@@ -578,6 +578,18 @@ header {
   border-right: 2px solid #14271c;
 }
 
+.tile-left .color-bar + .tile-content {
+  width: 75%;
+  margin-right: 25%;
+  box-sizing: border-box;
+}
+
+.tile-right .color-bar + .tile-content {
+  width: 75%;
+  margin-left: 25%;
+  box-sizing: border-box;
+}
+
 .tile-content {
   flex: 1;
   display: flex;
@@ -824,14 +836,35 @@ header {
   height: 100%;
 }
 
+/* Horizontal alignment for Top and Bottom rows */
+.tile-top .house-container,
+.tile-bottom .house-container {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(2px, 0.4vw, 3px);
+  padding: 0 2px;
+}
+
+/* Vertical alignment for Left and Right side rows */
+.tile-left .house-container,
+.tile-right .house-container {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(1.5px, 0.3vh, 2.5px);
+  padding: 2px 0;
+}
+
 .house-marker {
-  width: 10px;
-  height: 10px;
+  width: clamp(8px, 1.1vw, 10px);
+  height: clamp(8px, 1.1vw, 10px);
   background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
   border: 1px solid #ffffff;
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   position: relative;
+  flex-shrink: 0;
 }
 
 .hotel-marker {
@@ -842,6 +875,14 @@ header {
   border-radius: 2px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
   position: relative;
+  flex-shrink: 0;
+}
+
+/* Vertical orientation for hotels on side rows */
+.tile-left .hotel-marker,
+.tile-right .hotel-marker {
+  width: 11px;
+  height: 18px;
 }
 
 .mortgage-stripe {
