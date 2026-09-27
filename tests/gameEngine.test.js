@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { GameEngine } from '../js/gameEngine.js';
-import { updateGameSettings, reloadActiveBoard } from '../js/boardData.js?v=5.1';
+import { updateGameSettings, reloadActiveBoard, BOARD_TILES } from '../js/boardData.js?v=5.1';
 import { sounds } from '../js/audio.js?v=5.1';
 import { CHANCE_CARDS } from '../js/cardsData.js?v=5.2';
+import { AiPlayer } from '../js/aiPlayer.js';
 
 function createEngine(boardTheme = 'classic') {
   updateGameSettings({ boardTheme, startingCash: 1500, jailBailFee: 150 });
@@ -429,6 +430,47 @@ test('player stats track financial metrics and getMatchSummary outputs standings
   assert.equal(summary.standings[1].stats.rentPaid, 350);
   assert.ok(summary.globalCrownJewel, 'Global crown jewel detected');
   assert.equal(summary.globalCrownJewel.rentCollected, 350);
+});
+
+test('AI difficulty modes: aggressive buys aggressively and rushes 3 houses, standard buys sensibly', () => {
+  const engine = createEngine('classic');
+  const ai = new AiPlayer(engine);
+  const bot = engine.players[1];
+
+  // 1. Aggressive Mode property acquisition test
+  updateGameSettings({ aiDifficulty: 'aggressive' });
+  bot.cash = 250;
+  const tile1 = engine.getTileAt(6); // Oriental Ave ($100)
+  assert.ok(ai.decideBuyProperty(bot, tile1), 'Aggressive bot buys unowned property with $250 cash');
+
+  const railroad = engine.getTileAt(5); // Reading Railroad ($200)
+  assert.ok(ai.decideBuyProperty(bot, railroad), 'Aggressive bot buys railroad station with $250 cash ($200 + $10 buffer)');
+
+  // 2. Standard Mode property acquisition test
+  updateGameSettings({ aiDifficulty: 'standard' });
+  bot.cash = 250;
+  assert.ok(ai.decideBuyProperty(bot, tile1), 'Standard bot buys Oriental Ave with $250 cash');
+  assert.ok(ai.decideBuyProperty(bot, railroad), 'Standard bot buys Reading Railroad with $250 cash ($200 + $35 buffer)');
+
+  // 3. Aggressive 3-House Blitz Build test
+  updateGameSettings({ aiDifficulty: 'aggressive' });
+  // Give bot the Brown monopoly (Mediterranean 1, Baltic 3)
+  engine.board[1].owner = bot.id;
+  engine.board[3].owner = bot.id;
+  engine.board[1].houses = 0;
+  engine.board[3].houses = 0;
+  bot.cash = 1000; // House cost is $50 each
+
+  ai.tryUpgrading(bot);
+  // In aggressive mode, it should build across the group reaching at least 3 houses on each
+  assert.ok(engine.board[1].houses >= 3, `Mediterranean reached ${engine.board[1].houses} houses (>= 3)`);
+  assert.ok(engine.board[3].houses >= 3, `Baltic reached ${engine.board[3].houses} houses (>= 3)`);
+
+  // 4. Unmortgage test
+  engine.board[1].mortgaged = true;
+  bot.cash = 500;
+  ai.tryUnmortgaging(bot);
+  assert.equal(engine.board[1].mortgaged, false, 'Bot unmortgaged its monopoly property');
 });
 
 

@@ -412,6 +412,14 @@ class MonopolyApp {
           </select>
         </div>
 
+        <div>
+          <label style="font-size: 0.85rem; color: #94a3b8; display: block; margin-bottom: 4px;">AI Bots Difficulty & Strategy:</label>
+          <select class="select-ctrl" id="settingAiDifficulty" style="width: 100%;">
+            <option value="aggressive" ${(gameSettings.aiDifficulty || "aggressive") === "aggressive" ? "selected" : ""}>🔥 Aggressive (Grandmaster Tycoons - Relentless Purchases, Blitz 3-House Builds, Proactive Deals)</option>
+            <option value="standard" ${gameSettings.aiDifficulty === "standard" ? "selected" : ""}>⚖️ Standard (Balanced - Smart Land Acquisition, Calculated Builds, Traditional)</option>
+          </select>
+        </div>
+
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div>
             <label style="font-size: 0.85rem; color: #94a3b8; display: block; margin-bottom: 4px;">Jail Bail Fee ($):</label>
@@ -480,6 +488,7 @@ class MonopolyApp {
     document.getElementById("saveSettingsBtn").onclick = () => {
       const newSettings = {
         boardTheme: document.getElementById("settingTheme").value,
+        aiDifficulty: document.getElementById("settingAiDifficulty").value,
         jailBailFee:
           parseInt(document.getElementById("settingBail").value, 10) || 150,
         startingCash:
@@ -565,6 +574,14 @@ class MonopolyApp {
           <select class="select-ctrl" id="boardEditionSelect">
             <option value="classic" ${gameSettings.boardTheme === "classic" ? "selected" : ""}>Classic Atlantic City (GO, Jail, Free Parking - 40 Tiles)</option>
             <option value="world" ${gameSettings.boardTheme === "world" ? "selected" : ""}>World Mega-Cities (Cairo, Tokyo, Paris, Monaco - 36 Tiles)</option>
+          </select>
+        </div>
+
+        <div class="setup-board-field" style="margin-top: 10px;">
+          <label class="setup-field-label" for="aiDifficultySelect">AI Bots Strategy & Difficulty</label>
+          <select class="select-ctrl" id="aiDifficultySelect">
+            <option value="aggressive" ${(gameSettings.aiDifficulty || "aggressive") === "aggressive" ? "selected" : ""}>🔥 Aggressive (Grandmaster Tycoons - Relentless Purchases, Blitz 3-House Builds, Proactive Deals)</option>
+            <option value="standard" ${gameSettings.aiDifficulty === "standard" ? "selected" : ""}>⚖️ Standard (Balanced - Smart Land Acquisition, Calculated Builds, Traditional)</option>
           </select>
         </div>
 
@@ -715,7 +732,9 @@ class MonopolyApp {
 
     footerBtn.onclick = () => {
       const theme = document.getElementById("boardEditionSelect").value;
-      updateGameSettings({ boardTheme: theme });
+      const aiDifficultySelect = document.getElementById("aiDifficultySelect");
+      const aiDiff = aiDifficultySelect ? aiDifficultySelect.value : "aggressive";
+      updateGameSettings({ boardTheme: theme, aiDifficulty: aiDiff });
       reloadActiveBoard();
 
       const count = parseInt(
@@ -969,6 +988,7 @@ class MonopolyApp {
     await this.handleRollDice(true);
     await delay(1000);
 
+    this.ai.tryUnmortgaging(player);
     this.ai.tryUpgrading(player);
     this.ui.updateBoardState();
     this.ui.updateHUD();

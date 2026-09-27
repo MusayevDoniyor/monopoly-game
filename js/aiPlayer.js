@@ -2,6 +2,7 @@ import {
   BOARD_TILES,
   COLOR_GROUPS,
   TILE_PROBABILITIES,
+  gameSettings,
 } from "./boardData.js?v=5.1";
 import { sounds } from "./audio.js?v=5.1";
 
@@ -17,6 +18,21 @@ export class AiPlayer {
     this.lastTradeTurn = {};
     this.lastHumanTradeTurn = -999;
     this.rejectedOffers = {};
+  }
+
+  isAggressiveMode() {
+    return (gameSettings?.aiDifficulty || "aggressive") === "aggressive";
+  }
+
+  getAiArchetype(player) {
+    const name = (player?.name || "").toLowerCase();
+    if (name.includes("wallstreet") || name.includes("street")) {
+      return "STRATEGIST"; // Markov & ROI focus
+    }
+    if (name.includes("banker") || name.includes("bank")) {
+      return "CAPITALIST"; // Station hoarder & high-cash buyout focus
+    }
+    return "SHARK"; // Default / Tycoon Bot: relentless land grabber & rapid builder
   }
 
   // Handle Jail phase decision
@@ -53,148 +69,223 @@ export class AiPlayer {
   decideBuyProperty(player, tile) {
     if (player.cash < tile.price) return false;
 
-    // 1. Monopoly completion check (Top Priority)
+    const isAggressive = this.isAggressiveMode();
+    const unownedCount = BOARD_TILES.filter(
+      (t) =>
+        (t.type === "property" || t.type === "railroad" || t.type === "utility") &&
+        this.engine.board[t.id].owner === null,
+    ).length;
+
+    // 1. Monopoly Completion Check (Top Priority in both modes)
     if (tile.type === "property") {
       const groupTiles = BOARD_TILES.filter((t) => t.group === tile.group);
       const ownedInGroup = groupTiles.filter(
-        (t) => this.engine.board[t.id].owner === player.id,
+        (t) => this.engine.board[t.id]?.owner === player.id,
       ).length;
       if (ownedInGroup === groupTiles.length - 1) {
-        // Completes our monopoly! High priority, buy as long as we have even $20 left
-        return player.cash >= tile.price + 20;
+        // Completes our monopoly!
+        // In aggressive mode: Buy even if leaving $0! Monopoly gives immediate rent & leverage.
+        // In standard mode: Keep $15 buffer.
+        return isAggressive ? true : player.cash >= tile.price + 15;
       }
 
-      // 2. Block opponent monopoly (High Priority)
+      // 2. Block Opponent Monopoly (High Priority)
       for (const opponent of this.engine.getActivePlayers()) {
         if (opponent.id === player.id) continue;
         const oppOwned = groupTiles.filter(
-          (t) => this.engine.board[t.id].owner === opponent.id,
+          (t) => this.engine.board[t.id]?.owner === opponent.id,
         ).length;
         if (oppOwned === groupTiles.length - 1) {
-          // Block opponent!
-          return player.cash >= tile.price + 50;
+          // Deny opponent their monopoly!
+          return isAggressive ? true : player.cash >= tile.price + 25;
         }
       }
     }
 
-    // 3. Railroad Station synergy
+    // 3. Railroad Station Synergy
     if (tile.type === "railroad") {
-      const railroads = BOARD_TILES.filter((t) => t.group === "RAILROAD");
-      const ownedStations = railroads.filter(
-        (r) => this.engine.board[r.id].owner === player.id,
-      ).length;
-      if (ownedStations >= 1 && player.cash >= tile.price + 100) {
-        return true; // Owning multiple stations scales rent up to $200!
-      }
+      // In aggressive mode: Stations are high-priority cash cows! Buy if cash >= price + 10.
+      // In standard mode: Buy if cash >= price + 35.
+      return isAggressive
+        ? player.cash >= tile.price + 10
+        : player.cash >= tile.price + 35;
     }
 
-    // 4. Cash preservation for existing monopolies:
-    // If AI already owns a monopoly that needs houses, don't waste cash buying dead-end single properties!
+    // 4. Utility Synergy
+    if (tile.type === "utility") {
+      return isAggressive
+        ? player.cash >= tile.price + 15
+        : player.cash >= tile.price + 40;
+    }
+
+    // 5. Cash preservation for existing monopolies
     const owned = this.engine.getPlayerProperties(player.id);
     const hasMonopolyNeedingDevelopment = owned.some((t) => {
       if (t.type !== "property" || !this.engine.hasMonopoly(player.id, t.group))
         return false;
       const st = this.engine.board[t.id];
-      return st && st.houses < 4;
+      return st && st.houses < 3;
     });
 
     if (hasMonopolyNeedingDevelopment) {
-      // Must maintain a warchest to build houses! (at least $350 after buying)
-      if (player.cash < tile.price + 350) {
-        return false;
+      const devReserve = isAggressive ? 160 : 220;
+      if (player.cash < tile.price + devReserve) {
+        const groupTiles = BOARD_TILES.filter((t) => t.group === tile.group);
+        const ownedInGroup = groupTiles.filter(
+          (t) => this.engine.board[t.id]?.owner === player.id,
+        ).length;
+        // If it starts our second monopoly progress, still consider buying!
+        if (ownedInGroup === 0 && unownedCount <= 8) {
+          return false;
+        }
       }
     }
 
-    // 5. Progress towards a set (owning 1 of a 3-property group already)
+    // 6. Synergy bonus with existing sets
     let synergyScore = 0;
     if (tile.type === "property") {
       const groupTiles = BOARD_TILES.filter((t) => t.group === tile.group);
       const ownedInGroup = groupTiles.filter(
-        (t) => this.engine.board[t.id].owner === player.id,
+        (t) => this.engine.board[t.id]?.owner === player.id,
       ).length;
       if (ownedInGroup > 0) {
-        synergyScore += 100;
+        synergyScore += 80;
+      }
+      const prob = TILE_PROBABILITIES[tile.id] || 2.5;
+      if (prob >= 2.8) {
+        synergyScore += 25; // Markov sweet spot (Orange, Red, Illinois, etc.)
       }
     }
 
-    // 6. Dynamic safety buffer based on game stage:
-    const unownedCount = BOARD_TILES.filter(
-      (t) => t.type === "property" && this.engine.board[t.id].owner === null,
-    ).length;
-    let safetyBuffer = 180;
-    if (unownedCount <= 8) safetyBuffer = 260;
-    if (unownedCount <= 3) safetyBuffer = 360; // Late game: dangerous houses on board!
-
-    // If synergy exists, reduce required buffer
-    safetyBuffer = Math.max(70, safetyBuffer - synergyScore);
-
-    return player.cash >= tile.price + safetyBuffer;
+    // 7. Dynamic Safety Buffer
+    if (isAggressive) {
+      // Grandmaster Aggressive: Land grab mentality!
+      // In early & mid game (> 6 unowned), buy practically EVERYTHING!
+      if (unownedCount > 6) {
+        return player.cash >= tile.price + 10;
+      }
+      // Late game: keep modest buffer
+      const aggBuffer = Math.max(10, 40 - synergyScore);
+      return player.cash >= tile.price + aggBuffer;
+    } else {
+      // Standard Mode: Sensible, balanced buffers (fixes the excessive pass bug!)
+      let stdBuffer = 35;
+      if (unownedCount <= 8) stdBuffer = 65;
+      if (unownedCount <= 3) stdBuffer = 100;
+      stdBuffer = Math.max(20, stdBuffer - synergyScore);
+      return player.cash >= tile.price + stdBuffer;
+    }
   }
 
   // Algorithm: Return on Investment (ROI), Monopolies & Housing Scarcity strategy
   tryUpgrading(player) {
-    if (player.cash < 150) return;
+    const isAggressive = this.isAggressiveMode();
+    const minReserve = isAggressive ? 60 : 100;
+    if (player.cash < minReserve) return;
 
-    const owned = this.engine.getPlayerProperties(player.id);
-    const monopolizedGroups = new Set();
+    let buildPasses = 0;
+    const maxPasses = isAggressive ? 10 : 3; // Aggressive builds multiple houses in a single turn!
 
-    owned.forEach((tile) => {
-      if (
-        tile.type === "property" &&
-        this.engine.hasMonopoly(player.id, tile.group)
-      ) {
-        monopolizedGroups.add(tile.group);
+    while (buildPasses < maxPasses) {
+      const owned = this.engine.getPlayerProperties(player.id);
+      const monopolizedGroups = new Set();
+
+      owned.forEach((tile) => {
+        if (
+          tile.type === "property" &&
+          this.engine.hasMonopoly(player.id, tile.group)
+        ) {
+          monopolizedGroups.add(tile.group);
+        }
+      });
+
+      if (monopolizedGroups.size === 0) break;
+
+      // Evaluate best property to upgrade using ROI & 3-house rush
+      let bestCandidate = null;
+      let highestRoi = -1;
+
+      for (const groupKey of monopolizedGroups) {
+        const groupTiles = BOARD_TILES.filter((t) => t.group === groupKey);
+
+        for (const t of groupTiles) {
+          const state = this.engine.board[t.id];
+          const status = this.engine.getBuildStatus(player.id, t.id);
+          if (!status.canBuild) continue;
+
+          if (player.cash < t.houseCost + minReserve) continue;
+
+          const currentRent = this.engine.calculateRent(t.id);
+          let nextRent = 0;
+          if (state.houses < 4) {
+            nextRent = t.rent[state.houses + 1];
+          } else if (state.houses === 4) {
+            nextRent = t.rent[5]; // 1 Hotel
+          } else if (state.houses === 5) {
+            nextRent = Math.round(t.rent[5] * 1.5); // 2nd Hotel
+          }
+
+          const rentGain = Math.max(15, nextRent - currentRent);
+          const prob = (TILE_PROBABILITIES[t.id] || 2.5) / 100;
+          let roi = (rentGain * prob) / t.houseCost;
+
+          // 3-House Blitz Multiplier: Getting to 3 houses is the lethal turning point!
+          if (state.houses < 3) {
+            roi *= isAggressive ? 2.8 : 1.6;
+          } else if (state.houses < 5) {
+            roi *= isAggressive ? 1.4 : 1.1;
+          }
+
+          // Hotel 2 caution: Only build 2nd hotel if player has abundant cash (> $300 reserve)
+          if (state.houses === 5 && player.cash < t.houseCost + 300) {
+            continue;
+          }
+
+          if (roi > highestRoi) {
+            highestRoi = roi;
+            bestCandidate = t;
+          }
+        }
       }
-    });
 
-    if (monopolizedGroups.size === 0) return;
-
-    // Evaluate best property to upgrade using ROI:
-    let bestCandidate = null;
-    let highestRoi = -1;
-
-    for (const groupKey of monopolizedGroups) {
-      const groupTiles = BOARD_TILES.filter((t) => t.group === groupKey);
-
-      for (const t of groupTiles) {
-        const state = this.engine.board[t.id];
-        const status = this.engine.getBuildStatus(player.id, t.id);
-        if (!status.canBuild) continue;
-
-        const currentRent = this.engine.calculateRent(t.id);
-        let nextRent = 0;
-        if (state.houses < 4) {
-          nextRent = t.rent[state.houses + 1];
-        } else if (state.houses === 4) {
-          nextRent = t.rent[5]; // 1 Hotel
-        } else if (state.houses === 5) {
-          nextRent = Math.round(t.rent[5] * 1.5); // 2nd Hotel
-        }
-
-        const rentGain = Math.max(10, nextRent - currentRent);
-        const prob = (TILE_PROBABILITIES[t.id] || 2.5) / 100;
-        let roi = (rentGain * prob) / t.houseCost;
-
-        // Weight finishing 3-4 houses or 1st hotel
-        if (state.houses >= 2 && state.houses < 5) roi *= 1.3;
-
-        // For 2nd hotel (houses === 5), only build if abundant cash (> $300 reserve)
-        if (state.houses === 5 && player.cash < t.houseCost + 300) {
-          continue;
-        }
-
-        if (roi > highestRoi) {
-          highestRoi = roi;
-          bestCandidate = t;
-        }
+      if (bestCandidate && player.cash >= bestCandidate.houseCost + minReserve) {
+        const built = this.engine.buildHouse(player.id, bestCandidate.id);
+        if (!built) break;
+        buildPasses++;
+      } else {
+        break;
       }
     }
+  }
 
-    if (bestCandidate && player.cash >= bestCandidate.houseCost + 120) {
-      this.engine.buildHouse(player.id, bestCandidate.id);
-      // AI with strong cash reserve can build multiple upgrades in one turn
-      if (player.cash > 450 && Math.random() < 0.6) {
-        this.tryUpgrading(player);
+  // Systematically unmortgages properties when surplus cash is available
+  tryUnmortgaging(player) {
+    if (!player || player.bankrupt) return;
+    const isAggressive = this.isAggressiveMode();
+    const minReserve = isAggressive ? 160 : 300;
+    if (player.cash < minReserve) return;
+
+    const owned = this.engine.getPlayerProperties(player.id);
+    const mortgaged = owned.filter((t) => this.engine.board[t.id]?.mortgaged);
+    if (mortgaged.length === 0) return;
+
+    // Prioritize unmortgaging monopolies first, then railroad stations, then highest value
+    mortgaged.sort((a, b) => {
+      const aMonopoly = this.engine.hasMonopoly(player.id, a.group) ? 1 : 0;
+      const bMonopoly = this.engine.hasMonopoly(player.id, b.group) ? 1 : 0;
+      if (bMonopoly !== aMonopoly) return bMonopoly - aMonopoly;
+
+      const aStation = a.type === "railroad" ? 1 : 0;
+      const bStation = b.type === "railroad" ? 1 : 0;
+      if (bStation !== aStation) return bStation - aStation;
+
+      return (b.price || 0) - (a.price || 0);
+    });
+
+    for (const t of mortgaged) {
+      const unmortgageCost = Math.round(t.mortgage * 1.1);
+      if (player.cash >= unmortgageCost + minReserve) {
+        this.engine.unmortgageProperty(player.id, t.id);
       }
     }
   }
@@ -244,19 +335,20 @@ export class AiPlayer {
   async considerProactiveTrade(player, app) {
     if (!player || player.bankrupt) return false;
 
+    const isAggressive = this.isAggressiveMode();
     const currentTurn = this.engine.turnCount || 0;
     const playerCount = Math.max(2, this.engine.players.length || 4);
 
-    // Cooldown check for this AI: max 1 trade attempt per 3 rounds
-    if (
-      currentTurn - (this.lastTradeTurn[player.id] || -999) <
-      playerCount * 3
-    ) {
+    // Cooldown check for this AI:
+    // In aggressive mode: 1 attempt every round! In standard mode: 1 attempt every 2 rounds.
+    const cooldownTurns = isAggressive ? playerCount * 1 : playerCount * 2;
+    if (currentTurn - (this.lastTradeTurn[player.id] || -999) < cooldownTurns) {
       return false;
     }
 
-    // Do not initiate trade if player is low on cash
-    if (player.cash < 200) return false;
+    // Minimum cash required (can propose property-for-property swaps with lower cash)
+    const minCash = isAggressive ? 80 : 150;
+    if (player.cash < minCash) return false;
 
     // Scan for a color group where AI owns all but 1 property
     for (const groupKey of Object.keys(COLOR_GROUPS)) {
@@ -290,25 +382,22 @@ export class AiPlayer {
 
         // Anti-Spam protection for HUMAN player:
         if (!targetPlayer.isAi) {
-          // 1. Global human trade cooldown: across ALL bots, human gets max 1 offer per 4 full rounds (~16 turns)
+          // Human trade cooldown:
+          const humanWaitRounds = isAggressive ? 2 : 4;
           if (
             currentTurn - (this.lastHumanTradeTurn || -999) <
-            playerCount * 4
+            playerCount * humanWaitRounds
           ) {
             continue;
           }
 
-          // 2. Rejection history checks for this specific property:
           if (rej) {
-            // If human rejected 3 or more times, respect their decision permanently!
-            if (rej.count >= 3) {
+            if (rej.count >= (isAggressive ? 4 : 3)) {
               continue;
             }
-
-            // Cooldown after previous rejection:
-            // 1st rejection -> must wait at least 5 full rounds
-            // 2nd rejection -> must wait at least 8 full rounds
-            const requiredWaitRounds = rej.count === 1 ? 5 : 8;
+            const requiredWaitRounds = isAggressive
+              ? rej.count === 1 ? 3 : 5
+              : rej.count === 1 ? 5 : 8;
             if (currentTurn - rej.lastTurn < playerCount * requiredWaitRounds) {
               continue;
             }
@@ -531,6 +620,8 @@ export class AiPlayer {
     let requestedValue = requestedCash;
 
     // Value of properties offered to AI
+    const isAggressive = this.isAggressiveMode();
+    const monopolyMultiplier = isAggressive ? 2.8 : 2.2;
     offeredProps.forEach((id) => {
       const tile = BOARD_TILES[id];
       offeredValue += tile.price;
@@ -541,9 +632,9 @@ export class AiPlayer {
         (t) => this.engine.board[t.id]?.owner === receiverPlayer.id,
       ).length;
       if (currentlyOwned === groupTiles.length - 1) {
-        offeredValue += tile.price * 2.2; // Massive value to complete a monopoly
+        offeredValue += tile.price * monopolyMultiplier; // Massive value to complete a monopoly
       } else if (currentlyOwned > 0) {
-        offeredValue += tile.price * 0.3; // Progress towards set
+        offeredValue += tile.price * 0.4; // Progress towards set
       }
     });
 
@@ -563,12 +654,13 @@ export class AiPlayer {
         (t) => this.engine.board[t.id]?.owner === offeringPlayer.id,
       ).length;
       if (oppOwned === groupTiles.length - 1) {
-        requestedValue += tile.price * 1.8; // Significant premium to give opponent a monopoly
+        requestedValue += tile.price * (isAggressive ? 1.6 : 1.8);
       }
     });
 
-    // Fair deal condition: offered value must be at least 95% of requested value
-    const accepted = offeredValue >= requestedValue * 0.95;
+    // Fair deal condition
+    const minThreshold = isAggressive ? 0.90 : 0.95;
+    const accepted = offeredValue >= requestedValue * minThreshold;
 
     let reason = "";
     if (accepted) {

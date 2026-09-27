@@ -168,9 +168,14 @@ export const DEFAULT_SETTINGS = {
   turnTimerSeconds: 25,     // Enforced turn timer
   approvalTimerSeconds: 15, 
   bankHouses: 32,           // Total houses available
-  bankHotels: 18            // Scaled hotel limit
+  bankHotels: 18,           // Scaled hotel limit
+  aiDifficulty: 'aggressive' // 'aggressive' (Grandmaster Tycoons) or 'standard' (Balanced)
 };
 ```
+
+### 🤖 AI Difficulty Modes
+- **🔥 Aggressive (Grandmaster Tycoons)**: Relentless land-acquisition (buys unowned land without hesitation), 3-House blitz rushes on monopolies, proactive bot-to-bot and bot-to-human trade dealmaking, and systematic mortgage lifting.
+- **⚖️ Standard (Balanced)**: Smart property buying with balanced reserves, calculated single-turn house building, and traditional trade acceptance thresholds.
 
 ---
 
