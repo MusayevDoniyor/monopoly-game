@@ -209,27 +209,53 @@ Powered by `audio.js` with Web Audio API.
 ### Project Structure
 ```text
 monopoly-game/
-├── server.js               # Node.js WebSocket Multiplayer Server
+├── server.js               # Node.js HTTP & WebSocket Multiplayer Server
 ├── electron-main.js        # Electron wrapper for Desktop mode
-├── index.html              # Main UI structure & Board
-├── package.json            # Project config & dependencies
+├── index.html              # Main UI structure & Board canvas
+├── package.json            # Project config, scripts & dependencies
 ├── css/
-│   └── style.css           # Core styling, themes & animations
+│   ├── modules/            # Modular stylesheets
+│   │   ├── variables.css   # Luxury palette, fonts, CSS custom properties
+│   │   ├── board.css       # 36 & 40 grid layouts, heatmaps, property cards
+│   │   ├── dice.css        # 3D CSS perspective scenes & cube roll animations
+│   │   ├── tokens.css      # 3D player pawns & step animations
+│   │   ├── hud.css         # Control arena & player cards
+│   │   ├── feed.css        # Activity feed & jump-to-latest button
+│   │   ├── modals.css      # Modal base, dialogs & custom dropdowns
+│   │   ├── certificate.css # Winner diploma & print stylesheet
+│   │   ├── responsive.css  # Tablet and mobile breakpoints
+│   │   └── refinements.css # Micro-interactions and polish
+│   └── style.css           # 12-line master stylesheet entry point
 ├── js/
-│   ├── app.js              # Application entry point & Game Loop
-│   ├── gameEngine.js       # Core game logic (Movement, Rent, Logic)
-│   ├── boardData.js        # Tile definitions & Probabilities
-│   ├── cardsData.js        # Chance/Chest card definitions
-│   ├── aiPlayer.js         # AI behavior algorithms
-│   ├── ui.js               # Modal handling, DOM updates
-│   ├── audio.js            # Sound effect manager
-│   ├── particles.js        # Canvas FX rendering
-│   ├── achievements.js     # Steam-style achievements
-│   ├── icons.js            # SVG icons
-│   ├── multiplayer.js      # WebSocket client logic
+│   ├── ui/                 # Decomposed UI modules
+│   │   ├── uiComponent.js  # Base component with transparent delegation
+│   │   ├── customSelect.js # Universal dark-luxury custom dropdown component
+│   │   ├── diceRenderer.js # 3D dice rotation & settle physics
+│   │   ├── tokenAnimator.js# Step-by-step movement & sound sync
+│   │   ├── boardRenderer.js# Board rendering & heatmap overlays
+│   │   ├── activityFeed.js # Live feed logging & JSON export
+│   │   ├── hudController.js# Sidebar, turn status & button states
+│   │   ├── modalManager.js # Modal dialog orchestration
+│   │   └── railroadArtwork.js # Transit artwork mappings
+│   ├── app.js              # Application entry point & turn lifecycle
+│   ├── turnTimer.js        # Match clock and turn countdown timer
+│   ├── utils.js            # Shared utility functions (DRY)
+│   ├── gameEngine.js       # Core game state & official Monopoly rules
+│   ├── boardData.js        # Tile definitions & Markov probabilities
+│   ├── cardsData.js        # Chance & Community Chest cards
+│   ├── aiPlayer.js         # Grandmaster heuristic AI algorithms
+│   ├── ui.js               # UI Facade coordinating specialized renderers
+│   ├── audio.js            # Web Audio API sound effect manager
+│   ├── particles.js        # Canvas visual effects & confetti
+│   ├── achievements.js     # Milestone tracking & achievement toasts
+│   ├── icons.js            # SVG Lucide vector icons
+│   ├── multiplayer.js      # WebSocket client logic & sync
 │   └── geminiAdvisor.js    # AI Assistant integration
-├── images/                 # All graphical assets (WEBP/JPG/PNG)
-└── sound-effects/          # Audio files (MP3)
+├── tests/
+│   ├── gameEngine.test.js  # Official game rules & mechanics tests (18 tests)
+│   └── modularArchitecture.test.js # Architectural unit tests (5 tests)
+├── images/                 # Graphical assets (WEBP/JPG/PNG)
+└── sound-effects/          # High-fidelity audio files (MP3)
 ```
 
 ---
@@ -238,8 +264,8 @@ monopoly-game/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/monopoly-master.git
-   cd monopoly-master
+   git clone https://github.com/MusayevDoniyor/monopoly-game.git
+   cd monopoly-game
    ```
 
 2. **Install Dependencies**
