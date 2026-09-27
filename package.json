@@ -1,0 +1,21 @@
+{
+  "name": "monopoly-game",
+  "version": "1.0.0",
+  "description": "A complete, faithful, and visually rich digital implementation of the classic **Monopoly** board game. Built with an 11x11 interactive grid board, smooth pawn movement animations, Web Audio sound effects, official rules, property development, mortgaging, Chance & Community Chest decks, and autonomous AI bots.",
+  "main": "electron-main.js",
+  "scripts": {
+    "start": "node server.js",
+    "desktop": "electron electron-main.js",
+    "test": "node --test tests/gameEngine.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "electron": "^44.4.5"
+  }
+}
