@@ -336,12 +336,12 @@ export class MonopolyUI {
     const tokenMarkup = players
       .map((player, index) => {
         const angle = segmentAngle * index - 90;
-        const radius = count === 2 ? 34 : 38;
+        const radius = count === 2 ? 34 : count >= 5 ? 36 : 38;
         const x = 50 + Math.cos((angle * Math.PI) / 180) * radius;
         const y = 50 + Math.sin((angle * Math.PI) / 180) * radius;
         const playerColor = safePlayerColor(player.color);
         return `
-        <div class="start-selector-token" data-player-index="${index}" style="left: ${x}%; top: ${y}%; --player-color: ${playerColor};">
+        <div class="start-selector-token" data-player-index="${index}" style="left: ${x}%; top: ${y}%; --player-color: ${playerColor}; transform: translate(-50%, -50%) rotate(0deg);">
           <div class="start-selector-token-icon">${getIcon(player.token || "TOP_HAT")}</div>
           <span>${escapeHtml(player.name)}</span>
         </div>
@@ -349,11 +349,13 @@ export class MonopolyUI {
       })
       .join("");
 
+    const startGradientAngle = (-90 - segmentAngle / 2).toFixed(2);
+
     this.modalBody.innerHTML = `
       <div class="starting-player-selector">
         <div class="selector-subtitle">The wheel will choose who rolls first.</div>
         <div class="selector-arena selector-count-${count}">
-          <div class="selector-wheel" id="selectorWheel" style="--segment-angle: ${segmentAngle.toFixed(2)}deg; --wheel-gradient: conic-gradient(from -90deg, ${wheelStops});">
+          <div class="selector-wheel" id="selectorWheel" style="--segment-angle: ${segmentAngle.toFixed(2)}deg; --wheel-gradient: conic-gradient(from ${startGradientAngle}deg, ${wheelStops});">
             <div class="selector-wheel-grid"></div>
             <div class="selector-orbit selector-orbit-outer"></div>
             <div class="selector-orbit selector-orbit-inner"></div>
@@ -370,6 +372,7 @@ export class MonopolyUI {
 
     const arena = this.modalBody.querySelector(".selector-arena");
     const wheel = this.modalBody.querySelector("#selectorWheel");
+    const tokens = this.modalBody.querySelectorAll(".start-selector-token");
     const status = document.getElementById("startingSelectorStatus");
     const winnerToken = this.modalBody.querySelector(
       `[data-player-index="${winnerIndex}"]`,
@@ -379,11 +382,25 @@ export class MonopolyUI {
     requestAnimationFrame(() => {
       if (arena) arena.classList.add("is-spinning");
       if (wheel) wheel.style.transform = `rotate(${totalRotation}deg)`;
+      tokens.forEach((token) => {
+        token.style.setProperty("--token-rot", `${-totalRotation}deg`);
+        token.style.transform = `translate(-50%, -50%) rotate(${-totalRotation}deg)`;
+      });
     });
 
     window.setTimeout(() => {
       arena?.classList.remove("is-spinning");
-      winnerToken?.classList.add("winner");
+      if (winnerToken) {
+        winnerToken.classList.add("winner");
+        winnerToken.style.transition =
+          "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s";
+        winnerToken.style.transform = `translate(-50%, -50%) rotate(${-totalRotation}deg) scale(1.22)`;
+      }
+      tokens.forEach((tok) => {
+        if (tok !== winnerToken) {
+          tok.style.opacity = "0.55";
+        }
+      });
       if (status)
         status.innerHTML = `<strong style="color: var(--gold);">${escapeHtml(players[winnerIndex].name)}</strong> will roll first!`;
       const button = document.getElementById("startingSelectorButton");

@@ -28,7 +28,7 @@ test('classic edition exposes the correct corners and jail behavior', () => {
   player.position = engine.getJailTileId();
   engine.handleTileLanding(player);
   assert.equal(player.position, 10);
-  assert.equal(player.inJail, true);
+  assert.equal(player.inJail, false); // Just Visiting in official rules
 
   player.inJail = false;
   player.position = engine.getGoToJailTileId();
