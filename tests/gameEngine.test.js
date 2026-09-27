@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { GameEngine } from '../js/gameEngine.js';
-import { updateGameSettings, reloadActiveBoard } from '../js/boardData.js?v=4.11';
+import { updateGameSettings, reloadActiveBoard } from '../js/boardData.js?v=4.12';
+import { sounds } from '../js/audio.js?v=4.12';
 
 function createEngine(boardTheme = 'classic') {
   updateGameSettings({ boardTheme, startingCash: 1500, jailBailFee: 150 });
@@ -114,4 +115,20 @@ test('card jail actions resolve and finish the callback exactly once', () => {
   assert.equal(player.inJail, true);
   assert.equal(player.position, 10);
   assert.equal(completed, 1);
+});
+
+test('music and sound effects keep independent mute states', () => {
+  sounds.setSfxMuted(false);
+  sounds.musicEnabled = false;
+
+  assert.equal(sounds.toggleMusic(), true);
+  assert.equal(sounds.musicEnabled, true);
+
+  assert.equal(sounds.toggleMute(), true);
+  assert.equal(sounds.sfxMuted, true);
+  assert.equal(sounds.musicEnabled, true);
+
+  assert.equal(sounds.toggleMute(), false);
+  assert.equal(sounds.toggleMusic(), false);
+  assert.equal(sounds.sfxMuted, false);
 });

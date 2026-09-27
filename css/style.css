@@ -3253,6 +3253,19 @@ textarea {
   box-shadow: 0 5px 15px rgba(139, 100, 31, 0.32);
 }
 
+/* Audio channel state is visible and intentionally independent. */
+.btn-icon.audio-on {
+  color: #8fe0b5;
+  border-color: rgba(143, 224, 181, 0.72);
+  background: rgba(43, 110, 83, 0.2);
+}
+
+.btn-icon.audio-muted {
+  color: #f2a39a;
+  border-color: rgba(242, 163, 154, 0.62);
+  background: rgba(125, 52, 48, 0.18);
+}
+
 /* Board event tiles share the same calmer card language as their modal cards. */
 .event-tile {
   height: 100%;

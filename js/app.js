@@ -1,13 +1,13 @@
-import { GameEngine } from './gameEngine.js?v=4.11';
-import { MonopolyUI } from './ui.js?v=4.11';
-import { AiPlayer } from './aiPlayer.js?v=4.11';
-import { sounds } from './audio.js?v=4.11';
-import { geminiAdvisor } from './geminiAdvisor.js?v=4.11';
-import { MultiplayerManager } from './multiplayer.js?v=4.11';
-import { COLOR_GROUPS, gameSettings, updateGameSettings, reloadActiveBoard } from './boardData.js?v=4.11';
-import { particles } from './particles.js?v=4.11';
-import { achievements } from './achievements.js?v=4.11';
-import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from './icons.js?v=4.11';
+import { GameEngine } from './gameEngine.js?v=4.12';
+import { MonopolyUI } from './ui.js?v=4.12';
+import { AiPlayer } from './aiPlayer.js?v=4.12';
+import { sounds } from './audio.js?v=4.12';
+import { geminiAdvisor } from './geminiAdvisor.js?v=4.12';
+import { MultiplayerManager } from './multiplayer.js?v=4.12';
+import { COLOR_GROUPS, gameSettings, updateGameSettings, reloadActiveBoard } from './boardData.js?v=4.12';
+import { particles } from './particles.js?v=4.12';
+import { achievements } from './achievements.js?v=4.12';
+import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from './icons.js?v=4.12';
 
 class MonopolyApp {
   constructor() {
@@ -117,22 +117,41 @@ class MonopolyApp {
 
     // Header Quick Toggles
     const muteBtn = document.getElementById('muteBtn');
+    const musicBtn = document.getElementById('musicBtn');
+    const refreshAudioButtons = () => {
+      const sfxMuted = Boolean(sounds.sfxMuted);
+      const musicEnabled = Boolean(sounds.musicEnabled);
+      const muteIcon = document.getElementById('muteIconWrap');
+
+      if (muteIcon) muteIcon.innerHTML = getIcon(sfxMuted ? 'MUTE' : 'SPEAKER');
+      if (muteBtn) {
+        muteBtn.classList.toggle('audio-muted', sfxMuted);
+        muteBtn.setAttribute('aria-pressed', String(sfxMuted));
+        muteBtn.title = sfxMuted ? 'Sound FX: Off' : 'Sound FX: On';
+      }
+
+      if (musicBtn) {
+        musicBtn.classList.toggle('audio-on', musicEnabled);
+        musicBtn.setAttribute('aria-pressed', String(musicEnabled));
+        musicBtn.title = musicEnabled ? 'Jazz Music: On' : 'Jazz Music: Off';
+      }
+    };
+
     if (muteBtn) {
       muteBtn.onclick = () => {
-        const isMuted = sounds.toggleMute();
-        const iconWrap = document.getElementById('muteIconWrap');
-        if (iconWrap) iconWrap.innerHTML = getIcon(isMuted ? 'MUTE' : 'SPEAKER');
+        sounds.toggleMute();
+        refreshAudioButtons();
       };
     }
 
-    const musicBtn = document.getElementById('musicBtn');
     if (musicBtn) {
       musicBtn.onclick = () => {
-        const isPlaying = sounds.toggleMusic();
-        musicBtn.style.color = isPlaying ? '#34d399' : '#e2e8f0';
-        musicBtn.style.borderColor = isPlaying ? '#34d399' : 'rgba(255, 255, 255, 0.14)';
+        sounds.toggleMusic();
+        refreshAudioButtons();
       };
     }
+
+    refreshAudioButtons();
 
     const rulesHeaderBtn = document.getElementById('rulesHeaderBtn');
     if (rulesHeaderBtn) {

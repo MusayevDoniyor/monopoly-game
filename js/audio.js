@@ -2,9 +2,15 @@
 class SoundEffects {
   constructor() {
     this.ctx = null;
+    // Music and sound effects are deliberately independent channels.
+    // Keep `muted` as a compatibility alias for older callers, but only use
+    // it for the SFX channel — it must never pause or gate background music.
+    this.sfxMuted = false;
     this.muted = false;
     this.musicEnabled = false;
     this.sfxGain = null;
+    this.sfxMasterVolume = 0.7;
+    this.activeSfx = new Set();
 
     // Track audio files and exact durations (in seconds)
     this.audioFiles = {
@@ -34,6 +40,7 @@ class SoundEffects {
         if (key !== 'music') {
           const el = new Audio(info.src);
           el.preload = 'auto';
+          el.muted = this.sfxMuted;
           this.audioElements[key] = el;
         }
       });
@@ -49,7 +56,10 @@ class SoundEffects {
       if (AudioCtx) {
         this.ctx = new AudioCtx();
         this.sfxGain = this.ctx.createGain();
-        this.sfxGain.gain.setValueAtTime(0.7, this.ctx.currentTime);
+        this.sfxGain.gain.setValueAtTime(
+          this.sfxMuted ? 0 : this.sfxMasterVolume,
+          this.ctx.currentTime,
+        );
         this.sfxGain.connect(this.ctx.destination);
       }
     }
@@ -59,13 +69,17 @@ class SoundEffects {
   }
 
   playAudioFile(key) {
-    if (this.muted || typeof window === 'undefined' || typeof Audio === 'undefined') return;
+    if (this.sfxMuted || typeof window === 'undefined' || typeof Audio === 'undefined') return;
     try {
       const info = this.audioFiles[key];
       if (!info) return;
       const template = this.audioElements[key];
       const audio = template ? template.cloneNode() : new Audio(info.src);
       audio.volume = info.volume;
+      audio.muted = false;
+      this.activeSfx.add(audio);
+      audio.addEventListener('ended', () => this.activeSfx.delete(audio), { once: true });
+      audio.addEventListener('error', () => this.activeSfx.delete(audio), { once: true });
       audio.play().catch(() => {});
       return audio;
     } catch (e) {
@@ -74,15 +88,29 @@ class SoundEffects {
   }
 
   toggleMute() {
-    this.muted = !this.muted;
-    if (this.muted) {
-      if (this.bgMusic) this.bgMusic.pause();
-    } else {
-      if (this.musicEnabled && this.bgMusic) {
-        this.bgMusic.play().catch(() => {});
-      }
+    this.setSfxMuted(!this.sfxMuted);
+    return this.sfxMuted;
+  }
+
+  setSfxMuted(muted) {
+    this.sfxMuted = Boolean(muted);
+    this.muted = this.sfxMuted;
+
+    // Mute currently playing file-based effects immediately, without
+    // touching the independent background music element.
+    this.activeSfx.forEach((audio) => {
+      audio.muted = this.sfxMuted;
+    });
+
+    if (this.sfxGain && this.ctx) {
+      this.sfxGain.gain.setTargetAtTime(
+        this.sfxMuted ? 0 : this.sfxMasterVolume,
+        this.ctx.currentTime,
+        0.015,
+      );
     }
-    return this.muted;
+
+    return this.sfxMuted;
   }
 
   toggleMusic() {
@@ -96,8 +124,8 @@ class SoundEffects {
   }
 
   startMusic() {
-    if (this.muted || !this.bgMusic) return;
-    this.bgMusic.currentTime = 0;
+    if (!this.musicEnabled || !this.bgMusic) return;
+    this.bgMusic.muted = false;
     this.bgMusic.volume = this.audioFiles.music.volume;
     this.bgMusic.play().catch(err => {
       console.warn('Background jazz playback blocked until user gesture:', err);
@@ -148,7 +176,7 @@ class SoundEffects {
   }
 
   playStartingSelector(duration = 2.4) {
-    if (this.muted) return;
+    if (this.sfxMuted) return;
     this.init();
     if (!this.ctx || !this.sfxGain) return;
 
@@ -184,7 +212,7 @@ class SoundEffects {
   }
 
   playStep() {
-    if (this.muted) return;
+    if (this.sfxMuted) return;
     this.init();
     if (!this.ctx) return;
 
