@@ -3,12 +3,12 @@ import {
   COLOR_GROUPS,
   TILE_PROBABILITIES,
   gameSettings,
-} from "./boardData.js?v=4.12";
-import { sounds } from "./audio.js?v=4.12";
-import { geminiAdvisor } from "./geminiAdvisor.js?v=4.12";
-import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=4.12";
-import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=4.12";
-import { particles } from "./particles.js?v=4.12";
+} from "./boardData.js?v=4.13";
+import { sounds } from "./audio.js?v=4.13";
+import { geminiAdvisor } from "./geminiAdvisor.js?v=4.13";
+import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=4.13";
+import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=4.13";
+import { particles } from "./particles.js?v=4.13";
 
 const escapeHtml = (value) => String(value ?? "")
   .replace(/&/g, "&amp;")
@@ -969,9 +969,9 @@ export class MonopolyUI {
 
           <table class="rent-table">
             <tr><td>With 1 House</td><td>$ ${tile.rent[1]}.</td></tr>
-            <tr><td>With 2 Houses</td><td>${tile.rent[2]}.</td></tr>
-            <tr><td>With 3 Houses</td><td>${tile.rent[3]}.</td></tr>
-            <tr><td>With 4 Houses</td><td>${tile.rent[4]}.</td></tr>
+            <tr><td>With 2 Houses</td><td>$ ${tile.rent[2]}.</td></tr>
+            <tr><td>With 3 Houses</td><td>$ ${tile.rent[3]}.</td></tr>
+            <tr><td>With 4 Houses</td><td>$ ${tile.rent[4]}.</td></tr>
           </table>
 
           <div class="deed-hotel-row">With 1 HOTEL $${tile.rent[5]}.</div>

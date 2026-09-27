@@ -1,13 +1,13 @@
-import { GameEngine } from './gameEngine.js?v=4.12';
-import { MonopolyUI } from './ui.js?v=4.12';
-import { AiPlayer } from './aiPlayer.js?v=4.12';
-import { sounds } from './audio.js?v=4.12';
-import { geminiAdvisor } from './geminiAdvisor.js?v=4.12';
-import { MultiplayerManager } from './multiplayer.js?v=4.12';
-import { COLOR_GROUPS, gameSettings, updateGameSettings, reloadActiveBoard } from './boardData.js?v=4.12';
-import { particles } from './particles.js?v=4.12';
-import { achievements } from './achievements.js?v=4.12';
-import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from './icons.js?v=4.12';
+import { GameEngine } from './gameEngine.js?v=4.13';
+import { MonopolyUI } from './ui.js?v=4.13';
+import { AiPlayer } from './aiPlayer.js?v=4.13';
+import { sounds } from './audio.js?v=4.13';
+import { geminiAdvisor } from './geminiAdvisor.js?v=4.13';
+import { MultiplayerManager } from './multiplayer.js?v=4.13';
+import { COLOR_GROUPS, gameSettings, updateGameSettings, reloadActiveBoard } from './boardData.js?v=4.13';
+import { particles } from './particles.js?v=4.13';
+import { achievements } from './achievements.js?v=4.13';
+import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from './icons.js?v=4.13';
 
 class MonopolyApp {
   constructor() {
