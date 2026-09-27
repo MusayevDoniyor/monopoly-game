@@ -3,12 +3,12 @@ import {
   COLOR_GROUPS,
   TILE_PROBABILITIES,
   gameSettings,
-} from "./boardData.js?v=4.17";
-import { sounds } from "./audio.js?v=4.17";
-import { geminiAdvisor } from "./geminiAdvisor.js?v=4.17";
-import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=4.17";
-import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=4.17";
-import { particles } from "./particles.js?v=4.17";
+} from "./boardData.js?v=4.18";
+import { sounds } from "./audio.js?v=4.18";
+import { geminiAdvisor } from "./geminiAdvisor.js?v=4.18";
+import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=4.18";
+import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=4.18";
+import { particles } from "./particles.js?v=4.18";
 
 const escapeHtml = (value) => String(value ?? "")
   .replace(/&/g, "&amp;")
@@ -552,7 +552,7 @@ export class MonopolyUI {
         const container = document.getElementById(`tokens-${current}`);
         if (container) {
           container.appendChild(tokenEl);
-          sounds.playStep();
+          sounds.playStep(player);
         }
         await new Promise((r) => setTimeout(r, 260));
       }
@@ -564,7 +564,7 @@ export class MonopolyUI {
         const container = document.getElementById(`tokens-${current}`);
         if (container) {
           container.appendChild(tokenEl);
-          sounds.playStep();
+          sounds.playStep(player);
         }
         // Smooth eased movement: start fast, slow down at end (like real board game piece sliding)
         const progress = i / totalSteps;
@@ -2370,7 +2370,7 @@ export class MonopolyUI {
     });
 
     // 2. Play celebratory sound (level-up.mp3 - 2.47s)
-    sounds.playUpgrade();
+    sounds.playUpgrade(player);
 
     // 3. Log monopoly completion to game log
     this.engine.log(

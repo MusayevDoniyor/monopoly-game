@@ -8,6 +8,7 @@ class SoundEffects {
     this.sfxMuted = false;
     this.muted = false;
     this.musicEnabled = false;
+    this.botSfxEnabled = this.readBotSfxPreference();
     this.sfxGain = null;
     this.sfxMasterVolume = 0.7;
     this.activeSfx = new Set();
@@ -68,8 +69,33 @@ class SoundEffects {
     }
   }
 
-  playAudioFile(key) {
-    if (this.sfxMuted || typeof window === 'undefined' || typeof Audio === 'undefined') return;
+  readBotSfxPreference() {
+    if (typeof localStorage === 'undefined') return false;
+    try {
+      return localStorage.getItem('monopoly_bot_sfx') === 'true';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  setBotSfxEnabled(enabled) {
+    this.botSfxEnabled = Boolean(enabled);
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem('monopoly_bot_sfx', String(this.botSfxEnabled));
+      } catch (e) {
+        // Audio preferences are optional; keep the in-memory setting active.
+      }
+    }
+    return this.botSfxEnabled;
+  }
+
+  shouldPlayFor(actor) {
+    return !actor?.isAi || this.botSfxEnabled;
+  }
+
+  playAudioFile(key, actor = null) {
+    if (!this.shouldPlayFor(actor) || this.sfxMuted || typeof window === 'undefined' || typeof Audio === 'undefined') return;
     try {
       const info = this.audioFiles[key];
       if (!info) return;
@@ -139,40 +165,40 @@ class SoundEffects {
   }
 
   // Real Authentic Sound Effects
-  playCash() {
-    this.playAudioFile('cash'); // 3.19s
+  playCash(actor = null) {
+    this.playAudioFile('cash', actor); // 3.19s
   }
 
-  playUpgrade() {
-    this.playAudioFile('upgrade'); // 2.47s
+  playUpgrade(actor = null) {
+    this.playAudioFile('upgrade', actor); // 2.47s
   }
 
-  playCard() {
-    this.playAudioFile('card'); // 0.43s
+  playCard(actor = null) {
+    this.playAudioFile('card', actor); // 0.43s
   }
 
-  playJail() {
-    this.playAudioFile('jail'); // 6.34s
+  playJail(actor = null) {
+    this.playAudioFile('jail', actor); // 6.34s
   }
 
-  playBankrupt() {
-    this.playAudioFile('sad'); // 5.26s
+  playBankrupt(actor = null) {
+    this.playAudioFile('sad', actor); // 5.26s
   }
 
-  playPay() {
-    this.playAudioFile('sad'); // 5.26s
+  playPay(actor = null) {
+    this.playAudioFile('sad', actor); // 5.26s
   }
 
-  playBuzzer() {
-    this.playAudioFile('sad');
+  playBuzzer(actor = null) {
+    this.playAudioFile('sad', actor);
   }
 
-  playVictory() {
-    this.playAudioFile('victory'); // 6.72s
+  playVictory(actor = null) {
+    this.playAudioFile('victory', actor); // 6.72s
   }
 
-  playDice() {
-    this.playAudioFile('dice'); // 1.39s
+  playDice(actor = null) {
+    this.playAudioFile('dice', actor); // 1.39s
   }
 
   playStartingSelector(duration = 2.4) {
@@ -211,8 +237,8 @@ class SoundEffects {
     finalOsc.stop(start + duration + 0.45);
   }
 
-  playStep() {
-    if (this.sfxMuted) return;
+  playStep(actor = null) {
+    if (!this.shouldPlayFor(actor) || this.sfxMuted) return;
     this.init();
     if (!this.ctx) return;
 

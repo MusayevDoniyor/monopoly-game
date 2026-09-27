@@ -1,6 +1,6 @@
-import { BOARD_TILES, COLOR_GROUPS, gameSettings, reloadActiveBoard } from './boardData.js?v=4.17';
-import { CHANCE_CARDS, COMMUNITY_CHEST_CARDS } from './cardsData.js?v=4.17';
-import { sounds } from './audio.js?v=4.17';
+import { BOARD_TILES, COLOR_GROUPS, gameSettings, reloadActiveBoard } from './boardData.js?v=4.18';
+import { CHANCE_CARDS, COMMUNITY_CHEST_CARDS } from './cardsData.js?v=4.18';
+import { sounds } from './audio.js?v=4.18';
 
 export class GameEngine {
   constructor() {
@@ -322,7 +322,7 @@ export class GameEngine {
       this.log(`${player.name} purchased a 2nd HOTEL (Grand Hotel) on ${tile.name} for $${tile.houseCost}!`, 'success');
     }
 
-    sounds.playUpgrade();
+    sounds.playUpgrade(player);
     return { success: true };
   }
 
@@ -362,7 +362,7 @@ export class GameEngine {
       state.houses -= 1;
       this.log(`${player.name} sold 1 house from ${tile.name} (+$${refund}). Remaining: ${state.houses} houses.`, 'warning');
     }
-    sounds.playCash();
+    sounds.playCash(player);
     return true;
   }
 
@@ -388,7 +388,7 @@ export class GameEngine {
     state.mortgaged = true;
     player.cash += tile.mortgage;
     this.log(`${player.name} mortgaged ${tile.name} and received $${tile.mortgage}.`, 'warning');
-    sounds.playCash();
+    sounds.playCash(player);
     return true;
   }
 
@@ -411,7 +411,7 @@ export class GameEngine {
     player.cash -= cost;
     state.mortgaged = false;
     this.log(`${player.name} lifted mortgage on ${tile.name} for $${cost}.`, 'success');
-    sounds.playPay();
+    sounds.playPay(player);
     return true;
   }
 
@@ -423,7 +423,7 @@ export class GameEngine {
     this.currentTurn.canRollAgain = false;
     this.currentTurn.hasRolled = true;
     this.log(`[ARREST] ${player.name} was sent directly to JAIL! (Next turn bail: $${gameSettings.jailBailFee})`, 'danger');
-    sounds.playJail();
+    sounds.playJail(player);
     if (this.onJail) this.onJail(player);
   }
 
@@ -434,7 +434,6 @@ export class GameEngine {
     player.inJail = false;
     player.jailTurns = 0;
     this.log(`${player.name} paid $${bail} bail and is released from Jail!`, 'info');
-    sounds.playPay();
     return true;
   }
 
@@ -444,7 +443,7 @@ export class GameEngine {
     player.inJail = false;
     player.jailTurns = 0;
     this.log(`${player.name} used a VIP 'Get Out of Jail Free' ticket!`, 'success');
-    sounds.playCash();
+    sounds.playCash(player);
     return true;
   }
 
@@ -463,9 +462,9 @@ export class GameEngine {
       case 'CASH':
         player.cash += action.amount;
         if (action.amount > 0) {
-          sounds.playCash();
+          sounds.playCash(player);
         } else {
-          sounds.playPay();
+          sounds.playPay(player);
         }
         if (onComplete) onComplete();
         break;
@@ -480,7 +479,7 @@ export class GameEngine {
           const goRew = gameSettings.goReward || 200;
           player.cash += goRew;
           this.log(`${player.name} collected $${goRew} for passing START!`, 'success');
-          sounds.playCash();
+          sounds.playCash(player);
         }
         player.position = target;
         this.handleTileLanding(player, onComplete);
@@ -502,7 +501,7 @@ export class GameEngine {
           const goRew = gameSettings.goReward || 200;
           player.cash += goRew;
           this.log(`${player.name} passed START and collected $${goRew}.`, 'success');
-          sounds.playCash();
+          sounds.playCash(player);
         }
         player.position = nextRR;
         this.handleTileLanding(player, onComplete, { doubleRent: true });
@@ -525,7 +524,7 @@ export class GameEngine {
         const totalCost = action.amount * others.length;
         player.cash -= totalCost;
         others.forEach(p => (p.cash += action.amount));
-        sounds.playPay();
+        sounds.playPay(player);
         if (onComplete) onComplete();
         break;
       }
@@ -536,7 +535,7 @@ export class GameEngine {
           p.cash -= action.amount;
           player.cash += action.amount;
         });
-        sounds.playCash();
+        sounds.playCash(player);
         if (onComplete) onComplete();
         break;
       }
@@ -555,7 +554,7 @@ export class GameEngine {
         const cost = housesCount * action.perHouse + hotelsCount * action.perHotel;
         player.cash -= cost;
         this.log(`${player.name} paid $${cost} for repairs (${housesCount} houses, ${hotelsCount} hotels).`, 'warning');
-        sounds.playPay();
+        sounds.playPay(player);
         if (onComplete) onComplete();
         break;
       }
@@ -597,7 +596,7 @@ export class GameEngine {
     if (tile.type === 'tax') {
       player.cash -= tile.amount;
       this.log(`${player.name} paid $${tile.amount} in ${tile.name}.`, 'warning');
-      sounds.playPay();
+      sounds.playPay(player);
       if (onFinished) onFinished();
       return;
     }
@@ -628,7 +627,7 @@ export class GameEngine {
               player.cash -= tile.price;
               state.owner = player.id;
               this.log(`${player.name} purchased ${tile.name} for $${tile.price}!`, 'success');
-              sounds.playCash();
+              sounds.playCash(player);
             }
             this.currentTurn.awaitingAction = null;
             if (onFinished) onFinished();
@@ -655,7 +654,7 @@ export class GameEngine {
         player.cash -= rent;
         owner.cash += rent;
         this.log(`${player.name} paid $${rent} rent to ${owner.name} for landing on ${tile.name}.`, 'warning');
-        sounds.playPay();
+        sounds.playPay(player);
         if (onFinished) onFinished();
         return;
       } else {
@@ -742,7 +741,7 @@ export class GameEngine {
   declareBankruptcy(player) {
     player.bankrupt = true;
     this.log(`[BANKRUPT] ${player.name} has gone bankrupt and is eliminated!`, 'danger');
-    sounds.playBankrupt();
+    sounds.playBankrupt(player);
     if (this.onBankruptcy) this.onBankruptcy(player);
 
     BOARD_TILES.forEach(t => {
@@ -758,7 +757,7 @@ export class GameEngine {
       this.gameOver = true;
       this.winner = active[0];
       this.log(`[CHAMPION] GAME OVER! ${this.winner.name} IS THE MONOPOLY CHAMPION!`, 'success');
-      sounds.playVictory();
+      sounds.playVictory(this.winner);
       if (this.onGameOver) this.onGameOver(this.winner);
     }
   }
@@ -777,7 +776,7 @@ export class GameEngine {
       this.gameOver = true;
       this.winner = active[0] || null;
       if (this.winner) {
-        sounds.playVictory();
+        sounds.playVictory(this.winner);
         if (this.onGameOver) this.onGameOver(this.winner);
       }
       return;
@@ -813,7 +812,7 @@ export class GameEngine {
     });
 
     this.log(`[TRADE] Trade completed between ${p1.name} and ${p2.name}!`, 'success');
-    sounds.playCash();
+    sounds.playCash(p1.isAi && !p2.isAi ? p2 : p1);
     return true;
   }
 }

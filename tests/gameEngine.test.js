@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { GameEngine } from '../js/gameEngine.js';
-import { updateGameSettings, reloadActiveBoard } from '../js/boardData.js?v=4.17';
-import { sounds } from '../js/audio.js?v=4.17';
+import { updateGameSettings, reloadActiveBoard } from '../js/boardData.js?v=4.18';
+import { sounds } from '../js/audio.js?v=4.18';
 
 function createEngine(boardTheme = 'classic') {
   updateGameSettings({ boardTheme, startingCash: 1500, jailBailFee: 150 });
@@ -131,4 +131,35 @@ test('music and sound effects keep independent mute states', () => {
   assert.equal(sounds.toggleMute(), false);
   assert.equal(sounds.toggleMusic(), false);
   assert.equal(sounds.sfxMuted, false);
+});
+
+test('bot sound effects stay quiet by default but can be enabled', () => {
+  const bot = { isAi: true };
+  const human = { isAi: false };
+
+  sounds.setBotSfxEnabled(false);
+  assert.equal(sounds.shouldPlayFor(bot), false);
+  assert.equal(sounds.shouldPlayFor(human), true);
+
+  sounds.setBotSfxEnabled(true);
+  assert.equal(sounds.shouldPlayFor(bot), true);
+  sounds.setBotSfxEnabled(false);
+});
+
+test('paying Jail bail does not trigger the sad payment voice', () => {
+  const engine = createEngine('classic');
+  const player = engine.players[0];
+  player.inJail = true;
+  player.cash = 500;
+
+  const originalPlayPay = sounds.playPay;
+  let playPayCalls = 0;
+  sounds.playPay = () => { playPayCalls += 1; };
+
+  try {
+    assert.equal(engine.payJailBail(player), true);
+    assert.equal(playPayCalls, 0);
+  } finally {
+    sounds.playPay = originalPlayPay;
+  }
 });

@@ -1,5 +1,5 @@
-import { BOARD_TILES, COLOR_GROUPS, TILE_PROBABILITIES } from './boardData.js?v=4.17';
-import { sounds } from './audio.js?v=4.17';
+import { BOARD_TILES, COLOR_GROUPS, TILE_PROBABILITIES } from './boardData.js?v=4.18';
+import { sounds } from './audio.js?v=4.18';
 
 export class AiPlayer {
   constructor(engine) {
@@ -365,7 +365,7 @@ export class AiPlayer {
                 this.engine.board[missingTile.id].owner = player.id;
 
                 this.engine.log(`🤝 [TRADE AGREEMENT] You accepted ${player.name}'s offer!`, 'success');
-                sounds.playCash();
+                sounds.playCash(targetPlayer);
                 if (this.engine.hasMonopoly(player.id, missingTile.group)) {
                   app.ui.celebrateMonopoly(player, missingTile.group);
                 }
@@ -407,7 +407,7 @@ export class AiPlayer {
           this.engine.board[missingTile.id].owner = player.id;
 
           this.engine.log(`🤝 [AI TRADE DEAL] ${player.name} and ${targetPlayer.name} finalized a deal! ${player.name} acquired ${missingTile.name} and completed a monopoly!`, 'success');
-          sounds.playCash();
+          sounds.playCash(player);
           if (this.engine.hasMonopoly(player.id, missingTile.group)) {
             app.ui.celebrateMonopoly(player, missingTile.group);
           }

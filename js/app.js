@@ -1,13 +1,13 @@
-import { GameEngine } from './gameEngine.js?v=4.17';
-import { MonopolyUI } from './ui.js?v=4.17';
-import { AiPlayer } from './aiPlayer.js?v=4.17';
-import { sounds } from './audio.js?v=4.17';
-import { geminiAdvisor } from './geminiAdvisor.js?v=4.17';
-import { MultiplayerManager } from './multiplayer.js?v=4.17';
-import { COLOR_GROUPS, gameSettings, updateGameSettings, reloadActiveBoard } from './boardData.js?v=4.17';
-import { particles } from './particles.js?v=4.17';
-import { achievements } from './achievements.js?v=4.17';
-import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from './icons.js?v=4.17';
+import { GameEngine } from './gameEngine.js?v=4.18';
+import { MonopolyUI } from './ui.js?v=4.18';
+import { AiPlayer } from './aiPlayer.js?v=4.18';
+import { sounds } from './audio.js?v=4.18';
+import { geminiAdvisor } from './geminiAdvisor.js?v=4.18';
+import { MultiplayerManager } from './multiplayer.js?v=4.18';
+import { COLOR_GROUPS, gameSettings, updateGameSettings, reloadActiveBoard } from './boardData.js?v=4.18';
+import { particles } from './particles.js?v=4.18';
+import { achievements } from './achievements.js?v=4.18';
+import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from './icons.js?v=4.18';
 
 class MonopolyApp {
   constructor() {
@@ -338,6 +338,15 @@ class MonopolyApp {
           <label style="font-size: 0.85rem; color: #94a3b8; display: block; margin-bottom: 4px;">START Reward ($):</label>
           <input type="number" id="settingGoReward" class="input-text" style="width: 100%;" value="${gameSettings.goReward}" step="50" />
         </div>
+
+        <div>
+          <label style="font-size: 0.85rem; color: #94a3b8; display: block; margin-bottom: 4px;">Bot Sound Effects:</label>
+          <select class="select-ctrl" id="settingBotSfx" style="width: 100%;">
+            <option value="false" ${!sounds.botSfxEnabled ? 'selected' : ''}>Off (Recommended — player sounds only)</option>
+            <option value="true" ${sounds.botSfxEnabled ? 'selected' : ''}>On (All players)</option>
+          </select>
+          <div style="font-size: 0.74rem; color: #64748b; margin-top: 5px;">Keeps bot dice, movement, payments, and turn effects quiet by default.</div>
+        </div>
       </div>
     `;
 
@@ -357,6 +366,7 @@ class MonopolyApp {
         turnTimerSeconds: parseInt(document.getElementById('settingTurnTimer').value, 10),
         approvalTimerSeconds: parseInt(document.getElementById('settingApprovalTimer').value, 10)
       };
+      sounds.setBotSfxEnabled(document.getElementById('settingBotSfx').value === 'true');
 
       const matchInProgress = this.engine.players.length > 0 && (
         this.engine.turnCount > 0 ||
@@ -744,7 +754,7 @@ class MonopolyApp {
     this.stopTurnTimer();
 
     try {
-      sounds.playDice();
+      sounds.playDice(player);
       this.ui.renderDice(1, 1, true);
       await new Promise(r => setTimeout(r, 1390 / this.gameSpeed));
 
@@ -803,7 +813,7 @@ class MonopolyApp {
         const goReward = gameSettings.goReward || 200;
         player.cash += goReward;
         this.engine.log(`[START] ${player.name} passed START and collected $${goReward}!`, 'success');
-        sounds.playCash();
+        sounds.playCash(player);
         if (!player.isAi) achievements.unlock('first_step');
       }
 
@@ -981,7 +991,6 @@ class MonopolyApp {
 
     const onTradeExecuted = () => {
       this.engine.executeTrade(p1.id, p2.id, offProps, offCash, reqProps, reqCash);
-      sounds.playCash();
 
       // Check for newly completed monopolies
       const p1After = getMonopolies(p1);
