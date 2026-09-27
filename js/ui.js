@@ -3,12 +3,12 @@ import {
   COLOR_GROUPS,
   TILE_PROBABILITIES,
   gameSettings,
-} from "./boardData.js?v=4.13";
-import { sounds } from "./audio.js?v=4.13";
-import { geminiAdvisor } from "./geminiAdvisor.js?v=4.13";
-import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=4.13";
-import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=4.13";
-import { particles } from "./particles.js?v=4.13";
+} from "./boardData.js?v=4.14";
+import { sounds } from "./audio.js?v=4.14";
+import { geminiAdvisor } from "./geminiAdvisor.js?v=4.14";
+import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=4.14";
+import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=4.14";
+import { particles } from "./particles.js?v=4.14";
 
 const escapeHtml = (value) => String(value ?? "")
   .replace(/&/g, "&amp;")

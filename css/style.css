@@ -2688,7 +2688,7 @@ header {
 }
 
 .grid-11 .classic-center-logo { display: block; }
-.grid-11 .monopoly-logo-img { display: none; }
+.grid-11 .monopoly-logo-img { display: block; }
 .grid-11 .center-logo-wrap { z-index: 4; }
 .grid-11 .dice-tray,
 .grid-11 .turn-action-card,
@@ -3304,6 +3304,147 @@ textarea {
   font-size: 0.52rem;
   font-weight: 700;
   text-align: center;
+}
+
+/* Final board-center polish: keep the playable controls compact and let the
+   branded/event artwork carry the visual weight instead of dark empty blocks. */
+@media (min-width: 601px) {
+  .board-center {
+    justify-content: center;
+    gap: clamp(7px, 1.1vw, 12px);
+    padding: 10px 14px;
+  }
+
+  .center-logo-wrap {
+    flex: 0 0 auto;
+  }
+
+  .monopoly-logo-img {
+    width: min(270px, 70%);
+    max-height: 138px;
+  }
+
+  .dice-arena {
+    gap: 6px;
+  }
+
+  .dice-tray {
+    gap: 16px;
+    padding: 10px 18px 12px;
+    border-radius: 16px;
+  }
+
+  .turn-action-card {
+    width: min(86%, 300px);
+    padding: 8px 14px 9px;
+    gap: 5px;
+  }
+
+  .turn-player-header {
+    gap: 8px;
+    font-size: 0.98rem;
+  }
+
+  .token-avatar {
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+  }
+
+  .turn-status-text {
+    font-size: 0.82rem;
+  }
+
+  .action-buttons {
+    gap: 7px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 7px 14px;
+    font-size: 0.85rem;
+  }
+
+  .center-quick-actions {
+    gap: 8px;
+    margin-bottom: 0;
+  }
+}
+
+/* Use the supplied Chance/Chest artwork as visible board art. The previous
+   92% overlays made the source images read as flat, empty colour blocks. */
+.event-tile {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-size: cover;
+}
+
+.event-tile::before,
+.event-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.event-tile::before {
+  z-index: -2;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0.74;
+  filter: saturate(1.12) contrast(1.06);
+}
+
+.event-tile::after {
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(8, 12, 18, 0.08), rgba(8, 12, 18, 0.62));
+}
+
+.event-tile-chance {
+  background: linear-gradient(145deg, #7c2d12, #3b1717);
+}
+
+.event-tile-chance::before {
+  background-image: url('../images/chance-bg.jpg');
+}
+
+.event-tile-chest {
+  background: linear-gradient(145deg, #164e63, #102c35);
+}
+
+.event-tile-chest::before {
+  background-image: url('../images/chest-bg.jpg');
+}
+
+.event-tile-name,
+.event-tile-subtext {
+  position: relative;
+  z-index: 1;
+}
+
+/* Keep quick-action hover states intentional and calm instead of turning both
+   buttons into the same bright gold warning state. */
+.btn-ctrl:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+#managePropsBtn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(71, 127, 113, 0.96), rgba(45, 91, 80, 0.96));
+  border-color: rgba(143, 224, 181, 0.86);
+  box-shadow: 0 7px 18px rgba(18, 54, 45, 0.56), 0 0 10px rgba(143, 224, 181, 0.18);
+}
+
+#tradeBtn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(184, 139, 61, 0.96), rgba(139, 100, 31, 0.96));
+  border-color: rgba(255, 214, 126, 0.9);
+  box-shadow: 0 7px 18px rgba(80, 54, 18, 0.56), 0 0 10px rgba(255, 214, 126, 0.18);
+}
+
+.btn-ctrl:focus-visible {
+  outline: 2px solid rgba(255, 214, 126, 0.95);
+  outline-offset: 3px;
 }
 
 @media (max-width: 600px) {

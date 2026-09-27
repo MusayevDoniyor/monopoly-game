@@ -1,5 +1,5 @@
-import { BOARD_TILES, COLOR_GROUPS, TILE_PROBABILITIES } from './boardData.js?v=4.13';
-import { sounds } from './audio.js?v=4.13';
+import { BOARD_TILES, COLOR_GROUPS, TILE_PROBABILITIES } from './boardData.js?v=4.14';
+import { sounds } from './audio.js?v=4.14';
 
 export class AiPlayer {
   constructor(engine) {
