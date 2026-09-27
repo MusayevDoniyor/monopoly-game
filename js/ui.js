@@ -3,12 +3,12 @@ import {
   COLOR_GROUPS,
   TILE_PROBABILITIES,
   gameSettings,
-} from "./boardData.js?v=4.16";
-import { sounds } from "./audio.js?v=4.16";
-import { geminiAdvisor } from "./geminiAdvisor.js?v=4.16";
-import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=4.16";
-import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=4.16";
-import { particles } from "./particles.js?v=4.16";
+} from "./boardData.js?v=4.17";
+import { sounds } from "./audio.js?v=4.17";
+import { geminiAdvisor } from "./geminiAdvisor.js?v=4.17";
+import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=4.17";
+import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=4.17";
+import { particles } from "./particles.js?v=4.17";
 
 const escapeHtml = (value) => String(value ?? "")
   .replace(/&/g, "&amp;")
@@ -294,13 +294,24 @@ export class MonopolyUI {
     this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon("DICE")}</span> <span>Choosing Starting Player</span>`;
 
     const count = players.length;
+    const segmentAngle = 360 / count;
+    const safePlayerColor = (color, fallback = "#64748b") =>
+      /^#[0-9a-f]{6}$/i.test(color || "") ? color : fallback;
+    const wheelStops = players.map((player, index) => {
+      const start = (index * segmentAngle).toFixed(2);
+      const end = ((index + 1) * segmentAngle).toFixed(2);
+      const color = safePlayerColor(player.color);
+      return `${color} ${start}deg ${end}deg`;
+    }).join(", ");
+
     const tokenMarkup = players.map((player, index) => {
-      const angle = (360 / count) * index - 90;
+      const angle = segmentAngle * index - 90;
       const radius = count === 2 ? 34 : 38;
       const x = 50 + Math.cos(angle * Math.PI / 180) * radius;
       const y = 50 + Math.sin(angle * Math.PI / 180) * radius;
+      const playerColor = safePlayerColor(player.color);
       return `
-        <div class="start-selector-token" data-player-index="${index}" style="left: ${x}%; top: ${y}%; --player-color: ${player.color};">
+        <div class="start-selector-token" data-player-index="${index}" style="left: ${x}%; top: ${y}%; --player-color: ${playerColor};">
           <div class="start-selector-token-icon">${getIcon(player.token || "TOP_HAT")}</div>
           <span>${escapeHtml(player.name)}</span>
         </div>
@@ -311,11 +322,14 @@ export class MonopolyUI {
       <div class="starting-player-selector">
         <div class="selector-subtitle">The wheel will choose who rolls first.</div>
         <div class="selector-arena selector-count-${count}">
-          <div class="selector-orbit selector-orbit-outer"></div>
-          <div class="selector-orbit selector-orbit-inner"></div>
-          <div class="selector-pointer"></div>
+          <div class="selector-wheel" id="selectorWheel" style="--segment-angle: ${segmentAngle.toFixed(2)}deg; --wheel-gradient: conic-gradient(from -90deg, ${wheelStops});">
+            <div class="selector-wheel-grid"></div>
+            <div class="selector-orbit selector-orbit-outer"></div>
+            <div class="selector-orbit selector-orbit-inner"></div>
+            ${tokenMarkup}
+          </div>
+          <div class="selector-pointer" aria-hidden="true"><span></span></div>
           <div class="selector-drum"><span>ROLL<br>FIRST</span></div>
-          ${tokenMarkup}
         </div>
         <div class="selector-status" id="startingSelectorStatus">Spinning the starting wheel...</div>
       </div>
@@ -324,15 +338,14 @@ export class MonopolyUI {
     this.modalOverlay.classList.add("active");
 
     const arena = this.modalBody.querySelector(".selector-arena");
-    const pointer = this.modalBody.querySelector(".selector-pointer");
+    const wheel = this.modalBody.querySelector("#selectorWheel");
     const status = document.getElementById("startingSelectorStatus");
     const winnerToken = this.modalBody.querySelector(`[data-player-index="${winnerIndex}"]`);
-    const baseAngle = (360 / count) * winnerIndex;
-    const totalRotation = 360 * 5 - 90 + baseAngle;
+    const totalRotation = 360 * 5 - segmentAngle * winnerIndex;
 
     requestAnimationFrame(() => {
       if (arena) arena.classList.add("is-spinning");
-      if (pointer) pointer.style.transform = `rotate(${totalRotation}deg)`;
+      if (wheel) wheel.style.transform = `rotate(${totalRotation}deg)`;
     });
 
     window.setTimeout(() => {
