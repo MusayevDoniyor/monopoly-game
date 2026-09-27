@@ -691,10 +691,7 @@ export class GameEngine {
       return;
     }
 
-    if (
-      tile.id === this.getGoToJailTileId() ||
-      tile.id === this.getJailTileId()
-    ) {
+    if (tile.id === this.getGoToJailTileId()) {
       this.sendToJail(player);
       this.currentTurn.awaitingAction = {
         type: "jailed",
@@ -704,6 +701,15 @@ export class GameEngine {
           if (onFinished) onFinished();
         },
       };
+      return;
+    }
+
+    if (tile.id === this.getJailTileId()) {
+      this.log(
+        `${player.name} is Just Visiting Jail. No penalty or fine incurred.`,
+        "info",
+      );
+      if (onFinished) onFinished();
       return;
     }
 

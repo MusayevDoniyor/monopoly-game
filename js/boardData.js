@@ -97,7 +97,7 @@ export const BOARD_36_WORLD = [
   { id: 8, name: 'Bangkok', country: 'Thailand', type: 'property', group: 'LIGHT_BLUE', price: 120, rent: [8, 40, 100, 300, 450, 600], houseCost: 50, mortgage: 60 },
 
   // Corner 1: JAIL
-  { id: 9, name: 'JAIL', type: 'special', iconKey: 'JAIL', subtext: 'Bail: $150' },
+  { id: 9, name: 'JAIL', type: 'special', iconKey: 'JAIL', subtext: 'Just Visiting' },
   // Left Edge (10-17)
   { id: 10, name: 'Seoul', country: 'South Korea', type: 'property', group: 'PINK', price: 140, rent: [10, 50, 150, 450, 625, 750], houseCost: 100, mortgage: 70 },
   { id: 11, name: 'Solar Grid', type: 'utility', group: 'UTILITY', price: 150, mortgage: 75, iconKey: 'SOLAR' },
@@ -145,7 +145,7 @@ export const BOARD_40_CLASSIC = [
   { id: 7, name: 'Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Draw a card' },
   { id: 8, name: 'Vermont Avenue', type: 'property', group: 'LIGHT_BLUE', price: 100, rent: [6, 30, 90, 270, 400, 550], houseCost: 50, mortgage: 50 },
   { id: 9, name: 'Connecticut Avenue', type: 'property', group: 'LIGHT_BLUE', price: 120, rent: [8, 40, 100, 300, 450, 600], houseCost: 50, mortgage: 60 },
-  { id: 10, name: 'JAIL', type: 'special', iconKey: 'JAIL', subtext: 'Bail: $150' },
+  { id: 10, name: 'JAIL', type: 'special', iconKey: 'JAIL', subtext: 'Just Visiting' },
   { id: 11, name: 'St. Charles Place', type: 'property', group: 'PINK', price: 140, rent: [10, 50, 150, 450, 625, 750], houseCost: 100, mortgage: 70 },
   { id: 12, name: 'Electric Company', type: 'utility', group: 'UTILITY', price: 150, mortgage: 75, iconKey: 'SOLAR' },
   { id: 13, name: 'States Avenue', type: 'property', group: 'PINK', price: 140, rent: [10, 50, 150, 450, 625, 750], houseCost: 100, mortgage: 70 },
