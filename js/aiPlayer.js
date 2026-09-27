@@ -334,6 +334,7 @@ export class AiPlayer {
   // Proactively scans for trade opportunities to complete AI monopolies or mutually advantageous deals
   async considerProactiveTrade(player, app) {
     if (!player || player.bankrupt) return false;
+    if (this.engine.currentTurn?.canRollAgain) return false;
 
     const isAggressive = this.isAggressiveMode();
     const currentTurn = this.engine.turnCount || 0;

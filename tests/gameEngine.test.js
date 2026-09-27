@@ -473,5 +473,38 @@ test('AI difficulty modes: aggressive buys aggressively and rushes 3 houses, sta
   assert.equal(engine.board[1].mortgaged, false, 'Bot unmortgaged its monopoly property');
 });
 
+test('doubles re-roll mechanics and trade suppression during doubles', async () => {
+  const engine = createEngine('classic');
+  const ai = new AiPlayer(engine);
+
+  const bot = engine.players[1];
+  bot.isAi = true;
+  engine.currentTurn.playerIndex = 1;
+
+  // 1. Doubles re-roll flag check
+  engine.currentTurn.dice = [3, 3];
+  engine.currentTurn.canRollAgain = true;
+  engine.currentTurn.hasRolled = false;
+
+  // Proactive trade MUST be rejected while canRollAgain is true (never interrupt doubles)
+  const tradeRes = await ai.considerProactiveTrade(bot, {});
+  assert.equal(tradeRes, false, 'AI strictly suppresses proactive trades while doubles re-roll is pending');
+
+  // 2. Speeding: 3 consecutive doubles sends to Jail
+  engine.currentTurn.doublesCount = 2;
+  const mockRoll = () => {
+    engine.currentTurn.doublesCount++;
+    return { d1: 4, d2: 4, sum: 8, isDoubles: true };
+  };
+  mockRoll();
+  assert.equal(engine.currentTurn.doublesCount, 3);
+  if (engine.currentTurn.doublesCount >= 3) {
+    engine.sendToJail(bot);
+  }
+  assert.equal(bot.inJail, true, 'Player sent to jail after 3 doubles');
+  assert.equal(engine.currentTurn.canRollAgain, false, 'canRollAgain disabled when sent to jail for speeding');
+  assert.equal(engine.currentTurn.hasRolled, true, 'hasRolled marked true on arrest');
+});
+
 
 

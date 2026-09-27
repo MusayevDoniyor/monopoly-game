@@ -961,50 +961,88 @@ class MonopolyApp {
     if (this.isAiTurnRunning) return;
     this.isAiTurnRunning = true;
 
-    if (player.cash < 0) {
-      this.engine.ensureSolvency(player);
-      if (player.bankrupt) {
-        this.isAiTurnRunning = false;
-        this.handleEndTurn();
-        return;
-      }
-    }
-
     const delay = (ms) =>
-      new Promise((r) => setTimeout(r, ms / this.gameSpeed));
-    await delay(1200);
+      new Promise((r) => setTimeout(r, ms / Math.max(1, this.gameSpeed)));
 
-    if (player.inJail) {
-      const decision = this.ai.decideJailAction(player);
-      if (decision === "card") {
-        this.engine.useJailCard(player);
-      } else if (decision === "pay") {
-        this.engine.payJailBail(player);
+    try {
+      // 1. Initial solvency check
+      if (player.cash < 0) {
+        this.engine.ensureSolvency(player);
+        if (player.bankrupt) {
+          return;
+        }
       }
-      this.ui.updateHUD();
-      await delay(400);
-    }
 
-    await this.handleRollDice(true);
-    await delay(1000);
+      await delay(1000);
 
-    this.ai.tryUnmortgaging(player);
-    this.ai.tryUpgrading(player);
-    this.ui.updateBoardState();
-    this.ui.updateHUD();
+      // 2. Jail handling before rolls
+      if (player.inJail) {
+        const decision = this.ai.decideJailAction(player);
+        if (decision === "card") {
+          this.engine.useJailCard(player);
+        } else if (decision === "pay") {
+          this.engine.payJailBail(player);
+        }
+        this.ui.updateHUD();
+        await delay(500);
+      }
 
-    // AI proactively scans for strategic trades
-    await this.ai.considerProactiveTrade(player, this);
+      // 3. Roll phase: Execute initial roll and automatically re-roll on doubles
+      while (!player.bankrupt && !this.engine.gameOver) {
+        if (player.cash < 0) {
+          this.engine.ensureSolvency(player);
+          if (player.bankrupt) break;
+        }
 
-    await delay(1200);
+        await this.handleRollDice(true);
+        await delay(800);
 
-    if (this.engine.currentTurn.canRollAgain && !player.inJail) {
+        // Check whether the player is permitted to roll again (doubles & not in jail or bankrupt)
+        const canRollAgain =
+          this.engine.currentTurn.canRollAgain &&
+          !player.inJail &&
+          !player.bankrupt &&
+          !this.engine.gameOver;
+
+        if (!canRollAgain) {
+          break;
+        }
+
+        // Prepare for doubles re-roll: brief visual pause with active AI thinking indicator
+        this.ui.setTurnTimerAiThinking();
+        this.ui.updateHUD();
+        await delay(1000);
+      }
+
+      // 4. Post-roll property management & upgrades (ONLY after all rolls are completed)
+      if (!player.bankrupt && !this.engine.gameOver) {
+        try {
+          this.ai.tryUnmortgaging(player);
+          this.ai.tryUpgrading(player);
+        } catch (e) {
+          console.warn("[AI Turn] Error in post-roll property management:", e);
+        }
+
+        this.ui.updateBoardState();
+        this.ui.updateHUD();
+
+        // 5. Proactive strategic trade scan (ONLY when all rolls are finished, before ending turn)
+        try {
+          await this.ai.considerProactiveTrade(player, this);
+        } catch (e) {
+          console.warn("[AI Turn] Error in considerProactiveTrade:", e);
+        }
+
+        await delay(800);
+      }
+    } catch (err) {
+      console.error("[AI Turn] Unhandled error during AI turn:", err);
+    } finally {
       this.isAiTurnRunning = false;
-      await delay(600);
-      this.runAiTurn(player);
-    } else {
-      this.isAiTurnRunning = false;
-      this.handleEndTurn();
+      this._isRollingAnimation = false;
+      if (!this.engine.gameOver) {
+        this.handleEndTurn();
+      }
     }
   }
 
@@ -1146,11 +1184,21 @@ class MonopolyApp {
       });
 
       await new Promise((resolve) => {
+        let isResolved = false;
+        const safeResolve = () => {
+          if (!isResolved) {
+            isResolved = true;
+            resolve();
+          }
+        };
+
         this.engine.handleTileLanding(player, () => {
-          this.checkActionModal(isAi, resolve);
+          this.checkActionModal(isAi, safeResolve);
         });
         if (this.engine.currentTurn.awaitingAction) {
-          this.checkActionModal(isAi, resolve);
+          this.checkActionModal(isAi, safeResolve);
+        } else {
+          safeResolve();
         }
       });
 
