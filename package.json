@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "desktop": "electron electron-main.js",
-    "test": "node --test tests/gameEngine.test.js"
+    "test": "node --test tests/*.test.js"
   },
   "keywords": [],
   "author": "",

@@ -1,0 +1,141 @@
+/* ======================================================== */
+/* RESPONSIVE BOARD SHELL */
+/* ======================================================== */
+@media (max-width: 1320px) {
+  header {
+    padding: 0 14px;
+  }
+  .brand {
+    gap: 8px;
+  }
+  .brand-title {
+    font-size: 0.88rem;
+  }
+  .edition-tag {
+    font-size: 0.62rem;
+    padding: 3px 8px;
+  }
+  .app-container {
+    padding: 12px 14px;
+    gap: 14px;
+  }
+  .hud-panel {
+    width: 330px;
+  }
+}
+
+@media (max-width: 1100px) {
+  body {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: auto;
+  }
+  .app-container {
+    flex: 0 0 auto;
+  }
+  header {
+    min-height: 58px;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  .brand-title,
+  .edition-tag {
+    display: none;
+  }
+  .header-controls {
+    margin-left: auto;
+  }
+  .app-container {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 58px);
+    min-height: calc(100dvh - 58px);
+    align-items: center;
+  }
+  .board-wrapper {
+    width: 100%;
+  }
+  .board-container {
+    width: min(96vw, 780px);
+    height: min(96vw, 780px);
+  }
+  .hud-panel {
+    width: min(96vw, 780px);
+  }
+  .hud-log-card {
+    height: 220px;
+  }
+}
+
+@media (max-width: 560px) {
+  header {
+    justify-content: center;
+  }
+  .brand {
+    width: 100%;
+    justify-content: center;
+  }
+  .header-controls {
+    margin: 0;
+    width: 100%;
+    justify-content: center;
+  }
+  .btn-menu-label,
+  .btn-exit-label {
+    display: none;
+  }
+  .btn-menu,
+  .btn-exit-game {
+    padding: 8px 12px;
+  }
+  .app-container {
+    padding: 8px;
+  }
+  .board-container {
+    border-width: 6px;
+    border-radius: 8px;
+  }
+  .tile-country {
+    font-size: clamp(0.32rem, 1.5vw, 0.48rem);
+  }
+  .tile-name {
+    font-size: clamp(0.38rem, 1.7vw, 0.56rem);
+  }
+  .tile-price {
+    font-size: clamp(0.42rem, 1.7vw, 0.62rem);
+  }
+  .tile-icon-svg {
+    width: 18px;
+    height: 18px;
+  }
+  .player-token {
+    width: 22px;
+    height: 22px;
+    padding: 3px;
+  }
+  .board-center {
+    padding: 8px;
+  }
+  .dice-tray {
+    gap: 12px;
+    padding: 12px 16px 14px;
+  }
+  .die-scene {
+    transform: scale(0.82);
+    margin: -5px;
+  }
+  .turn-action-card {
+    width: 100%;
+  }
+  .center-quick-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn-ctrl {
+    font-size: 0.7rem;
+    padding: 5px 8px;
+  }
+}

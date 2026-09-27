@@ -1,0 +1,501 @@
+/* GAME OVER MODAL — STANDINGS · ANALYTICS · CERTIFICATE    */
+/* ======================================================== */
+
+.game-over-modal-card {
+  max-width: min(760px, 94vw) !important;
+}
+
+/* ── Tabs Bar ── */
+.go-tabs-bar {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+.go-tab-btn {
+  flex: 1;
+  padding: 9px 6px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.go-tab-btn:hover { background: rgba(255,255,255,0.06); color: #e2e8f0; }
+.go-tab-btn.active {
+  background: linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.1));
+  color: var(--gold);
+  box-shadow: 0 2px 8px rgba(212,175,55,0.15);
+}
+
+/* ── Champion Banner ── */
+.go-champion-banner {
+  text-align: center;
+  padding: 18px 12px;
+  background: linear-gradient(180deg, rgba(212,175,55,0.08) 0%, transparent 100%);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+.go-trophy-glow {
+  font-size: 3rem;
+  filter: drop-shadow(0 0 20px rgba(212,175,55,0.6));
+  margin-bottom: 6px;
+}
+.go-champion-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-shadow: 0 2px 12px rgba(212,175,55,0.4);
+}
+.go-champion-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-top: 4px;
+}
+.go-champion-subtitle {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* ── Meta Bar ── */
+.go-meta-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+/* ── Stat Cards ── */
+.go-stat-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+.go-stat-card:hover { border-color: rgba(212,175,55,0.3); }
+.go-stat-icon { font-size: 1.1rem; margin-bottom: 2px; }
+.go-stat-value {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.go-stat-label {
+  font-size: 0.65rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* ── Standings Table ── */
+.go-standings-table-wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 12px;
+}
+.go-standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.go-standings-table th {
+  background: rgba(0,0,0,0.4);
+  color: #94a3b8;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  padding: 8px 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+.go-standings-table td {
+  padding: 9px 10px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  color: #e2e8f0;
+  white-space: nowrap;
+}
+.go-standings-table tr:hover td { background: rgba(255,255,255,0.03); }
+.go-winner-row td { background: rgba(212,175,55,0.06); }
+.go-bankrupt-row td { opacity: 0.55; }
+.go-td-mono { font-family: var(--font-mono); font-weight: 700; }
+.go-rank { font-weight: 800; }
+.go-player-dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  box-shadow: 0 0 4px rgba(0,0,0,0.3);
+}
+.go-player-name { font-weight: 700; }
+.go-ai-badge {
+  font-size: 0.6rem;
+  background: rgba(99,102,241,0.25);
+  color: #818cf8;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 700;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.go-winner-badge {
+  font-size: 0.6rem;
+  background: rgba(212,175,55,0.2);
+  color: var(--gold);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 800;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.go-bankrupt-badge {
+  font-size: 0.6rem;
+  background: rgba(239,68,68,0.2);
+  color: #f87171;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 700;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* ── Crown Jewel ── */
+.go-crown-jewel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(212,175,55,0.08), rgba(212,175,55,0.03));
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: #e2e8f0;
+}
+
+/* ── Analytics Chips ── */
+.go-analytics-chips, .go-cert-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.go-analytics-chip, .go-cert-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: #94a3b8;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.go-analytics-chip:hover, .go-cert-chip:hover {
+  border-color: rgba(212,175,55,0.3);
+  color: #e2e8f0;
+}
+.go-analytics-chip.active, .go-cert-chip.active {
+  background: rgba(212,175,55,0.15);
+  border-color: rgba(212,175,55,0.4);
+  color: var(--gold);
+}
+
+/* ── Analytics Panels ── */
+.go-analytics-panel { display: none; }
+.go-analytics-panel.active { display: block; }
+.go-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.go-section-title {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #cbd5e1;
+  margin-bottom: 8px;
+  margin-top: 4px;
+}
+.go-profit-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.go-profit-bar.positive {
+  background: rgba(52,211,153,0.08);
+  border: 1px solid rgba(52,211,153,0.2);
+  color: #34d399;
+}
+.go-profit-bar.negative {
+  background: rgba(248,113,113,0.08);
+  border: 1px solid rgba(248,113,113,0.2);
+  color: #f87171;
+}
+.go-profit-bar strong { font-family: var(--font-mono); font-size: 1rem; }
+
+.go-totals-bar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: rgba(0,0,0,0.25);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+.go-totals-bar strong { font-family: var(--font-mono); }
+
+/* ── Certificate Panels ── */
+.go-cert-panel { display: none; }
+.go-cert-panel.active { display: block; }
+
+/* ── Ornate Certificate ── */
+.tycoon-certificate {
+  position: relative;
+  background: linear-gradient(180deg, #1a1a2e 0%, #0d1117 60%, #1a1a2e 100%);
+  border: 3px solid var(--gold);
+  border-radius: 14px;
+  padding: 28px 24px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(212,175,55,0.15),
+    inset 0 0 40px rgba(212,175,55,0.04),
+    0 12px 40px rgba(0,0,0,0.5);
+}
+.cert-corner {
+  position: absolute;
+  width: 28px; height: 28px;
+  border-color: var(--gold);
+  border-style: solid;
+  opacity: 0.5;
+}
+.cert-corner-tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+.cert-corner-tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
+.cert-corner-bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
+.cert-corner-br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
+
+.cert-header {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 4px;
+  color: var(--gold);
+  font-weight: 800;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.cert-divider {
+  color: var(--gold);
+  opacity: 0.4;
+  font-size: 0.7rem;
+  letter-spacing: 8px;
+  margin: 8px 0;
+}
+.cert-presented {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  font-style: italic;
+  margin-bottom: 4px;
+}
+.cert-player-name {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+.cert-title-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.06));
+  border: 1px solid rgba(212,175,55,0.3);
+  padding: 6px 16px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+.cert-grade {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: var(--gold);
+  background: rgba(212,175,55,0.15);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.cert-title-text {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.cert-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 14px 0;
+}
+.cert-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.cert-stat-val {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--gold);
+}
+.cert-stat-lbl {
+  font-size: 0.6rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.cert-highlight {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 16px;
+}
+
+.cert-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid rgba(212,175,55,0.15);
+}
+.cert-seal {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%);
+}
+.cert-seal-inner { text-align: center; }
+.cert-seal-icon { font-size: 1.2rem; }
+.cert-seal-text {
+  font-size: 0.45rem;
+  letter-spacing: 2px;
+  color: var(--gold);
+  font-weight: 900;
+}
+.cert-date { text-align: center; }
+.cert-date-label {
+  font-size: 0.6rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.cert-date-value {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+.cert-signature { text-align: center; }
+.cert-sig-line {
+  width: 80px;
+  height: 1px;
+  background: rgba(212,175,55,0.3);
+  margin: 0 auto 4px;
+}
+.cert-sig-label {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ── Print Button ── */
+.go-print-btn {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  border: 1px solid rgba(212,175,55,0.3);
+  background: rgba(212,175,55,0.08);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.go-print-btn:hover {
+  background: rgba(212,175,55,0.15);
+  border-color: rgba(212,175,55,0.5);
+}
+
+/* ── Print Styles ── */
+@media print {
+  body * { visibility: hidden !important; }
+  .tycoon-certificate.printing,
+  .tycoon-certificate.printing * {
+    visibility: visible !important;
+  }
+  .tycoon-certificate.printing {
+    position: fixed;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    background: #fff !important;
+    color: #1a1a2e !important;
+    border-color: #b8860b !important;
+    box-shadow: none !important;
+  }
+  .tycoon-certificate.printing .cert-player-name { color: #1a1a2e !important; }
+  .tycoon-certificate.printing .cert-stat-val { color: #b8860b !important; }
+  .tycoon-certificate.printing .cert-presented,
+  .tycoon-certificate.printing .cert-highlight,
+  .tycoon-certificate.printing .cert-date-value,
+  .tycoon-certificate.printing .cert-sig-label { color: #555 !important; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+  .go-analytics-grid { grid-template-columns: repeat(2, 1fr); }
+  .cert-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .cert-footer { flex-direction: column; align-items: center; gap: 12px; }
+  .go-meta-bar { grid-template-columns: repeat(3, 1fr); }
+  .cert-player-name { font-size: 1.2rem; }
+}
+
+/* ======================================================== */

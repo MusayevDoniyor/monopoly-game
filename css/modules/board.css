@@ -1,0 +1,440 @@
+/* 2D Board Section */
+.board-wrapper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Luxurious Casino Felt Table Frame */
+.board-container {
+  /* Generous sizing ensuring tiles have comfortable breathing room while keeping full frame visible */
+  width: min(calc(100dvh - 120px), 90vw, 920px);
+  height: min(calc(100dvh - 120px), 90vw, 920px);
+  background: #0d2818;
+  border: 8px solid #0d1e15;
+  box-shadow:
+    inset 0 0 24px rgba(0, 0, 0, 0.8),
+    0 20px 50px rgba(0, 0, 0, 0.8),
+    0 0 0 2px var(--gold);
+  border-radius: 12px;
+  display: grid;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 10x10 Grid (36 Tiles: 4 corners + 4x8) */
+.board-container.grid-10 {
+  grid-template-columns: 14% repeat(8, 9%) 14%;
+  grid-template-rows: 14% repeat(8, 9%) 14%;
+}
+
+/* 11x11 Grid (40 Tiles) */
+.board-container.grid-11 {
+  grid-template-columns: 13% repeat(9, 8.22%) 13%;
+  grid-template-rows: 13% repeat(9, 8.22%) 13%;
+}
+
+/* Flat 2D Crisp Board Tiles */
+.tile {
+  background: #ffffff;
+  border: 1px solid #1a2e22;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  color: #111;
+  transition: all 0.16s ease;
+  overflow: hidden;
+}
+
+.tile:hover {
+  background-color: #f8fafc;
+  z-index: 10;
+  box-shadow:
+    inset 0 0 0 2.5px var(--gold),
+    0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.tile.corner {
+  background: #f1f5f9;
+}
+
+/* Color Bands */
+.color-bar {
+  width: 100%;
+  height: 25%;
+  border-bottom: 2px solid #14271c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  position: relative;
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.tile-bottom .color-bar {
+  order: 1;
+  height: 25%;
+  border-bottom: 2px solid #14271c;
+}
+.tile-bottom .tile-content {
+  order: 2;
+}
+
+.tile-top .color-bar {
+  order: 2;
+  height: 25%;
+  border-top: 2px solid #14271c;
+}
+.tile-top .tile-content {
+  order: 1;
+}
+
+.tile-left .color-bar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 25%;
+  height: 100%;
+  border-left: 2px solid #14271c;
+}
+
+.tile-right .color-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 25%;
+  height: 100%;
+  border-right: 2px solid #14271c;
+}
+
+.tile-left .color-bar + .tile-content {
+  width: 75%;
+  margin-right: 25%;
+  box-sizing: border-box;
+}
+
+.tile-right .color-bar + .tile-content {
+  width: 75%;
+  margin-left: 25%;
+  box-sizing: border-box;
+}
+
+.tile-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2px 2px;
+  width: 100%;
+  z-index: 2;
+  gap: 1px;
+}
+
+.tile-country {
+  font-size: clamp(0.48rem, 0.65vw, 0.56rem);
+  color: #475569;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 1;
+}
+
+.tile-name {
+  font-size: clamp(0.55rem, 0.72vw, 0.64rem);
+  font-weight: 900;
+  line-height: 1.12;
+  text-transform: uppercase;
+  color: #09131d;
+  margin-bottom: 1px;
+}
+
+.tile-price {
+  font-family: var(--font-mono);
+  font-size: clamp(0.62rem, 0.75vw, 0.72rem);
+  font-weight: 900;
+  color: #15803d;
+  background: rgba(22, 163, 74, 0.12);
+  padding: 1px 4px;
+  border-radius: 4px;
+  line-height: 1.1;
+}
+
+.tile-subtext {
+  font-size: clamp(0.48rem, 0.6vw, 0.56rem);
+  color: #64748b;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.tile-icon-svg {
+  width: clamp(20px, 2.4vw, 26px);
+  height: clamp(20px, 2.4vw, 26px);
+  margin: 1px 0;
+  color: #1e293b;
+  transition: transform 0.2s;
+}
+
+.tile-railroad-content {
+  justify-content: space-evenly;
+  gap: 2px;
+  padding: 2px 1px;
+}
+
+.tile-railroad-art {
+  display: block;
+  width: 100%;
+  height: clamp(25px, 4.4vw, 40px);
+  flex: 0 0 auto;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 3px;
+  background: #eee3cb;
+}
+
+.tile-railroad-content .tile-name {
+  font-size: clamp(0.38rem, 0.62vw, 0.55rem);
+  margin: 0;
+}
+
+.tile:hover .tile-icon-svg {
+  transform: scale(1.1);
+}
+
+/* Owner Empire Indicator Ribbons */
+.tile-owner-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3);
+  z-index: 6;
+}
+
+.owner-icon-svg {
+  width: 12px;
+  height: 12px;
+  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+/* Strategic Heatmap Layer */
+.heatmap-badge {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  z-index: 12;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.show-heatmap .heatmap-badge {
+  opacity: 0.92;
+}
+
+/* Corner Specifics */
+.corner-start {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.corner-start .start-arrow-svg {
+  color: #dc2626;
+  width: 36px;
+  height: 36px;
+  transform: rotate(-45deg);
+  filter: drop-shadow(0 2px 4px rgba(220, 38, 38, 0.4));
+  animation: pulseArrow 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseArrow {
+  0%,
+  100% {
+    transform: rotate(-45deg) scale(1);
+  }
+  50% {
+    transform: rotate(-45deg) scale(1.12);
+  }
+}
+
+.corner-jail {
+  background: #f8fafc;
+  position: relative;
+  overflow: hidden;
+}
+
+.jail-cell {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 68%;
+  height: 68%;
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+  border-top: 2.5px solid #000;
+  border-left: 2.5px solid #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #fff;
+  gap: 2px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.jail-cell-icon {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6));
+}
+
+.just-visiting-tag {
+  position: absolute;
+  font-size: 0.5rem;
+  font-weight: 900;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.just-visiting-tag.bottom {
+  bottom: 2px;
+  left: 2px;
+}
+.just-visiting-tag.left {
+  top: 2px;
+  left: 2px;
+  transform: rotate(90deg);
+  transform-origin: left top;
+}
+
+/* Corner 2: Safe Zone */
+.corner-safe-zone {
+  background: #fdfaf0;
+  position: relative;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.safe-zone-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.safe-zone-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.28s ease;
+}
+
+.tile.corner-safe-zone:hover .safe-zone-img {
+  transform: scale(1.06);
+  filter: contrast(1.05) brightness(1.02);
+}
+
+/* 3D Isometric Buildings */
+.house-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  height: 100%;
+}
+
+/* Horizontal alignment for Top and Bottom rows */
+.tile-top .house-container,
+.tile-bottom .house-container {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(2px, 0.4vw, 3px);
+  padding: 0 2px;
+}
+
+/* Vertical alignment for Left and Right side rows */
+.tile-left .house-container,
+.tile-right .house-container {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(1.5px, 0.3vh, 2.5px);
+  padding: 2px 0;
+}
+
+.house-marker {
+  width: clamp(8px, 1.1vw, 10px);
+  height: clamp(8px, 1.1vw, 10px);
+  background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+  border: 1px solid #ffffff;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.hotel-marker {
+  width: 18px;
+  height: 11px;
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  border: 1px solid #ffffff;
+  border-radius: 2px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Vertical orientation for hotels on side rows */
+.tile-left .hotel-marker,
+.tile-right .hotel-marker {
+  width: 11px;
+  height: 18px;
+}
+
+.mortgage-stripe {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(220, 38, 38, 0.3),
+    rgba(220, 38, 38, 0.3) 6px,
+    rgba(255, 255, 255, 0.35) 6px,
+    rgba(255, 255, 255, 0.35) 12px
+  );
+  z-index: 5;
+  pointer-events: none;
+}

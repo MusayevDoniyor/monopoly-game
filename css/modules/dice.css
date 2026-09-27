@@ -1,0 +1,355 @@
+/* 2D Board Center (Rich Casino Felt Felt Arena) */
+.board-center {
+  background: radial-gradient(
+    circle at center,
+    #1b5037 0%,
+    #0d3020 70%,
+    #061910 100%
+  );
+  border: 3px solid #0a1f14;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px 12px 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.grid-10 .board-center {
+  grid-column: 2 / 10;
+  grid-row: 2 / 10;
+}
+.grid-11 .board-center {
+  grid-column: 2 / 11;
+  grid-row: 2 / 11;
+}
+
+.center-logo-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 0;
+  pointer-events: none;
+}
+
+.monopoly-logo-img {
+  width: 250px;
+  max-width: 75%;
+  max-height: 105px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.85))
+    drop-shadow(0 0 16px rgba(212, 175, 55, 0.35));
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+  pointer-events: auto;
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.3s ease;
+}
+
+.monopoly-logo-img:hover {
+  transform: scale(1.04);
+  filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.9))
+    drop-shadow(0 0 22px rgba(212, 175, 55, 0.55));
+}
+
+/* Dice Arena & Realistic Inset Tray */
+.dice-arena {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+  width: 100%;
+}
+
+/* Sunken Casino Felt Dice Arena with True 3D Perspective */
+.dice-tray {
+  display: flex;
+  gap: 26px;
+  background: radial-gradient(
+    circle at center,
+    rgba(16, 52, 34, 0.85) 0%,
+    rgba(4, 16, 10, 0.98) 100%
+  );
+  padding: 18px 26px 20px 26px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(212, 175, 55, 0.4);
+  box-shadow:
+    inset 0 4px 20px rgba(0, 0, 0, 0.9),
+    0 10px 28px rgba(0, 0, 0, 0.6),
+    0 0 16px rgba(212, 175, 55, 0.15);
+  perspective: 750px;
+  perspective-origin: 50% 38%;
+  transform-style: preserve-3d;
+}
+
+/* 3D Die Scene Container */
+.die-scene {
+  width: 60px;
+  height: 60px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+}
+
+/* Dynamic Ground Contact Shadow */
+.die-shadow {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 52px;
+  height: 16px;
+  margin-left: -26px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    transparent 80%
+  );
+  border-radius: 50%;
+  filter: blur(4px);
+  pointer-events: none;
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
+  z-index: 1;
+}
+
+.die-scene.rolling .die-shadow {
+  animation: shadowPulse 0.85s ease-in-out infinite;
+}
+
+@keyframes shadowPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.75;
+    filter: blur(4px);
+  }
+  40% {
+    transform: scale(0.5);
+    opacity: 0.2;
+    filter: blur(9px);
+  }
+}
+
+/* True 6-Sided 3D Die Cube */
+.die-cube {
+  width: 54px;
+  height: 54px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: var(--target-rot, rotateX(0deg) rotateY(0deg));
+  transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+  z-index: 2;
+}
+
+.die-scene:hover .die-cube {
+  transform: var(--target-rot, rotateX(0deg) rotateY(0deg)) translateY(-4px)
+    scale(1.04);
+}
+
+/* 6 Faces of the 3D Cube (Size 54px, Half = 27px) */
+.die-face {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  border-radius: 10px;
+  background: radial-gradient(
+    circle at 35% 35%,
+    #ffffff 0%,
+    #f8fafc 40%,
+    #e2e8f0 85%,
+    #cbd5e1 100%
+  );
+  /* A border on every 3D face creates the bright white seams visible at the
+     cube edges. Use inset shading instead so all six faces read as one die. */
+  border: 0;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.72),
+    inset 0 -2px 4px rgba(15, 23, 42, 0.22),
+    inset 2px 0 3px rgba(255, 255, 255, 0.7),
+    inset -2px 0 3px rgba(15, 23, 42, 0.15);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 6px;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+}
+
+/* Mathematical 3D Positioning for each of the 6 faces */
+.face-front {
+  transform: rotateY(0deg) translateZ(27px);
+}
+.face-back {
+  transform: rotateY(180deg) translateZ(27px);
+}
+.face-right {
+  transform: rotateY(90deg) translateZ(27px);
+}
+.face-left {
+  transform: rotateY(-90deg) translateZ(27px);
+}
+.face-top {
+  transform: rotateX(90deg) translateZ(27px);
+}
+.face-bottom {
+  transform: rotateX(-90deg) translateZ(27px);
+}
+
+/* Obsidian Recessed Enamel Pips */
+.pip {
+  width: 9.5px;
+  height: 9.5px;
+  background: radial-gradient(
+    circle at 35% 35%,
+    #475569 0%,
+    #1e293b 50%,
+    #020617 100%
+  );
+  border-radius: 50%;
+  place-self: center;
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.95),
+    0 1px 1px rgba(255, 255, 255, 0.7);
+  transition: transform 0.15s ease;
+}
+
+/* Luxury Crimson Ruby Pip for Single Center Pip (Face 1) */
+.die-face.is-one .pip-center {
+  width: 14px;
+  height: 14px;
+  background: radial-gradient(
+    circle at 35% 35%,
+    #f87171 0%,
+    #dc2626 55%,
+    #7f1d1d 100%
+  );
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.8),
+    0 0 8px rgba(220, 38, 38, 0.5),
+    0 1px 1px rgba(255, 255, 255, 0.7);
+}
+
+.pip-center {
+  grid-column: 2;
+  grid-row: 2;
+}
+.pip-tl {
+  grid-column: 1;
+  grid-row: 1;
+}
+.pip-tr {
+  grid-column: 3;
+  grid-row: 1;
+}
+.pip-ml {
+  grid-column: 1;
+  grid-row: 2;
+}
+.pip-mr {
+  grid-column: 3;
+  grid-row: 2;
+}
+.pip-bl {
+  grid-column: 1;
+  grid-row: 3;
+}
+.pip-br {
+  grid-column: 3;
+  grid-row: 3;
+}
+
+/* 3D Physics Tumbling Animations (synchronized with 1.39s roll-dice sound) */
+.die-cube.rolling-3d-1 {
+  animation: real3DCubeTumble1 0.695s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+
+.die-cube.rolling-3d-2 {
+  animation: real3DCubeTumble2 0.695s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+
+.die-cube.dice-settle {
+  animation: cubeImpactBounce 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes real3DCubeTumble1 {
+  0% {
+    transform: translateY(0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)
+      scale(1);
+  }
+  20% {
+    transform: translateY(-44px) rotateX(170deg) rotateY(210deg) rotateZ(45deg)
+      scale(1.15);
+  }
+  40% {
+    transform: translateY(-52px) rotateX(350deg) rotateY(430deg) rotateZ(110deg)
+      scale(1.2);
+  }
+  60% {
+    transform: translateY(-38px) rotateX(520deg) rotateY(650deg) rotateZ(190deg)
+      scale(1.12);
+  }
+  80% {
+    transform: translateY(-16px) rotateX(670deg) rotateY(870deg) rotateZ(280deg)
+      scale(1.05);
+  }
+  100% {
+    transform: translateY(0px) rotateX(720deg) rotateY(1080deg) rotateZ(360deg)
+      scale(1);
+  }
+}
+
+@keyframes real3DCubeTumble2 {
+  0% {
+    transform: translateY(0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)
+      scale(1);
+  }
+  20% {
+    transform: translateY(-48px) rotateX(-180deg) rotateY(-220deg)
+      rotateZ(-40deg) scale(1.16);
+  }
+  40% {
+    transform: translateY(-56px) rotateX(-360deg) rotateY(-460deg)
+      rotateZ(-120deg) scale(1.22);
+  }
+  60% {
+    transform: translateY(-42px) rotateX(-540deg) rotateY(-690deg)
+      rotateZ(-210deg) scale(1.14);
+  }
+  80% {
+    transform: translateY(-18px) rotateX(-690deg) rotateY(-900deg)
+      rotateZ(-290deg) scale(1.06);
+  }
+  100% {
+    transform: translateY(0px) rotateX(-720deg) rotateY(-1080deg)
+      rotateZ(-360deg) scale(1);
+  }
+}
+
+@keyframes cubeImpactBounce {
+  0% {
+    transform: var(--target-rot) translateY(-22px) scale(1.12);
+  }
+  45% {
+    transform: var(--target-rot) translateY(4px) scale(0.95);
+  }
+  75% {
+    transform: var(--target-rot) translateY(-2px) scale(1.02);
+  }
+  100% {
+    transform: var(--target-rot) translateY(0) scale(1);
+  }
+}
