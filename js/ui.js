@@ -3,12 +3,12 @@ import {
   COLOR_GROUPS,
   TILE_PROBABILITIES,
   gameSettings,
-} from "./boardData.js?v=4.10";
-import { sounds } from "./audio.js?v=4.10";
-import { geminiAdvisor } from "./geminiAdvisor.js?v=4.10";
-import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=4.10";
-import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=4.10";
-import { particles } from "./particles.js?v=4.10";
+} from "./boardData.js?v=4.11";
+import { sounds } from "./audio.js?v=4.11";
+import { geminiAdvisor } from "./geminiAdvisor.js?v=4.11";
+import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=4.11";
+import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=4.11";
+import { particles } from "./particles.js?v=4.11";
 
 const escapeHtml = (value) => String(value ?? "")
   .replace(/&/g, "&amp;")
@@ -453,13 +453,11 @@ export class MonopolyUI {
           </div>
         `;
       } else if (tile.type === "chance" || tile.type === "community-chest") {
-        const bgImg = tile.type === "chance" ? "chance-bg.jpg" : "chest-bg.jpg";
-        const overlay = tile.type === "chance" ? "rgba(234, 88, 12, 0.75)" : "rgba(3, 105, 161, 0.75)";
-        
+        const eventClass = tile.type === "chance" ? "event-tile-chance" : "event-tile-chest";
         innerHTML = `
-          <div class="tile-content" style="background: linear-gradient(${overlay}, ${overlay}), url('images/${bgImg}') center/cover; height: 100%; width: 100%; border-radius: 4px; padding: 4px;">
-            <div class="tile-name" style="color: #fff; font-size: 0.75rem; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">${tile.name}</div>
-            <div class="tile-subtext" style="color: rgba(255,255,255,0.9);">${tile.subtext || ""}</div>
+          <div class="tile-content event-tile ${eventClass}">
+            <div class="tile-name event-tile-name">${tile.name}</div>
+            <div class="tile-subtext event-tile-subtext">${tile.subtext || ""}</div>
           </div>
         `;
       } else {
@@ -979,7 +977,7 @@ export class MonopolyUI {
           <div class="deed-hotel-row">With 1 HOTEL $${tile.rent[5]}.</div>
           ${
             gameSettings.allowDoubleHotels !== false
-              ? `<div class="deed-hotel-row" style="background: rgba(251,191,36,0.12); color: #d97706; border-top: 1px dashed rgba(217,119,6,0.3); margin-top: 2px; font-weight: 800; font-size: 0.88rem; padding: 2px 0;">With 2 HOTELS $${Math.round(tile.rent[5] * 1.5)}.</div>`
+              ? `<div class="deed-hotel-row deed-hotel-row-secondary">With 2 HOTELS $${Math.round(tile.rent[5] * 1.5)}.</div>`
               : ""
           }
 
@@ -1048,7 +1046,7 @@ export class MonopolyUI {
           <div class="deed-silhouette-icon">${getIcon(tile.iconKey || "SOLAR")}</div>
           <div class="deed-railroad-title">${tile.name.toUpperCase()}</div>
 
-          <div style="font-size: 0.84rem; text-align: center; line-height: 1.5; padding: 10px 4px; font-family: 'Times New Roman', Georgia, serif; color: #111;">
+          <div class="deed-utility-copy">
             If one "Utility" is owned rent is <strong>4 times</strong> amount shown on dice.<br><br>
             If both "Utilities" are owned rent is <strong>10 times</strong> amount shown on dice.
           </div>

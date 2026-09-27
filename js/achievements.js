@@ -1,5 +1,5 @@
-import { sounds } from './audio.js?v=4.10';
-import { ICONS, getIcon } from './icons.js?v=4.10';
+import { sounds } from './audio.js?v=4.11';
+import { ICONS, getIcon } from './icons.js?v=4.11';
 
 export const ACHIEVEMENTS_LIST = {
   first_step: { id: 'first_step', iconKey: 'START_ARROW', title: 'Grand Tour', desc: 'Completed your first lap around the board!' },

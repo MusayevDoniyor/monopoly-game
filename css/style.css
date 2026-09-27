@@ -16,9 +16,9 @@
   --accent-green: #10b981;
   --accent-yellow: #f59e0b;
   --accent-purple: #a855f7;
-  --font-display: 'Cinzel', Georgia, serif;
-  --font-body: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: "Aptos Display", "Segoe UI Variable", "Segoe UI", sans-serif;
+  --font-body: "Aptos", "Segoe UI Variable", "Segoe UI", sans-serif;
+  --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
 }
 
 *, *::before, *::after {
@@ -2882,6 +2882,446 @@ header {
   .turn-action-card { width: 100%; }
   .center-quick-actions { flex-wrap: wrap; justify-content: center; }
   .btn-ctrl { font-size: 0.7rem; padding: 5px 8px; }
+}
+
+/* ======================================================== */
+/* CARD SYSTEM REFINEMENT — CLEAN, EDITORIAL, ROOMY         */
+/* ======================================================== */
+:root {
+  --font-display: "Aptos Display", "Segoe UI Variable", "Segoe UI", sans-serif;
+  --font-body: "Aptos", "Segoe UI Variable", "Segoe UI", sans-serif;
+  --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  --panel-bg: rgba(20, 28, 26, 0.96);
+  --panel-border: rgba(212, 175, 55, 0.24);
+  --accent-blue: #7fa7ff;
+}
+
+body {
+  letter-spacing: 0.05px;
+  line-height: 1.35;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-body);
+}
+
+.modal-card {
+  background: linear-gradient(180deg, #202b29 0%, #121a19 100%);
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.modal-card.naked-modal {
+  max-width: min(470px, calc(100vw - 24px)) !important;
+}
+
+.player-config-row {
+  grid-template-columns: 126px minmax(0, 1fr) 82px 34px;
+  gap: 10px;
+}
+
+.input-text,
+.select-ctrl {
+  background: #1b2725;
+  border-color: #344540;
+  font-size: 0.86rem;
+}
+
+.input-text:focus,
+.select-ctrl:focus {
+  outline: 2px solid rgba(127, 167, 255, 0.45);
+  outline-offset: 1px;
+  border-color: var(--accent-blue);
+}
+
+/* Chance and Chest draw cards */
+.luxury-card-scene {
+  width: 100%;
+  padding: 8px 0 12px;
+}
+
+.luxury-card {
+  width: min(430px, calc(100vw - 34px));
+  padding: 12px;
+  border-radius: 22px;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.62),
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.luxury-card.card-chance {
+  background:
+    linear-gradient(145deg, rgba(115, 53, 32, 0.94), rgba(52, 30, 25, 0.97)),
+    url('../images/chance-bg.jpg') center/cover;
+  background-blend-mode: normal, soft-light;
+}
+
+.luxury-card.card-chest {
+  background:
+    linear-gradient(145deg, rgba(38, 79, 70, 0.96), rgba(20, 42, 39, 0.98)),
+    url('../images/chest-bg.jpg') center/cover;
+  background-blend-mode: normal, soft-light;
+}
+
+.card-inner-frame {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 15px;
+  padding: 20px 18px 18px;
+  gap: 15px;
+  background: rgba(9, 16, 15, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.16);
+}
+
+.card-top-row {
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.card-deck-tag {
+  font-family: var(--font-body);
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 1.35px;
+  color: rgba(255, 255, 255, 0.82);
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+}
+
+.card-cat-pill {
+  font-size: 0.64rem;
+  padding: 4px 8px;
+  letter-spacing: 0.75px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.card-cat-pill.windfall { background: rgba(21, 94, 73, 0.8); color: #c9f6df; border-color: #65c99a; }
+.card-cat-pill.penalty { background: rgba(125, 52, 48, 0.78); color: #ffd8d0; border-color: #e98f80; }
+.card-cat-pill.travel { background: rgba(47, 84, 79, 0.82); color: #d4eee8; border-color: #88c5b8; }
+.card-cat-pill.legal { background: rgba(117, 86, 31, 0.8); color: #ffefb0; border-color: #d8b657; }
+.card-cat-pill.event { background: rgba(83, 60, 95, 0.8); color: #eadbfa; border-color: #ba9ad7; }
+
+.card-title-banner {
+  width: 100%;
+  padding: 2px 4px 0;
+}
+
+.card-title-banner h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.12rem, 3.8vw, 1.38rem);
+  line-height: 1.15;
+  letter-spacing: 0.35px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  overflow-wrap: anywhere;
+}
+
+.card-art-container {
+  width: 82px;
+  height: 82px;
+  flex: 0 0 auto;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.11);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 16px;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+}
+
+.card-desc-box {
+  width: 100%;
+  min-height: 92px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  text-align: left;
+}
+
+.card-desc-box p {
+  width: 100%;
+  font-size: 0.94rem;
+  line-height: 1.58;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.card-impact-pill {
+  width: 100%;
+  justify-content: center;
+  padding: 9px 14px;
+  border-radius: 11px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  box-shadow: none;
+}
+
+.card-impact-pill.positive {
+  background: rgba(58, 137, 101, 0.28);
+  color: #b8f0d1;
+  border-color: rgba(126, 220, 168, 0.65);
+}
+
+.card-impact-pill.negative {
+  background: rgba(165, 73, 61, 0.28);
+  color: #ffd0c6;
+  border-color: rgba(242, 145, 127, 0.65);
+}
+
+.btn-luxury-card-continue {
+  min-height: 46px;
+  margin-top: 2px;
+  border-radius: 11px;
+  background: #e4c46a;
+  color: #211b0b;
+  font-size: 0.88rem;
+  letter-spacing: 0.15px;
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.25);
+}
+
+.btn-luxury-card-continue:hover {
+  background: #f0d47e;
+  box-shadow: 0 9px 22px rgba(0, 0, 0, 0.3);
+}
+
+/* Title deeds and station / utility cards */
+.deed-container {
+  max-width: 370px;
+  gap: 10px;
+}
+
+.deed-card-view {
+  width: min(100%, 346px);
+  border: 0;
+  border-radius: 18px;
+  padding: 15px;
+  background: linear-gradient(180deg, #fffdf7 0%, #f3eee2 100%);
+  box-shadow:
+    0 24px 55px rgba(0, 0, 0, 0.52),
+    0 0 0 1px rgba(255, 255, 255, 0.52);
+  font-family: var(--font-body);
+}
+
+.deed-header {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 10px;
+  margin-bottom: 14px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14);
+}
+
+.deed-header .subtitle,
+.deed-header .title,
+.deed-rent-headline,
+.deed-hotel-row,
+.deed-railroad-title,
+.rent-table,
+.deed-footer-stats,
+.deed-rule-note,
+.deed-utility-copy {
+  font-family: var(--font-body);
+}
+
+.deed-header .subtitle {
+  font-size: 0.68rem;
+  letter-spacing: 1.6px;
+  opacity: 0.78;
+}
+
+.deed-header .title {
+  font-size: 1.08rem;
+  letter-spacing: 0.7px;
+  line-height: 1.22;
+}
+
+.deed-rent-headline {
+  font-size: 1.06rem;
+  letter-spacing: 0.2px;
+  margin-bottom: 9px;
+}
+
+.rent-table {
+  font-size: 0.82rem;
+  margin-bottom: 9px;
+}
+
+.rent-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid #e2ddd0;
+}
+
+.rent-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.rent-table tr td:last-child {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.deed-hotel-row {
+  font-size: 0.86rem;
+  line-height: 1.35;
+  margin: 4px 0 8px;
+}
+
+.deed-hotel-row-secondary {
+  background: rgba(216, 182, 87, 0.16);
+  color: #8b6413;
+  border-top: 1px dashed rgba(139, 100, 19, 0.3);
+  margin-top: 2px;
+  padding: 6px 5px;
+  border-radius: 7px;
+  font-size: 0.78rem;
+}
+
+.deed-footer-stats {
+  font-size: 0.76rem;
+  line-height: 1.55;
+  margin-bottom: 8px;
+  color: #33403c;
+}
+
+.deed-rule-note {
+  font-size: 0.64rem;
+  line-height: 1.42;
+  color: #62706a;
+  padding: 8px 2px 2px;
+  border-top: 1px solid #d8d1c4;
+}
+
+.deed-silhouette-icon {
+  width: 56px;
+  height: 56px;
+  padding: 11px;
+  border-radius: 16px;
+  background: #e8eee9;
+  color: #24453d;
+  margin-bottom: 9px;
+}
+
+.deed-railroad-title {
+  font-size: 1.03rem;
+  letter-spacing: 0.7px;
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+
+.deed-utility-copy {
+  font-size: 0.8rem;
+  text-align: center;
+  line-height: 1.55;
+  padding: 12px 6px;
+  color: #273630;
+}
+
+.deed-owner-badge {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  font-size: 0.73rem;
+  line-height: 1.3;
+}
+
+.deed-floating-bar {
+  width: min(100%, 346px);
+  background: rgba(20, 28, 26, 0.96);
+  border-color: rgba(212, 175, 55, 0.25);
+  border-radius: 15px;
+  padding: 12px;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.42);
+}
+
+.deed-card-close {
+  background: #234239;
+  border-color: rgba(212, 175, 55, 0.72);
+}
+
+.btn-manage-card {
+  background: linear-gradient(135deg, #477f71 0%, #2d5b50 100%);
+  box-shadow: 0 5px 15px rgba(45, 91, 80, 0.38);
+}
+
+.btn-trade {
+  background: linear-gradient(135deg, #b88b3d 0%, #8b641f 100%);
+  box-shadow: 0 5px 15px rgba(139, 100, 31, 0.32);
+}
+
+/* Board event tiles share the same calmer card language as their modal cards. */
+.event-tile {
+  height: 100%;
+  width: 100%;
+  border-radius: 4px;
+  padding: 5px 4px;
+  gap: 4px;
+  justify-content: center;
+  background-position: center;
+  background-size: cover;
+  background-blend-mode: normal, soft-light;
+}
+
+.event-tile-chance {
+  background-image:
+    linear-gradient(145deg, rgba(115, 53, 32, 0.92), rgba(52, 30, 25, 0.94)),
+    url('../images/chance-bg.jpg');
+}
+
+.event-tile-chest {
+  background-image:
+    linear-gradient(145deg, rgba(38, 79, 70, 0.94), rgba(20, 42, 39, 0.96)),
+    url('../images/chest-bg.jpg');
+}
+
+.event-tile-name {
+  color: #fffaf0;
+  font-size: 0.69rem;
+  letter-spacing: 0.1px;
+  text-align: center;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.55);
+}
+
+.event-tile-subtext {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.52rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .player-config-row {
+    grid-template-columns: 84px minmax(0, 1fr) 76px 32px;
+    gap: 6px;
+  }
+
+  .input-text,
+  .select-ctrl {
+    padding: 8px 8px;
+    font-size: 0.79rem;
+  }
+
+  .luxury-card {
+    width: min(430px, calc(100vw - 22px));
+    padding: 8px;
+  }
+
+  .card-inner-frame {
+    padding: 17px 13px 14px;
+  }
+
+  .card-desc-box {
+    min-height: 84px;
+    padding: 12px 13px;
+  }
+
+  .card-desc-box p {
+    font-size: 0.86rem;
+  }
 }
 
 
