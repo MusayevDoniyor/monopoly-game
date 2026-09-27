@@ -1,5 +1,5 @@
 import { GameEngine } from './gameEngine.js?v=5.1';
-import { MonopolyUI } from './ui.js?v=5.2';
+import { MonopolyUI } from './ui.js?v=5.3';
 import { AiPlayer } from './aiPlayer.js?v=5.1';
 import { sounds } from './audio.js?v=5.1';
 import { geminiAdvisor } from './geminiAdvisor.js?v=5.1';

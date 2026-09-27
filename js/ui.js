@@ -1053,6 +1053,10 @@ export class MonopolyUI {
               src: "images/pennsylvania-railroad.webp",
               alt: "Vintage engraved steam locomotive at a railway station for Pennsylvania Railroad",
             },
+            "B. & O. Railroad": {
+              src: "images/bo-railroad.webp",
+              alt: "Vintage engraved steam train crossing a stone railway bridge for B. & O. Railroad",
+            },
           }[tile.name]
         : null;
       return `
