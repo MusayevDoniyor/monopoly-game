@@ -25,6 +25,16 @@ const MIME_TYPES = {
 
 const server = http.createServer((req, res) => {
   let reqPath = req.url.split('?')[0];
+
+  if (reqPath === '/health') {
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store'
+    });
+    res.end(JSON.stringify({ status: 'ok' }));
+    return;
+  }
+
   if (reqPath === '/' || reqPath === '') reqPath = '/index.html';
 
   const filePath = path.join(PUBLIC_DIR, reqPath);
@@ -233,7 +243,7 @@ wss.on('connection', ws => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`================================================================`);
   console.log(`[MONOPOLY MASTER] Server running on http://localhost:${PORT}`);
   console.log(`[MULTIPLAYER] WebSocket Engine ready for room connections`);

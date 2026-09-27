@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: monopoly-master
+    runtime: node
+    repo: https://github.com/MusayevDoniyor/monopoly-game.git
+    branch: main
+    region: frankfurt
+    plan: free
+    numInstances: 1
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    autoDeployTrigger: commit
+    healthCheckPath: /health
+    maxShutdownDelaySeconds: 60
+    envVars:
+      - key: NODE_ENV
+        value: production
