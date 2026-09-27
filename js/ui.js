@@ -1043,32 +1043,50 @@ export class MonopolyUI {
         ? (tile.rent || [25, 50, 100, 200])
         : [bRent, bRent + sRent, bRent + sRent * 2, bRent + sRent * 3];
       const stationLabel = isClassicBoard ? "Railroads" : "Airports / Stations";
+      const railroadArtwork = isClassicBoard
+        ? {
+            "Reading Railroad": {
+              src: "images/reading-railroad.webp",
+              alt: "Vintage engraved steam locomotive for Reading Railroad",
+            },
+            "Pennsylvania Railroad": {
+              src: "images/pennsylvania-railroad.webp",
+              alt: "Vintage engraved steam locomotive at a railway station for Pennsylvania Railroad",
+            },
+          }[tile.name]
+        : null;
       return `
-        <div class="deed-card-view">
+        <div class="deed-card-view${railroadArtwork ? " deed-railroad-card" : ""}">
           ${closeBtnHTML}
-          <div class="deed-silhouette-icon">${getIcon(tile.iconKey || "PLANE")}</div>
-          <div class="deed-railroad-title">${tile.name.toUpperCase()}</div>
-
-          <table class="rent-table">
-            <tr><td>Rent</td><td>$ ${rentSchedule[0]}.</td></tr>
-            <tr><td>If 2 ${stationLabel} are owned</td><td>$ ${rentSchedule[1]}.</td></tr>
-            <tr><td>If 3 ${stationLabel} are owned</td><td>$ ${rentSchedule[2]}.</td></tr>
-            <tr><td>If 4 ${stationLabel} are owned</td><td>$ ${rentSchedule[3]}.</td></tr>
-          </table>
-
-          <div class="deed-footer-stats" style="margin-top: 14px;">
-            <div>Mortgage Value $${tile.mortgage}.</div>
-          </div>
-
           ${
-            showOwnerBadge
-              ? `
-            <div class="deed-owner-badge" style="background: ${owner ? owner.color : "#f1f5f9"}; color: ${owner ? "#ffffff" : "#1e293b"}; border: 1px solid ${owner ? "transparent" : "#cbd5e1"};">
-              ${owner ? `Owner: ${owner.name}` : `Price: $${tile.price} • Unowned`} ${state?.mortgaged ? " • MORTGAGED" : ""}
-            </div>
-          `
-              : ""
+            railroadArtwork
+              ? `<div class="deed-railroad-hero"><img src="${railroadArtwork.src}" alt="${railroadArtwork.alt}" width="1200" height="800" decoding="async"></div>`
+              : `<div class="deed-silhouette-icon">${getIcon(tile.iconKey || "PLANE")}</div>`
           }
+          <div class="deed-railroad-body">
+            <div class="deed-railroad-title">${tile.name.toUpperCase()}</div>
+
+            <table class="rent-table">
+              <tr><td>Rent</td><td>$ ${rentSchedule[0]}.</td></tr>
+              <tr><td>If 2 ${stationLabel} are owned</td><td>$ ${rentSchedule[1]}.</td></tr>
+              <tr><td>If 3 ${stationLabel} are owned</td><td>$ ${rentSchedule[2]}.</td></tr>
+              <tr><td>If 4 ${stationLabel} are owned</td><td>$ ${rentSchedule[3]}.</td></tr>
+            </table>
+
+            <div class="deed-footer-stats" style="margin-top: 14px;">
+              <div>Mortgage Value $${tile.mortgage}.</div>
+            </div>
+
+            ${
+              showOwnerBadge
+                ? `
+              <div class="deed-owner-badge" style="background: ${owner ? owner.color : "#f1f5f9"}; color: ${owner ? "#ffffff" : "#1e293b"}; border: 1px solid ${owner ? "transparent" : "#cbd5e1"};">
+                ${owner ? `Owner: ${owner.name}` : `Price: $${tile.price} • Unowned`} ${state?.mortgaged ? " • MORTGAGED" : ""}
+              </div>
+            `
+                : ""
+            }
+          </div>
         </div>
       `;
     } else {

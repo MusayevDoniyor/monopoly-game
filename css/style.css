@@ -3363,6 +3363,36 @@ textarea {
   border-color: rgba(212, 175, 55, 0.72);
 }
 
+.deed-card-view.deed-railroad-card {
+  padding: 0;
+}
+
+.deed-railroad-hero {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 18px 18px 0 0;
+  background: #e8dfca;
+}
+
+.deed-railroad-hero img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 53%;
+}
+
+.deed-railroad-body {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px 14px;
+}
+
+.deed-railroad-card .deed-railroad-title {
+  margin: 0 0 8px;
+}
+
 .btn-manage-card {
   background: linear-gradient(135deg, #477f71 0%, #2d5b50 100%);
   box-shadow: 0 5px 15px rgba(45, 91, 80, 0.38);
