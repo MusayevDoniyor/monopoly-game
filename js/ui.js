@@ -451,42 +451,56 @@ export class MonopolyUI {
       } else if (tile.id === 0) {
         tileEl.classList.add("corner-start");
         innerHTML = `
-          <div class="tile-name" style="font-size: 1.15rem; color: #dc2626; font-weight: 900;">${tile.name}</div>
-          <div class="start-arrow-svg">${getIcon("START_ARROW")}</div>
-          <div style="font-size: 0.64rem; font-weight: 900; color: #166534;">COLLECT $${gameSettings.goReward}</div>
+          <div class="corner-topline"><span class="corner-kicker">THE STARTING LINE</span><span class="corner-number">01</span></div>
+          <div class="start-emblem">
+            <span class="start-arrow-svg">${getIcon("START_ARROW")}</span>
+            <span class="start-wordmark">${tile.name}</span>
+          </div>
+          <div class="start-reward"><span>COLLECT AS YOU PASS</span><strong>$${gameSettings.goReward}</strong></div>
         `;
       } else if (tile.name.includes("JAIL") && !tile.name.includes("GO TO")) {
         tileEl.classList.add("corner-jail");
         innerHTML = `
-          <div class="just-visiting-tag bottom">JAIL</div>
-          <div class="just-visiting-tag left">JAIL</div>
+          <div class="jail-visiting-zone">
+            <span class="corner-kicker">A MOMENT TO PAUSE</span>
+            <span class="corner-number">02</span>
+            <strong>JUST<br>VISITING</strong>
+            <span class="jail-visiting-note">NO PENALTY</span>
+          </div>
           <div class="jail-cell">
+            <span class="jail-cell-bars" aria-hidden="true"></span>
             <div class="jail-cell-icon">${getIcon("JAIL")}</div>
-            <div>IN JAIL</div>
-            <div style="font-size: 0.55rem;">Bail: $${gameSettings.jailBailFee}</div>
+            <strong>IN JAIL</strong>
+            <span class="jail-bail-label">BAIL $${gameSettings.jailBailFee}</span>
           </div>
         `;
       } else if (tile.name.includes("FREE")) {
         tileEl.classList.add("corner-free-parking");
         innerHTML = `
-          <div class="free-parking-art" aria-label="Free Parking">
+          <div class="free-parking-art">
+            <div class="corner-topline"><span class="corner-kicker">REST STOP</span><span class="corner-number">03</span></div>
             <div class="free-parking-title">FREE<br>PARKING</div>
             <div class="free-parking-chip">$</div>
-            <div class="free-parking-caption">NO FEE</div>
+            <div class="free-parking-caption">NO FEE <span>•</span> TAKE A BREATHER</div>
           </div>
         `;
       } else if (tile.name.includes("SAFE") || (this.engine.getBoardLength() === 36 && tile.id === 18)) {
         tileEl.classList.add("corner-safe-zone");
         innerHTML = `
           <div class="safe-zone-wrapper">
-            <img src="images/safe-zone.webp" alt="Free Parking" class="safe-zone-img" loading="lazy" decoding="async" />
+            <img src="images/safe-zone.webp" alt="Illustrated safe zone sign" class="safe-zone-img" loading="lazy" decoding="async" />
+            <span class="safe-zone-index">03</span>
+            <span class="safe-zone-stamp">NO FEE</span>
           </div>
         `;
       } else if (tile.name.includes("GO TO JAIL")) {
+        tileEl.classList.add("corner-go-to-jail");
         innerHTML = `
-          <div class="tile-content" style="gap: 5px;">
-            <div class="tile-icon-svg" style="color: #dc2626; width: auto; height: auto; font-size: 1.8rem; line-height: 1;">${getIcon("POLICE")}</div>
-            <div class="tile-name" style="color: #dc2626; font-size: 0.75rem; font-weight: 900; line-height: 1;">GO TO<br>JAIL</div>
+          <div class="go-to-jail-art">
+            <div class="corner-topline"><span class="corner-kicker">DIRECT TO</span><span class="corner-number">04</span></div>
+            <div class="go-to-jail-emblem"><span class="go-to-jail-icon">${getIcon("POLICE")}</span><span class="go-to-jail-arrow">↘</span></div>
+            <strong class="go-to-jail-title">GO TO<br>JAIL</strong>
+            <span class="go-to-jail-note">DO NOT PASS START</span>
           </div>
         `;
       } else if (tile.type === "chance" || tile.type === "community-chest") {
@@ -1365,6 +1379,24 @@ export class MonopolyUI {
     const iconKey = isChance ? "CHANCE" : "CHEST";
     const cat = (card.category || "EVENT").toLowerCase();
     const impactPositive = !card.badge || !card.badge.includes("-");
+    const cardArt = (() => {
+      switch (card.action?.type) {
+        case "CASH": return impactPositive
+          ? { icon: "COIN", label: "BANK REWARD" }
+          : { icon: "TAX", label: "EXPENSE" };
+        case "MOVE_TO": return card.action.target === 0
+          ? { icon: "START_ARROW", label: "BACK TO START" }
+          : { icon: "PLANE", label: "ADVANCE" };
+        case "MOVE_RELATIVE": return { icon: "LIGHTNING", label: "MOVE" };
+        case "MOVE_NEAREST_RAILROAD": return { icon: "TRAIN", label: "TRANSIT" };
+        case "GO_TO_JAIL": return { icon: "JAIL", label: "DETENTION" };
+        case "GET_OUT_OF_JAIL": return { icon: "KEY", label: "GET OUT" };
+        case "PAY_PLAYERS": return { icon: "HANDSHAKE", label: "PAY THE TABLE" };
+        case "COLLECT_FROM_PLAYERS": return { icon: "TROPHY", label: "COLLECT" };
+        case "REPAIRS": return { icon: "HOUSE", label: "PROPERTY REPAIRS" };
+        default: return { icon: iconKey, label: isChance ? "CHANCE" : "COMMUNITY" };
+      }
+    })();
 
     this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon(iconKey)}</span> <span>${isChance ? "SURPRISE CHANCE" : "LUCKY CHEST"}</span>`;
 
@@ -1382,8 +1414,10 @@ export class MonopolyUI {
               <h3>${card.title || (isChance ? "FATE STRIKES" : "TREASURY ORDER")}</h3>
             </div>
 
-            <div class="card-art-container">
-              ${getIcon(iconKey)}
+            <div class="card-art-container card-art-${cat}" aria-label="${cardArt.label}">
+              <span class="card-art-orbit" aria-hidden="true"></span>
+              <span class="card-art-mark">${getIcon(cardArt.icon)}</span>
+              <span class="card-art-caption">${cardArt.label}</span>
             </div>
 
             <div class="card-desc-box">
@@ -1437,12 +1471,16 @@ export class MonopolyUI {
     this.modalOverlay.classList.add("active");
   }
 
-  showPropertyManagementModal(player) {
-    this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon("HOUSE")}</span> <span>Property & Building Management: ${player.name}</span>`;
+  showPropertyManagementModal(player, restoreScrollTop = 0) {
+    if (this.modalCard) {
+      this.modalCard.classList.remove("naked-modal", "setup-modal");
+      this.modalCard.classList.add("property-management-modal");
+    }
+    this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon("HOUSE")}</span> <span>Property Portfolio</span>`;
     const props = this.engine.getPlayerProperties(player.id);
 
     if (props.length === 0) {
-      this.modalBody.innerHTML = `<div style="text-align: center; color: #94a3b8; padding: 28px;">You don't own any properties yet.</div>`;
+      this.modalBody.innerHTML = `<div class="mgmt-empty-state"><span class="icon-wrap">${getIcon("HOUSE")}</span><strong>No properties yet</strong><span>Buy a property to start building your portfolio.</span></div>`;
       this.modalFooter.innerHTML = `<button class="btn-primary" id="closeManageBtn">Close</button>`;
       document.getElementById("closeManageBtn").onclick = () => this.closeModal();
       this.modalOverlay.classList.add("active");
@@ -1457,15 +1495,25 @@ export class MonopolyUI {
       grouped[gKey].push(tile);
     });
 
+    const monopolyCount = [...new Set(props.filter(tile => tile.type === "property").map(tile => tile.group))]
+      .filter(groupKey => this.engine.hasMonopoly(player.id, groupKey)).length;
+    const developedCount = props.filter(tile => (this.engine.board[tile.id]?.houses || 0) > 0).length;
     let html = `
-      <div style="display: flex; flex-direction: column; gap: 12px; max-height: 480px; overflow-y: auto; padding-right: 6px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.35); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 6px;">
-          <div style="font-size: 0.85rem; color: #cbd5e1;">Funds: <strong style="color: var(--gold); font-family: var(--font-mono); font-size: 0.95rem;">$${player.cash}</strong></div>
-          <div style="font-size: 0.8rem; color: #94a3b8;">
-            Bank Inventory: <strong style="color: #34d399;">${this.engine.bank.houses}</strong> houses, <strong style="color: #f87171;">${this.engine.bank.hotels}</strong> hotels remaining
-          </div>
-        </div>
-        <div id="mgmtNoticeBanner" style="display: none; padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; line-height: 1.4;"></div>
+      <div class="property-management-content">
+        <section class="mgmt-overview" aria-label="Portfolio overview">
+          <div class="mgmt-stat"><span>Available cash</span><strong class="mgmt-cash">$${player.cash.toLocaleString()}</strong></div>
+          <div class="mgmt-stat"><span>Properties</span><strong>${props.length}</strong></div>
+          <div class="mgmt-stat"><span>Monopolies · developed</span><strong>${monopolyCount} · ${developedCount}</strong></div>
+          <div class="mgmt-bank-stock"><span>Bank inventory</span><strong>${this.engine.bank.houses} houses</strong><strong>${this.engine.bank.hotels} hotels</strong></div>
+        </section>
+        <div id="mgmtNoticeBanner" class="mgmt-notice" role="status" aria-live="polite"></div>
+        <nav class="mgmt-group-nav" aria-label="Jump to property group">
+          ${Object.keys(grouped).map(groupKey => {
+            const groupConfig = COLOR_GROUPS[groupKey];
+            return `<button type="button" class="mgmt-group-chip" data-mgmt-target="mgmt-group-${groupKey}" style="--group-color:${groupConfig?.hex || "#64748b"}">${groupConfig?.name || groupKey}<span>${grouped[groupKey].length}</span></button>`;
+          }).join("")}
+        </nav>
+        <div class="mgmt-groups">
     `;
 
     Object.keys(grouped).forEach(groupKey => {
@@ -1476,13 +1524,14 @@ export class MonopolyUI {
       const isDevelopable = groupTiles[0].type === 'property';
 
       html += `
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
-          <div style="background: rgba(0,0,0,0.35); border-left: 6px solid ${groupConfig?.hex || '#64748b'}; padding: 8px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
-            <div style="font-weight: 800; font-size: 0.88rem; color: #f8fafc; display: flex; align-items: center; gap: 6px;">
+        <section class="mgmt-group" id="mgmt-group-${groupKey}" style="--group-color:${groupConfig?.hex || '#64748b'}">
+          <div class="mgmt-group-heading">
+            <div class="mgmt-group-title">
+              <span class="mgmt-color-swatch" aria-hidden="true"></span>
               <span>${groupConfig?.name || groupKey}</span>
-              <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">(${groupTiles.length}/${allCategoryTiles.length})</span>
+              <span class="mgmt-group-count">${groupTiles.length} of ${allCategoryTiles.length}</span>
             </div>
-            <div>
+            <div class="mgmt-group-status">
               ${isDevelopable ? (
                 isMonopoly
                   ? '<span style="background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.4); padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800;">⭐ FULL MONOPOLY (Building Allowed)</span>'
@@ -1491,7 +1540,7 @@ export class MonopolyUI {
             </div>
           </div>
 
-          <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px 12px;">
+          <div class="mgmt-property-list">
       `;
 
       groupTiles.forEach(tile => {
@@ -1523,17 +1572,17 @@ export class MonopolyUI {
         }
 
         html += `
-          <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-            <div>
-              <div style="font-weight: 800; font-size: 0.94rem; color: #fff;">${tile.name}</div>
-              <div style="margin-top: 3px; display: flex; align-items: center; gap: 8px;">
+          <article class="mgmt-property-row">
+            <div class="mgmt-property-copy">
+              <div class="mgmt-property-name">${tile.name}</div>
+              <div class="mgmt-property-meta">
                 ${levelBadge}
                 <span style="color: #64748b; font-size: 0.76rem;">•</span>
                 <span style="color: #34d399; font-size: 0.78rem; font-family: var(--font-mono); font-weight: 700;">Rent: $${rent}</span>
               </div>
             </div>
 
-            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+            <div class="mgmt-property-actions">
         `;
 
         if (tile.type === 'property') {
@@ -1603,19 +1652,27 @@ export class MonopolyUI {
 
         html += `
             </div>
-          </div>
+          </article>
         `;
       });
 
       html += `
           </div>
-        </div>
+        </section>
       `;
     });
 
-    html += `</div>`;
+    html += `</div></div>`;
     this.modalBody.innerHTML = html;
-    this.modalFooter.innerHTML = `<button class="btn-primary" id="closeManageBtn">Done (Close)</button>`;
+    this.modalFooter.innerHTML = `<span class="mgmt-footer-hint">Changes apply immediately and sync to the table.</span><button class="btn-primary" id="closeManageBtn">Done</button>`;
+    requestAnimationFrame(() => { this.modalBody.scrollTop = restoreScrollTop; });
+
+    this.modalBody.querySelectorAll("[data-mgmt-target]").forEach(button => {
+      button.onclick = () => {
+        const target = document.getElementById(button.dataset.mgmtTarget);
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+    });
 
     const showNotice = (msg, isError = true) => {
       const banner = document.getElementById("mgmtNoticeBanner");
@@ -1645,7 +1702,7 @@ export class MonopolyUI {
           this.updateBoardState();
           this.updateHUD();
           if (this.app?.syncGameState) this.app.syncGameState();
-          this.showPropertyManagementModal(player);
+          this.showPropertyManagementModal(player, this.modalBody.scrollTop);
         };
       }
 
@@ -1677,7 +1734,7 @@ export class MonopolyUI {
           this.updateBoardState();
           this.updateHUD();
           if (this.app?.syncGameState) this.app.syncGameState();
-          this.showPropertyManagementModal(player);
+          this.showPropertyManagementModal(player, this.modalBody.scrollTop);
         };
       }
 
@@ -1695,7 +1752,7 @@ export class MonopolyUI {
           this.updateBoardState();
           this.updateHUD();
           if (this.app?.syncGameState) this.app.syncGameState();
-          this.showPropertyManagementModal(player);
+          this.showPropertyManagementModal(player, this.modalBody.scrollTop);
         };
       }
 
@@ -1707,7 +1764,7 @@ export class MonopolyUI {
           this.updateBoardState();
           this.updateHUD();
           if (this.app?.syncGameState) this.app.syncGameState();
-          this.showPropertyManagementModal(player);
+          this.showPropertyManagementModal(player, this.modalBody.scrollTop);
         };
       }
 
@@ -1719,7 +1776,7 @@ export class MonopolyUI {
           this.updateBoardState();
           this.updateHUD();
           if (this.app?.syncGameState) this.app.syncGameState();
-          this.showPropertyManagementModal(player);
+          this.showPropertyManagementModal(player, this.modalBody.scrollTop);
         };
       }
 
@@ -1731,7 +1788,7 @@ export class MonopolyUI {
           this.updateBoardState();
           this.updateHUD();
           if (this.app?.syncGameState) this.app.syncGameState();
-          this.showPropertyManagementModal(player);
+          this.showPropertyManagementModal(player, this.modalBody.scrollTop);
         };
       }
     });
@@ -2823,6 +2880,6 @@ export class MonopolyUI {
     if (this.closeModalCrossBtn) this.closeModalCrossBtn.style.display = "";
     this.isInspectModal = false;
     this.modalOverlay.classList.remove("active");
-    if (this.modalCard) this.modalCard.classList.remove("naked-modal", "setup-modal");
+    if (this.modalCard) this.modalCard.classList.remove("naked-modal", "setup-modal", "property-management-modal");
   }
 }

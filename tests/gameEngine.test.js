@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { GameEngine } from '../js/gameEngine.js';
 import { updateGameSettings, reloadActiveBoard } from '../js/boardData.js?v=5.1';
 import { sounds } from '../js/audio.js?v=5.1';
+import { CHANCE_CARDS } from '../js/cardsData.js?v=5.2';
 
 function createEngine(boardTheme = 'classic') {
   updateGameSettings({ boardTheme, startingCash: 1500, jailBailFee: 150 });
@@ -66,6 +67,30 @@ test('dice stay within range and classic railroad rent follows the official sche
   assert.equal(engine.calculateRent(5), 200);
 });
 
+test('mortgaged railroads leave active rent count while a double-rent card is explicit', () => {
+  const engine = createEngine('classic');
+  const owner = engine.players[0];
+  const visitor = engine.players[1];
+  [5, 15, 25, 35].forEach(id => { engine.board[id].owner = owner.id; });
+  engine.board[35].mortgaged = true;
+
+  assert.equal(engine.calculateRent(35), 0, 'a mortgaged railroad itself collects no rent');
+  assert.equal(engine.calculateRent(5), 100, 'three unmortgaged railroads use the three-railroad rate');
+
+  visitor.position = 5;
+  const ownerCash = owner.cash;
+  const visitorCash = visitor.cash;
+  engine.handleTileLanding(visitor);
+  assert.equal(owner.cash - ownerCash, 100);
+  assert.equal(visitorCash - visitor.cash, 100);
+
+  owner.cash = ownerCash;
+  visitor.cash = visitorCash;
+  engine.handleTileLanding(visitor, null, { doubleRent: true });
+  assert.equal(owner.cash - ownerCash, 200, 'the nearest-railroad card doubles the reduced base rent');
+  assert.match(engine.logs[0].text, /double-rent card: \$100 × 2/);
+});
+
 test('property purchase, even building, hotels, sale, and mortgage stay financially consistent', () => {
   const engine = createEngine('classic');
   const player = engine.players[0];
@@ -115,6 +140,35 @@ test('card jail actions resolve and finish the callback exactly once', () => {
   assert.equal(player.inJail, true);
   assert.equal(player.position, 10);
   assert.equal(completed, 1);
+});
+
+test('travel cards defer destination completion until their movement animation can finish', () => {
+  const engine = createEngine('classic');
+  const player = engine.players[0];
+  player.position = 36;
+  let completed = 0;
+  const tokyoCard = CHANCE_CARDS.find(card => card.id === 'ch_tokyo');
+  engine.chanceDeck = [tokyoCard];
+
+  engine.handleTileLanding(player, () => { completed += 1; });
+  const drawAction = engine.currentTurn.awaitingAction;
+  assert.equal(drawAction.type, 'card_drawn');
+  drawAction.onResolve(true);
+
+  assert.equal(player.position, 24);
+  assert.equal(engine.getTileAt(player.position).name, 'Illinois Avenue');
+  assert.equal(player.cash, 1700);
+  assert.equal(engine.currentTurn.awaitingAction.type, 'buy_prompt');
+  assert.equal(completed, 0, 'the landing callback must wait for movement and the destination prompt');
+
+  engine.currentTurn.awaitingAction.onPass();
+  assert.equal(completed, 0, 'the deferred animation path owns completion');
+
+  const worldEngine = createEngine('world');
+  const worldPlayer = worldEngine.players[0];
+  worldEngine.executeCard(worldPlayer, tokyoCard, () => {});
+  assert.equal(worldPlayer.position, 22);
+  assert.equal(worldEngine.getTileAt(worldPlayer.position).name, 'Tokyo');
 });
 
 test('music and sound effects keep independent mute states', () => {

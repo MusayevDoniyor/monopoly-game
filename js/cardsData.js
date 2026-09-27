@@ -13,7 +13,7 @@ export const DYNAMIC_CHANCE_CARDS = [
     category: 'TRAVEL',
     badge: 'WARP TO MONACO',
     text: 'Take a luxury VIP helicopter flight straight to Monaco / Boardwalk. If unowned, you may purchase it!',
-    action: { type: 'MOVE_TO', target: 35, collectGo: false }
+    action: { type: 'MOVE_TO', targets: { classic: 39, world: 35 }, collectGo: false }
   },
   {
     id: 'ch_tokyo',
@@ -21,7 +21,7 @@ export const DYNAMIC_CHANCE_CARDS = [
     category: 'TRAVEL',
     badge: 'ADVANCE TO TOKYO',
     text: 'Corporate summit in Tokyo / Illinois Ave. If you pass START along the way, collect $200.',
-    action: { type: 'MOVE_TO', target: 22, collectGo: true }
+    action: { type: 'MOVE_TO', targets: { classic: 24, world: 22 }, collectGo: true }
   },
   {
     id: 'ch_airport',

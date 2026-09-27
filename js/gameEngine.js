@@ -1,5 +1,5 @@
 import { BOARD_TILES, COLOR_GROUPS, gameSettings, reloadActiveBoard } from './boardData.js?v=5.1';
-import { CHANCE_CARDS, COMMUNITY_CHEST_CARDS } from './cardsData.js?v=5.1';
+import { CHANCE_CARDS, COMMUNITY_CHEST_CARDS } from './cardsData.js?v=5.2';
 import { sounds } from './audio.js?v=5.1';
 
 export class GameEngine {
@@ -471,7 +471,7 @@ export class GameEngine {
 
       case 'MOVE_TO': {
         const oldPos = player.position;
-        let target = action.target;
+        let target = action.targets?.[gameSettings.boardTheme] ?? action.target;
         if (target >= this.getBoardLength()) {
           target = this.getBoardLength() - 1;
         }
@@ -608,9 +608,9 @@ export class GameEngine {
         cardType: tile.type,
         card,
         player,
-        onResolve: () => {
+        onResolve: (deferCompletion = false) => {
           this.currentTurn.awaitingAction = null;
-          this.executeCard(player, card, onFinished);
+          this.executeCard(player, card, deferCompletion ? () => {} : onFinished);
         }
       };
       return;
@@ -647,13 +647,13 @@ export class GameEngine {
         }
 
         const owner = this.players[state.owner];
-        let rent = this.calculateRent(tile.id, this.currentTurn.dice[0] + this.currentTurn.dice[1]);
-
-        if (options.doubleRent) rent *= 2;
+        const baseRent = this.calculateRent(tile.id, this.currentTurn.dice[0] + this.currentTurn.dice[1]);
+        const rent = options.doubleRent ? baseRent * 2 : baseRent;
 
         player.cash -= rent;
         owner.cash += rent;
-        this.log(`${player.name} paid $${rent} rent to ${owner.name} for landing on ${tile.name}.`, 'warning');
+        const rentBreakdown = options.doubleRent ? ` (double-rent card: $${baseRent} × 2)` : '';
+        this.log(`${player.name} paid $${rent} rent to ${owner.name} for landing on ${tile.name}${rentBreakdown}.`, 'warning');
         sounds.playPay(player);
         if (onFinished) onFinished();
         return;

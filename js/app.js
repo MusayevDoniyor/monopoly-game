@@ -1,5 +1,5 @@
-import { GameEngine } from './gameEngine.js?v=5.1';
-import { MonopolyUI } from './ui.js?v=5.5';
+import { GameEngine } from './gameEngine.js?v=5.3';
+import { MonopolyUI } from './ui.js?v=5.8';
 import { AiPlayer } from './aiPlayer.js?v=5.1';
 import { sounds } from './audio.js?v=5.1';
 import { geminiAdvisor } from './geminiAdvisor.js?v=5.1';
@@ -976,9 +976,10 @@ class MonopolyApp {
     } else if (action.type === 'card_drawn') {
       const drawnCard = action.card;
       const cardPlayer = action.player || this.engine.getCurrentPlayer();
+      const cardMovesPlayer = ['MOVE_TO', 'MOVE_RELATIVE', 'MOVE_NEAREST_RAILROAD'].includes(drawnCard.action?.type);
       if (isAi) {
         const oldPos = cardPlayer.position;
-        action.onResolve();
+        action.onResolve(cardMovesPlayer);
         const newPos = cardPlayer.position;
         this.syncGameState();
         if (newPos !== oldPos) {
@@ -992,7 +993,7 @@ class MonopolyApp {
       } else {
         this.ui.showCardModal(action.cardType, drawnCard, async () => {
           const oldPos = cardPlayer.position;
-          action.onResolve();
+          action.onResolve(cardMovesPlayer);
           const newPos = cardPlayer.position;
           this.syncGameState();
 
