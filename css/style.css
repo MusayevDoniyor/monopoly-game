@@ -476,7 +476,7 @@ header {
   /* Generous sizing ensuring tiles have comfortable breathing room while keeping full frame visible */
   width: min(calc(100dvh - 120px), 90vw, 920px);
   height: min(calc(100dvh - 120px), 90vw, 920px);
-  background: #d8e5d4;
+  background: #0d2818;
   border: 8px solid #0d1e15;
   box-shadow:
     inset 0 0 24px rgba(0, 0, 0, 0.8),
@@ -3748,11 +3748,11 @@ header {
 .grid-11 .board-center {
   background: radial-gradient(
     circle at center,
-    #d8eee7 0%,
-    #c4e4dc 68%,
-    #afd4ca 100%
+    #1b5037 0%,
+    #0d3020 70%,
+    #061910 100%
   );
-  border-color: #335f58;
+  border-color: #0a1f14;
 }
 
 .grid-11 .classic-center-art {
