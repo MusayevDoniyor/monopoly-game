@@ -1,65 +1,36 @@
-# 🎩 Monopoly Master: Deluxe PC Edition
+# Monopoly Master
 
-A complete, AAA-quality digital edition of **Monopoly** designed to look, sound, and feel like a native desktop game from **Steam** or the **Microsoft Store**.
+A browser-based property trading board game with local AI opponents and real-time online rooms. The game includes two board editions: a 40-space classic layout and a custom 36-space world layout.
 
----
+## Run locally
 
-## 🎮 How to Launch
+Requirements: Node.js and npm.
 
-### 🚀 Option 1: Native Standalone PC Game Window (Recommended)
-Double-click [`Play-Monopoly.bat`](file:///C:/Users/doniy/Desktop/monopoly-game/Play-Monopoly.bat) or [`start.bat`](file:///C:/Users/doniy/Desktop/monopoly-game/start.bat) in this folder.
-- Launches the game in an **isolated, borderless native desktop window**.
-- **No browser URL bar, no tabs, no bookmarks** — an authentic Steam/Windows PC game experience!
-
-### 🖥️ Option 2: Electron Desktop App
-```powershell
-cd C:\Users\doniy\Desktop\monopoly-game
-npm run desktop
-```
-
-### 🌐 Option 3: Browser / LAN Multiplayer
-```powershell
+```sh
+npm ci
 npm start
 ```
-Then open `http://localhost:8080`.
 
----
+Open <http://localhost:8080>. To run the automated game-engine checks, use:
 
-## 🌟 AAA Features Built Into This Edition
+```sh
+npm test
+```
 
-### 1. 🏆 Steam-Style Achievements System
-Includes real-time Steam achievement toast notifications with custom icons, sounds, and persistent progression:
-- 🏁 **Grand Tour**: Complete your first full lap around the board.
-- 👑 **City Baron**: Acquire your first complete color monopoly.
-- 🏨 **5-Star Hospitality**: Construct a luxury Hotel.
-- ⚖️ **The Great Escape**: Successfully escape Jail by paying bail or rolling doubles.
-- 💎 **Centibillionaire**: Accumulate over $3,000 cash.
-- 🪦 **Hostile Takeover**: Bankrupt an opponent.
-- ✈️ **Global Aviation Mogul**: Own 3 or more Airports/Stations simultaneously.
-- 🎰 **Jackpot Strike**: Win +$250 or more from a Lucky Chest card.
+On Windows, `start.bat` opens the browser-based game. `Play-Monopoly.bat` launches it in an app-style browser window when Microsoft Edge or Chrome is installed.
 
-### 2. 🎵 Procedural Ambient Lounge Soundtrack & SFX
-- Built-in procedural **Lounge Jazz background music** synthesized on the fly via the Web Audio API.
-- Individual toggles for **Music** and **SFX Mute** directly in the top header.
+## Online play and deployment
 
-### 3. ✨ Particle FX Engine & Screen Shakes
-- **Golden Coin Bursts**: Exploding gold coins fly across the screen when collecting $200 from START or winning cash.
-- **Floating Cash Text**: Glowing emerald `+$200` and crimson `-$150` chips float up during transactions.
-- **Screen Shake**: Tactile camera shake impact when getting thrown into Jail or paying huge rent penalties.
-- **Victory Confetti Shower**: Full-screen rainbow confetti celebration when winning the championship!
+The Render Blueprint is defined in [`render.yaml`](render.yaml). It runs the Node server and its WebSocket multiplayer endpoint on the same service. Players can create a room and share its four-character code with friends.
 
-### 4. 📐 Classic 2D Board Layout (11 Tiles Per Row, 40 Spaces)
-- **Classic default**: GO, JAIL, FREE PARKING, and GO TO JAIL corners with 40 total spaces.
-- **Corner 0**: `GO` (Collect $200)
-- **Corner 1**: `JAIL` (**$150 Bail** on your next turn, with interactive prompt)
-- **Corner 2**: `FREE PARKING` (No-fee rest area)
-- **Corner 3**: `GO TO JAIL` (Police arrest)
-- **Optional World edition**: 36 custom city spaces with START and SAFE ZONE corners.
-- **Station/Airport Rent**: Scales linearly ($50 → $100 → $150 → $200).
+Room membership and the latest game state are held in server memory. There is no persistent database: a server restart or instance replacement ends active rooms. The included Render configuration uses the free plan, which can sleep when idle and may delay the next connection while the service starts.
 
-### 5. 👥 Real-Time Online Multiplayer Rooms & AI Bots
-- Create 4-letter room codes (`PARK`, `CITY`) so friends on phones, tablets, or other PCs can join in real time.
-- Play against tournament-level AI bots that use **Markov probability heatmaps** and **housing scarcity strategies**.
+## Project layout
 
-### 6. 🧠 Gemini AI Tactical Advisor
-- Click **"Ask Gemini AI"** on any turn for grandmaster tournament advice or witty live commentary.
+- `index.html`, `css/`, `images/`: browser interface and visual assets
+- `js/`: game engine, board/card data, AI, audio, UI, and multiplayer client
+- `server.js`: static HTTP server and WebSocket room server
+- `tests/`: automated game-engine checks
+- `render.yaml`: Render deployment Blueprint
+
+The optional Gemini advisor uses a key entered by the player. The key is stored in that browser's local storage and requests go directly from the browser to Google's Gemini API. The built-in heuristic advisor works without a key.

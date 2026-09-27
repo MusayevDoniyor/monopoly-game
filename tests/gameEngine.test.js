@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { GameEngine } from '../js/gameEngine.js';
-import { updateGameSettings, reloadActiveBoard } from '../js/boardData.js?v=4.18';
-import { sounds } from '../js/audio.js?v=4.18';
+import { updateGameSettings, reloadActiveBoard } from '../js/boardData.js?v=5.1';
+import { sounds } from '../js/audio.js?v=5.1';
 
 function createEngine(boardTheme = 'classic') {
   updateGameSettings({ boardTheme, startingCash: 1500, jailBailFee: 150 });

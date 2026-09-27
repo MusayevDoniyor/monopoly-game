@@ -1,6 +1,6 @@
-import { BOARD_TILES, COLOR_GROUPS, gameSettings, reloadActiveBoard } from './boardData.js?v=4.18';
-import { CHANCE_CARDS, COMMUNITY_CHEST_CARDS } from './cardsData.js?v=4.18';
-import { sounds } from './audio.js?v=4.18';
+import { BOARD_TILES, COLOR_GROUPS, gameSettings, reloadActiveBoard } from './boardData.js?v=5.1';
+import { CHANCE_CARDS, COMMUNITY_CHEST_CARDS } from './cardsData.js?v=5.1';
+import { sounds } from './audio.js?v=5.1';
 
 export class GameEngine {
   constructor() {

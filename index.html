@@ -3,9 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monopoly Master - Professional 2D Desktop Edition</title>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="css/style.css?v=4.18" />
+  <meta name="description" content="Play Monopoly Master online with friends or against clever AI bots. Choose classic or world boards, trade properties, build empires, and compete in real time." />
+  <meta name="theme-color" content="#07150e" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <link rel="canonical" href="https://monopoly-master.onrender.com/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Monopoly Master" />
+  <meta property="og:title" content="Monopoly Master — Play Online" />
+  <meta property="og:description" content="Build your empire, trade with friends, and challenge AI in Monopoly Master." />
+  <meta property="og:url" content="https://monopoly-master.onrender.com/" />
+  <meta property="og:image" content="https://monopoly-master.onrender.com/images/social-preview.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Monopoly Master board-game logo on a dark green background" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Monopoly Master — Play Online" />
+  <meta name="twitter:description" content="Build your empire, trade with friends, and challenge AI in Monopoly Master." />
+  <meta name="twitter:image" content="https://monopoly-master.onrender.com/images/social-preview.jpg" />
+  <link rel="preload" as="image" href="images/main-logo.webp" fetchpriority="high" />
+  <link rel="stylesheet" href="css/style.css?v=5.1" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎩</text></svg>">
 </head>
 <body oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
@@ -20,6 +37,10 @@
       <div class="match-timer-badge" id="matchTimerBadge" title="Match Duration">
         <span class="icon-wrap" id="matchTimerIcon"></span>
         <span id="matchTimerText">00:00</span>
+      </div>
+      <div class="online-room-badge" id="onlineRoomBadge" style="display: none;" title="Multiplayer Room Status">
+        <span class="online-status-dot"></span>
+        <span id="onlineRoomText">ONLINE</span>
       </div>
     </div>
 
@@ -138,17 +159,17 @@
 
           <div class="classic-center-art" aria-hidden="true">
             <div class="classic-art-card classic-art-community">
-              <img src="images/chest-bg.jpg" alt="" />
+              <img src="images/chest-bg.webp" alt="" />
               <span>COMMUNITY<br>CHEST</span>
             </div>
             <div class="classic-art-card classic-art-chance">
-              <img src="images/chance-bg.jpg" alt="" />
+              <img src="images/chance-bg.webp" alt="" />
               <span>CHANCE</span>
             </div>
           </div>
           
           <div class="center-logo-wrap">
-            <img src="images/main-logo.png" alt="Monopoly Master" class="monopoly-logo-img">
+            <img src="images/main-logo.webp" alt="Monopoly Master" class="monopoly-logo-img" width="960" height="682" fetchpriority="high" decoding="async">
           </div>
 
           <!-- Dice & Turn Actions Arena -->
@@ -347,6 +368,6 @@
   <!-- Particle / Canvas Layer for Visual FX -->
   <canvas id="fxCanvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 9999;"></canvas>
 
-  <script type="module" src="js/app.js?v=4.18"></script>
+  <script type="module" src="js/app.js?v=5.1"></script>
 </body>
 </html>

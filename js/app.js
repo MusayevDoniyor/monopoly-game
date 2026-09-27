@@ -1,13 +1,13 @@
-import { GameEngine } from './gameEngine.js?v=4.18';
-import { MonopolyUI } from './ui.js?v=4.18';
-import { AiPlayer } from './aiPlayer.js?v=4.18';
-import { sounds } from './audio.js?v=4.18';
-import { geminiAdvisor } from './geminiAdvisor.js?v=4.18';
-import { MultiplayerManager } from './multiplayer.js?v=4.18';
-import { COLOR_GROUPS, gameSettings, updateGameSettings, reloadActiveBoard } from './boardData.js?v=4.18';
-import { particles } from './particles.js?v=4.18';
-import { achievements } from './achievements.js?v=4.18';
-import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from './icons.js?v=4.18';
+import { GameEngine } from './gameEngine.js?v=5.1';
+import { MonopolyUI } from './ui.js?v=5.1';
+import { AiPlayer } from './aiPlayer.js?v=5.1';
+import { sounds } from './audio.js?v=5.1';
+import { geminiAdvisor } from './geminiAdvisor.js?v=5.1';
+import { MultiplayerManager } from './multiplayer.js?v=5.1';
+import { COLOR_GROUPS, gameSettings, updateGameSettings, reloadActiveBoard } from './boardData.js?v=5.1';
+import { particles } from './particles.js?v=5.1';
+import { achievements } from './achievements.js?v=5.1';
+import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from './icons.js?v=5.1';
 
 class MonopolyApp {
   constructor() {
@@ -605,6 +605,7 @@ class MonopolyApp {
     if (this.engine.gameOver) return;
     const current = this.engine.getCurrentPlayer();
     if (!current || current.id !== player.id) return;
+    if (this.multiplayer.isOnline && this.multiplayer.localPlayerId !== player.id) return;
 
     if (phase === 'roll') {
       if (!this.engine.currentTurn.hasRolled && !player.inJail) {
@@ -761,7 +762,23 @@ class MonopolyApp {
       const { d1, d2, sum, isDoubles } = this.engine.rollDice();
       this.ui.renderDice(d1, d2, false);
 
-      this.multiplayer.syncAction('ROLL_DICE', { d1, d2, sum, isDoubles, playerId: player.id });
+      const total = this.engine.getBoardLength();
+      const oldPos = player.position;
+      const targetPos = (oldPos + sum) % total;
+      const shouldMove = player.inJail
+        ? isDoubles || player.jailTurns >= 2
+        : this.engine.currentTurn.doublesCount < 2;
+
+      this.multiplayer.syncAction('ROLL_DICE', {
+        d1,
+        d2,
+        sum,
+        isDoubles,
+        playerId: player.id,
+        oldPos,
+        targetPos,
+        shouldMove
+      });
 
       // Jail escape on roll
       if (player.inJail) {
@@ -803,9 +820,6 @@ class MonopolyApp {
         }
       }
 
-      const total = this.engine.getBoardLength();
-      const oldPos = player.position;
-      const targetPos = (oldPos + sum) % total;
 
       // Pass START check
       const landedOnGo = targetPos === 0 && oldPos !== 0;
@@ -875,12 +889,25 @@ class MonopolyApp {
       players: this.engine.players,
       board: this.engine.board,
       bank: this.engine.bank,
-      currentTurn: this.engine.currentTurn,
+      currentTurn: {
+        playerIndex: this.engine.currentTurn.playerIndex,
+        dice: this.engine.currentTurn.dice,
+        hasRolled: this.engine.currentTurn.hasRolled,
+        doublesCount: this.engine.currentTurn.doublesCount,
+        canRollAgain: this.engine.currentTurn.canRollAgain,
+        count: this.engine.currentTurn.count,
+        awaitingActionDesc: this.engine.currentTurn.awaitingAction ? {
+          type: this.engine.currentTurn.awaitingAction.type,
+          playerName: this.engine.currentTurn.awaitingAction.player?.name,
+          tileName: this.engine.currentTurn.awaitingAction.tile?.name,
+          tilePrice: this.engine.currentTurn.awaitingAction.tile?.price
+        } : null
+      },
       turnCount: this.engine.turnCount,
       roundCount: this.engine.roundCount,
       gameOver: this.engine.gameOver,
       winnerId: this.engine.winner?.id ?? null,
-      logs: this.engine.logs
+      logs: Array.isArray(this.engine.logs) ? this.engine.logs.slice(-50) : []
     });
   }
 
@@ -905,6 +932,7 @@ class MonopolyApp {
         } else {
           action.onPass();
         }
+        this.syncGameState();
         if (onComplete) onComplete();
       } else {
         this.ui.showBuyPrompt(action.tile, action.player, () => {
@@ -917,10 +945,12 @@ class MonopolyApp {
           }
           this.ui.updateBoardState();
           this.ui.updateHUD();
+          this.syncGameState();
           if (onComplete) onComplete();
         }, () => {
           action.onPass();
           this.ui.updateHUD();
+          this.syncGameState();
           if (onComplete) onComplete();
         });
       }
@@ -931,6 +961,7 @@ class MonopolyApp {
         const oldPos = cardPlayer.position;
         action.onResolve();
         const newPos = cardPlayer.position;
+        this.syncGameState();
         if (newPos !== oldPos) {
           const isBackwards = drawnCard.action?.type === 'MOVE_RELATIVE' && drawnCard.action?.steps < 0;
           this.ui.animateMovement(cardPlayer, newPos, () => {
@@ -944,6 +975,7 @@ class MonopolyApp {
           const oldPos = cardPlayer.position;
           action.onResolve();
           const newPos = cardPlayer.position;
+          this.syncGameState();
 
           if (newPos !== oldPos) {
             const isBackwards = drawnCard.action?.type === 'MOVE_RELATIVE' && drawnCard.action?.steps < 0;
@@ -953,11 +985,13 @@ class MonopolyApp {
             this.checkActionModal(false, () => {
               this.ui.updateBoardState();
               this.ui.updateHUD();
+              this.syncGameState();
               if (onComplete) onComplete();
             });
           } else {
             this.ui.updateBoardState();
             this.ui.updateHUD();
+            this.syncGameState();
             if (onComplete) onComplete();
           }
         });
@@ -965,12 +999,14 @@ class MonopolyApp {
     } else if (action.type === 'jailed') {
       if (isAi) {
         action.onResolve();
+        this.syncGameState();
         if (onComplete) onComplete();
       } else {
         this.ui.showArrestModal(action.player, () => {
           action.onResolve();
           this.ui.updateBoardState();
           this.ui.updateHUD();
+          this.syncGameState();
           if (onComplete) onComplete();
         });
       }
@@ -1021,6 +1057,7 @@ class MonopolyApp {
 
       if (isAccepted) {
         onTradeExecuted();
+        this.syncGameState();
         this.ui.showTradeResultModal(true, p2, reason, () => {
           this.ui.updateBoardState();
           this.ui.updateHUD();
@@ -1032,7 +1069,13 @@ class MonopolyApp {
           this.ui.updateHUD();
         });
       }
+    } else if (this.multiplayer?.isOnline) {
+      // Online Human vs Human Trade Proposal
+      this.multiplayer.sendTradeOffer(p1.id, p2.id, offProps, offCash, reqProps, reqCash);
+      this.engine.log(`Trade proposal sent to ${p2.name}. Waiting for their response...`, 'info');
+      this.ui.showWaitingModal('Trade Proposal Sent', `Waiting for ${p2.name} to review and respond to your trade offer...`);
     } else {
+      // Local Pass & Play Human Trade Proposal
       this.ui.showTradeOfferModal(p1, p2, offProps, offCash, reqProps, reqCash, () => {
         onTradeExecuted();
       }, () => {
@@ -1070,23 +1113,98 @@ class MonopolyApp {
     this.syncGameState();
   }
 
-  handleRemoteAction(action, payload) {
+  async handleRemoteAction(action, payload) {
+    if (!action || !payload) return;
+
     if (action === 'ROLL_DICE') {
+      const rollingPlayer = this.engine.players[payload.playerId];
+      sounds.playDice(rollingPlayer);
+      this.ui.renderDice(1, 1, true);
+      await new Promise(r => setTimeout(r, 1390 / this.gameSpeed));
       this.ui.renderDice(payload.d1, payload.d2, false);
-    } else if (action === 'GAME_STATE' && payload) {
+
+      if (rollingPlayer && payload.shouldMove !== false && Number.isInteger(payload.targetPos)) {
+        await new Promise(resolve => {
+          this.ui.animateMovement(rollingPlayer, payload.targetPos, resolve);
+        });
+      }
+      this.ui.updateBoardState();
+      this.ui.updateHUD();
+    } else if (action === 'TRADE_OFFER') {
+      if (payload.targetId === this.multiplayer.localPlayerId) {
+        const p1 = this.engine.players[payload.proposerId];
+        const p2 = this.engine.players[payload.targetId];
+        if (p1 && p2) {
+          sounds.playCard(p2);
+          this.ui.showTradeOfferModal(p1, p2, payload.offeredProps, payload.offeredCash, payload.reqProps, payload.reqCash, () => {
+            this.engine.executeTrade(p1.id, p2.id, payload.offeredProps, payload.offeredCash, payload.reqProps, payload.reqCash);
+            this.multiplayer.sendTradeResponse(p1.id, p2.id, true, 'Trade terms agreed.');
+            this.ui.updateBoardState();
+            this.ui.updateHUD();
+            this.syncGameState();
+          }, () => {
+            this.multiplayer.sendTradeResponse(p1.id, p2.id, false, 'Trade proposal declined.');
+            this.engine.log(`${p2.name} declined trade proposal from ${p1.name}.`, 'warning');
+            this.ui.updateBoardState();
+            this.ui.updateHUD();
+          });
+        }
+      }
+    } else if (action === 'TRADE_RESPONSE') {
+      if (payload.proposerId === this.multiplayer.localPlayerId) {
+        this.ui.closeModal();
+        const p2 = this.engine.players[payload.targetId];
+        if (payload.accepted) {
+          this.ui.showTradeResultModal(true, p2, payload.reason || 'Trade completed successfully!', () => {
+            this.ui.updateBoardState();
+            this.ui.updateHUD();
+          });
+          this.syncGameState();
+        } else {
+          this.ui.showTradeResultModal(false, p2, payload.reason || 'Trade offer was declined.', () => {
+            this.ui.updateBoardState();
+            this.ui.updateHUD();
+          });
+        }
+      }
+    } else if (action === 'GAME_STATE') {
+      const prevPlayerIndex = this.engine.currentTurn?.playerIndex;
+      const prevHasRolled = this.engine.currentTurn?.hasRolled;
+
       this.engine.players = payload.players || this.engine.players;
       this.engine.board = payload.board || this.engine.board;
       this.engine.bank = payload.bank || this.engine.bank;
-      this.engine.currentTurn = payload.currentTurn || this.engine.currentTurn;
+      if (payload.currentTurn) {
+        this.engine.currentTurn = {
+          ...this.engine.currentTurn,
+          ...payload.currentTurn
+        };
+      }
       this.engine.turnCount = payload.turnCount ?? this.engine.turnCount;
       this.engine.roundCount = payload.roundCount ?? this.engine.roundCount;
       this.engine.gameOver = !!payload.gameOver;
       this.engine.winner = Number.isInteger(payload.winnerId)
         ? this.engine.players[payload.winnerId]
         : null;
-      this.engine.logs = payload.logs || this.engine.logs;
+      if (payload.logs && Array.isArray(payload.logs)) {
+        this.engine.logs = payload.logs;
+      }
+
       this.ui.updateBoardState();
       this.ui.updateHUD();
+
+      const current = this.engine.getCurrentPlayer();
+      const isMyTurn = this.multiplayer.isOnline && current && this.multiplayer.localPlayerId === current.id;
+      if (isMyTurn) {
+        if (prevPlayerIndex !== current.id) {
+          sounds.playCard(current);
+          this.triggerTurnStart();
+        } else if (!prevHasRolled && this.engine.currentTurn.hasRolled) {
+          this.startTurnTimer(current, 'end_turn');
+        }
+      } else {
+        this.stopTurnTimer();
+      }
     }
   }
 }

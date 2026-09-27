@@ -3,12 +3,12 @@ import {
   COLOR_GROUPS,
   TILE_PROBABILITIES,
   gameSettings,
-} from "./boardData.js?v=4.18";
-import { sounds } from "./audio.js?v=4.18";
-import { geminiAdvisor } from "./geminiAdvisor.js?v=4.18";
-import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=4.18";
-import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=4.18";
-import { particles } from "./particles.js?v=4.18";
+} from "./boardData.js?v=5.1";
+import { sounds } from "./audio.js?v=5.1";
+import { geminiAdvisor } from "./geminiAdvisor.js?v=5.1";
+import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=5.1";
+import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=5.1";
+import { particles } from "./particles.js?v=5.1";
 
 const escapeHtml = (value) => String(value ?? "")
   .replace(/&/g, "&amp;")
@@ -455,7 +455,7 @@ export class MonopolyUI {
         tileEl.classList.add("corner-safe-zone");
         innerHTML = `
           <div class="safe-zone-wrapper">
-            <img src="images/safe-zone.jpg" alt="Free Parking" class="safe-zone-img" />
+            <img src="images/safe-zone.webp" alt="Free Parking" class="safe-zone-img" loading="lazy" decoding="async" />
           </div>
         `;
       } else if (tile.name.includes("GO TO JAIL")) {
@@ -712,12 +712,8 @@ export class MonopolyUI {
     this.engine.players.forEach((p) => {
       const tokenEl = this.tokenElements?.[p.id];
       const container = document.getElementById(`tokens-${p.position}`);
-      if (
-        tokenEl &&
-        container &&
-        tokenEl.parentElement !== container &&
-        !tokenEl.classList.contains("moving")
-      ) {
+      if (tokenEl && container && tokenEl.parentElement !== container) {
+        tokenEl.classList.remove("moving");
         container.appendChild(tokenEl);
       }
     });
@@ -740,7 +736,12 @@ export class MonopolyUI {
         this.rollBtn.disabled = true;
         this.endTurnBtn.disabled = true;
       } else if (!isLocalTurn) {
-        this.turnStatusEl.innerText = `Waiting for ${current.name}...`;
+        const actionDesc = this.engine.currentTurn?.awaitingActionDesc;
+        if (actionDesc?.type === 'buy_prompt') {
+          this.turnStatusEl.innerText = `${current.name} is deciding whether to buy ${actionDesc.tileName || 'Property'} ($${actionDesc.tilePrice || ''})...`;
+        } else {
+          this.turnStatusEl.innerText = `Waiting for ${current.name}...`;
+        }
         this.rollBtn.disabled = true;
         this.endTurnBtn.disabled = true;
       } else if (current.cash < 0) {
@@ -865,6 +866,24 @@ export class MonopolyUI {
       row.append(time, text);
       this.logBoxEl.appendChild(row);
     });
+
+    // Online Room Badge
+    const roomBadge = document.getElementById("onlineRoomBadge");
+    const roomText = document.getElementById("onlineRoomText");
+    if (roomBadge && roomText) {
+      if (this.app?.multiplayer?.isOnline && this.app.multiplayer.roomCode) {
+        roomBadge.style.display = "inline-flex";
+        if (this.app.multiplayer.isReconnecting) {
+          roomBadge.classList.add("reconnecting");
+          roomText.innerText = "RECONNECTING...";
+        } else {
+          roomBadge.classList.remove("reconnecting");
+          roomText.innerText = `ROOM: ${this.app.multiplayer.roomCode}`;
+        }
+      } else {
+        roomBadge.style.display = "none";
+      }
+    }
   }
 
   showArrestModal(player, onDismiss) {
@@ -1549,6 +1568,7 @@ export class MonopolyUI {
           this.engine.buildHouse(player.id, tile.id);
           this.updateBoardState();
           this.updateHUD();
+          if (this.app?.syncGameState) this.app.syncGameState();
           this.showPropertyManagementModal(player);
         };
       }
@@ -1580,6 +1600,7 @@ export class MonopolyUI {
           this.engine.buildHouse(player.id, tile.id);
           this.updateBoardState();
           this.updateHUD();
+          if (this.app?.syncGameState) this.app.syncGameState();
           this.showPropertyManagementModal(player);
         };
       }
@@ -1597,6 +1618,7 @@ export class MonopolyUI {
           this.engine.buildHouse(player.id, tile.id);
           this.updateBoardState();
           this.updateHUD();
+          if (this.app?.syncGameState) this.app.syncGameState();
           this.showPropertyManagementModal(player);
         };
       }
@@ -1608,6 +1630,7 @@ export class MonopolyUI {
           this.engine.sellHouse(player.id, tile.id);
           this.updateBoardState();
           this.updateHUD();
+          if (this.app?.syncGameState) this.app.syncGameState();
           this.showPropertyManagementModal(player);
         };
       }
@@ -1619,6 +1642,7 @@ export class MonopolyUI {
           this.engine.mortgageProperty(player.id, tile.id);
           this.updateBoardState();
           this.updateHUD();
+          if (this.app?.syncGameState) this.app.syncGameState();
           this.showPropertyManagementModal(player);
         };
       }
@@ -1630,6 +1654,7 @@ export class MonopolyUI {
           this.engine.unmortgageProperty(player.id, tile.id);
           this.updateBoardState();
           this.updateHUD();
+          if (this.app?.syncGameState) this.app.syncGameState();
           this.showPropertyManagementModal(player);
         };
       }
@@ -1801,6 +1826,7 @@ export class MonopolyUI {
           this.engine.sellHouse(player.id, tId);
           this.updateBoardState();
           this.updateHUD();
+          if (this.app?.syncGameState) this.app.syncGameState();
           renderDebtBody();
         };
       });
@@ -1811,6 +1837,7 @@ export class MonopolyUI {
           this.engine.mortgageProperty(player.id, tId);
           this.updateBoardState();
           this.updateHUD();
+          if (this.app?.syncGameState) this.app.syncGameState();
           renderDebtBody();
         };
       });
@@ -2203,6 +2230,25 @@ export class MonopolyUI {
     document.getElementById("cancelTradeBtn").onclick = () => this.closeModal();
 
     renderTradeBody();
+    this.modalOverlay.classList.add("active");
+  }
+
+  showWaitingModal(title, message) {
+    this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon("HOURGLASS")}</span> <span>${escapeHtml(title)}</span>`;
+    this.modalBody.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; padding: 24px 8px;">
+        <div style="font-size: 2.5rem; animation: pulseArrow 1.5s infinite ease-in-out;">
+          ${getIcon("HOURGLASS")}
+        </div>
+        <div style="font-size: 1rem; color: #f8fafc; font-weight: 600; line-height: 1.5;">
+          ${escapeHtml(message)}
+        </div>
+      </div>
+    `;
+    this.modalFooter.innerHTML = `
+      <button class="btn-secondary" id="cancelWaitingModalBtn" style="width: 100%; justify-content: center;">Dismiss</button>
+    `;
+    document.getElementById("cancelWaitingModalBtn").onclick = () => this.closeModal();
     this.modalOverlay.classList.add("active");
   }
 

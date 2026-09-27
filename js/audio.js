@@ -33,14 +33,18 @@ class SoundEffects {
   initAudioElements() {
     if (typeof window === 'undefined') return;
     try {
-      this.bgMusic = new Audio(this.audioFiles.music.src);
+      this.bgMusic = new Audio();
+      this.bgMusic.preload = 'none';
+      this.bgMusic.src = this.audioFiles.music.src;
       this.bgMusic.loop = true;
       this.bgMusic.volume = this.audioFiles.music.volume;
 
       Object.entries(this.audioFiles).forEach(([key, info]) => {
         if (key !== 'music') {
-          const el = new Audio(info.src);
-          el.preload = 'auto';
+          const el = new Audio();
+          // Keep the multi-megabyte audio files off the initial page load.
+          el.preload = 'none';
+          el.src = info.src;
           el.muted = this.sfxMuted;
           this.audioElements[key] = el;
         }
