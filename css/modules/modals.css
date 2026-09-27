@@ -188,7 +188,7 @@
       rgba(124, 45, 18, 0.85) 0%,
       rgba(234, 88, 12, 0.85) 100%
     ),
-    url("../images/chance-bg.webp") center/cover;
+    url("../../images/chance-bg.webp") center/cover;
 }
 
 .luxury-card.card-chest {
@@ -198,7 +198,7 @@
       rgba(12, 74, 110, 0.85) 0%,
       rgba(3, 105, 161, 0.85) 100%
     ),
-    url("../images/chest-bg.webp") center/cover;
+    url("../../images/chest-bg.webp") center/cover;
 }
 
 .card-inner-frame {

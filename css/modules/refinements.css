@@ -420,14 +420,14 @@ textarea {
 .luxury-card.card-chance {
   background:
     linear-gradient(145deg, rgba(115, 53, 32, 0.94), rgba(52, 30, 25, 0.97)),
-    url("../images/chance-bg.webp") center/cover;
+    url("../../images/chance-bg.webp") center/cover;
   background-blend-mode: normal, soft-light;
 }
 
 .luxury-card.card-chest {
   background:
     linear-gradient(145deg, rgba(38, 79, 70, 0.96), rgba(20, 42, 39, 0.98)),
-    url("../images/chest-bg.webp") center/cover;
+    url("../../images/chest-bg.webp") center/cover;
   background-blend-mode: normal, soft-light;
 }
 
@@ -829,13 +829,13 @@ textarea {
 .event-tile-chance {
   background-image:
     linear-gradient(145deg, rgba(115, 53, 32, 0.92), rgba(52, 30, 25, 0.94)),
-    url("../images/chance-bg.webp");
+    url("../../images/chance-bg.webp");
 }
 
 .event-tile-chest {
   background-image:
     linear-gradient(145deg, rgba(38, 79, 70, 0.94), rgba(20, 42, 39, 0.96)),
-    url("../images/chest-bg.webp");
+    url("../../images/chest-bg.webp");
 }
 
 .event-tile-name {
@@ -958,7 +958,7 @@ textarea {
 }
 
 .event-tile-chance::before {
-  background-image: url("../images/chance-bg.webp");
+  background-image: url("../../images/chance-bg.webp");
 }
 
 .event-tile-chest {
@@ -966,7 +966,7 @@ textarea {
 }
 
 .event-tile-chest::before {
-  background-image: url("../images/chest-bg.webp");
+  background-image: url("../../images/chest-bg.webp");
 }
 
 .event-tile-name,
