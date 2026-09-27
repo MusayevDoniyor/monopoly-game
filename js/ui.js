@@ -568,7 +568,7 @@ export class MonopolyUI {
             <div class="tile-name">${tile.name}</div>
             ${tile.price ? `<div class="tile-price">$${tile.price}</div>` : ""}
             ${tile.amount ? `<div class="tile-price">PAY $${tile.amount}</div>` : ""}
-            ${tile.subtext ? `<div class="tile-subtext">${tile.subtext}</div>` : ""}
+            ${tile.subtext && !tile.amount ? `<div class="tile-subtext">${tile.subtext}</div>` : ""}
           </div>
         `;
       }

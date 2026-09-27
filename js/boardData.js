@@ -90,7 +90,7 @@ export const BOARD_36_WORLD = [
   { id: 1, name: 'Cairo', country: 'Egypt', type: 'property', group: 'BROWN', price: 60, rent: [2, 10, 30, 90, 160, 250], houseCost: 50, mortgage: 30 },
   { id: 2, name: 'Lucky Chest', type: 'community-chest', iconKey: 'CHEST', subtext: 'Mystery Bonus' },
   { id: 3, name: 'Mumbai', country: 'India', type: 'property', group: 'BROWN', price: 60, rent: [4, 20, 60, 180, 320, 450], houseCost: 50, mortgage: 30 },
-  { id: 4, name: 'Carbon Tax', type: 'tax', amount: 150, iconKey: 'TAX', subtext: 'Pay $150' },
+  { id: 4, name: 'Carbon Tax', type: 'tax', amount: 150, iconKey: 'TAX' },
   { id: 5, name: 'JFK Airport', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'PLANE' },
   { id: 6, name: 'Buenos Aires', country: 'Argentina', type: 'property', group: 'LIGHT_BLUE', price: 100, rent: [6, 30, 90, 270, 400, 550], houseCost: 50, mortgage: 50 },
   { id: 7, name: 'Surprise Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Random Fate' },
@@ -129,7 +129,7 @@ export const BOARD_36_WORLD = [
   { id: 31, name: 'Haneda Airport', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'PLANE' },
   { id: 32, name: 'Surprise Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Random Fate' },
   { id: 33, name: 'Geneva', country: 'Switzerland', type: 'property', group: 'DARK_BLUE', price: 350, rent: [35, 175, 500, 1100, 1300, 1500], houseCost: 200, mortgage: 175 },
-  { id: 34, name: 'Wealth Tax', type: 'tax', amount: 100, iconKey: 'DIAMOND', subtext: 'Pay $100' },
+  { id: 34, name: 'Wealth Tax', type: 'tax', amount: 100, iconKey: 'DIAMOND' },
   { id: 35, name: 'Monaco', country: 'Monaco', type: 'property', group: 'DARK_BLUE', price: 400, rent: [50, 200, 600, 1400, 1700, 2000], houseCost: 200, mortgage: 200 }
 ];
 
@@ -139,7 +139,7 @@ export const BOARD_40_CLASSIC = [
   { id: 1, name: 'Mediterranean Avenue', type: 'property', group: 'BROWN', price: 60, rent: [2, 10, 30, 90, 160, 250], houseCost: 50, mortgage: 30 },
   { id: 2, name: 'Community Chest', type: 'community-chest', iconKey: 'CHEST', subtext: 'Draw a card' },
   { id: 3, name: 'Baltic Avenue', type: 'property', group: 'BROWN', price: 60, rent: [4, 20, 60, 180, 320, 450], houseCost: 50, mortgage: 30 },
-  { id: 4, name: 'Income Tax', type: 'tax', amount: 200, iconKey: 'TAX', subtext: 'Pay $200' },
+  { id: 4, name: 'Income Tax', type: 'tax', amount: 200, iconKey: 'TAX' },
   { id: 5, name: 'Reading Railroad', type: 'railroad', group: 'RAILROAD', price: 200, rent: [25, 50, 100, 200], mortgage: 100, iconKey: 'TRAIN' },
   { id: 6, name: 'Oriental Avenue', type: 'property', group: 'LIGHT_BLUE', price: 100, rent: [6, 30, 90, 270, 400, 550], houseCost: 50, mortgage: 50 },
   { id: 7, name: 'Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Draw a card' },
@@ -173,7 +173,7 @@ export const BOARD_40_CLASSIC = [
   { id: 35, name: 'Short Line', type: 'railroad', group: 'RAILROAD', price: 200, rent: [25, 50, 100, 200], mortgage: 100, iconKey: 'TRAIN' },
   { id: 36, name: 'Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Draw a card' },
   { id: 37, name: 'Park Place', type: 'property', group: 'DARK_BLUE', price: 350, rent: [35, 175, 500, 1100, 1300, 1500], houseCost: 200, mortgage: 175 },
-  { id: 38, name: 'Luxury Tax', type: 'tax', amount: 100, iconKey: 'DIAMOND', subtext: 'Pay $100' },
+  { id: 38, name: 'Luxury Tax', type: 'tax', amount: 100, iconKey: 'DIAMOND' },
   { id: 39, name: 'Boardwalk', type: 'property', group: 'DARK_BLUE', price: 400, rent: [50, 200, 600, 1400, 1700, 2000], houseCost: 200, mortgage: 200 }
 ];
 
