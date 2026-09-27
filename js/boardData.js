@@ -7,7 +7,7 @@ export const COLOR_GROUPS = {
   YELLOW: { name: 'Yellow', hex: '#eab308', count: 2 },
   GREEN: { name: 'Green', hex: '#10b981', count: 2 },
   DARK_BLUE: { name: 'Dark Blue', hex: '#1e3a8a', count: 2 },
-  RAILROAD: { name: 'Transit / Airport', hex: '#475569', count: 4 },
+  RAILROAD: { name: 'Transit Station', hex: '#475569', count: 4 },
   UTILITY: { name: 'Utility / Power', hex: '#64748b', count: 2 }
 };
 
@@ -37,7 +37,7 @@ export const TILE_PROBABILITIES_36 = {
   2: 2.3,   // Chest
   3: 2.2,   // Brown 2
   4: 2.4,   // Tax
-  5: 2.9,   // Airport 1
+  5: 2.9,   // Station 1
   6: 2.3,   // Light Blue 1
   7: 2.4,   // Chance
   8: 2.5,   // Light Blue 2
@@ -45,7 +45,7 @@ export const TILE_PROBABILITIES_36 = {
   10: 2.6,  // Pink 1
   11: 2.7,  // Solar
   12: 2.8,  // Pink 2
-  13: 3.1,  // Airport 2
+  13: 3.1,  // Station 2
   14: 3.2,  // Orange 1
   15: 2.8,  // Chest
   16: 3.3,  // Orange 2
@@ -55,7 +55,7 @@ export const TILE_PROBABILITIES_36 = {
   20: 2.8,  // Chance
   21: 3.1,  // Red 2
   22: 3.3,  // Red 3
-  23: 3.0,  // Airport 3
+  23: 3.0,  // Station 3
   24: 2.9,  // Yellow 1
   25: 2.7,  // Hydro
   26: 2.8,  // Yellow 2
@@ -63,7 +63,7 @@ export const TILE_PROBABILITIES_36 = {
   28: 2.7,  // Green 1
   29: 2.4,  // Chest
   30: 2.6,  // Green 2
-  31: 2.8,  // Airport 4
+  31: 2.8,  // Station 4
   32: 2.5,  // Chance
   33: 2.2,  // Dark Blue 1
   34: 2.1,  // Tax
@@ -91,7 +91,7 @@ export const BOARD_36_WORLD = [
   { id: 2, name: 'Lucky Chest', type: 'community-chest', iconKey: 'CHEST', subtext: 'Mystery Bonus' },
   { id: 3, name: 'Mumbai', country: 'India', type: 'property', group: 'BROWN', price: 60, rent: [4, 20, 60, 180, 320, 450], houseCost: 50, mortgage: 30 },
   { id: 4, name: 'Carbon Tax', type: 'tax', amount: 150, iconKey: 'TAX' },
-  { id: 5, name: 'JFK Airport', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'PLANE' },
+  { id: 5, name: 'JFK Station', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'TRAIN' },
   { id: 6, name: 'Buenos Aires', country: 'Argentina', type: 'property', group: 'LIGHT_BLUE', price: 100, rent: [6, 30, 90, 270, 400, 550], houseCost: 50, mortgage: 50 },
   { id: 7, name: 'Surprise Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Random Fate' },
   { id: 8, name: 'Bangkok', country: 'Thailand', type: 'property', group: 'LIGHT_BLUE', price: 120, rent: [8, 40, 100, 300, 450, 600], houseCost: 50, mortgage: 60 },
@@ -102,7 +102,7 @@ export const BOARD_36_WORLD = [
   { id: 10, name: 'Seoul', country: 'South Korea', type: 'property', group: 'PINK', price: 140, rent: [10, 50, 150, 450, 625, 750], houseCost: 100, mortgage: 70 },
   { id: 11, name: 'Solar Grid', type: 'utility', group: 'UTILITY', price: 150, mortgage: 75, iconKey: 'SOLAR' },
   { id: 12, name: 'Rome', country: 'Italy', type: 'property', group: 'PINK', price: 160, rent: [12, 60, 180, 500, 700, 900], houseCost: 100, mortgage: 80 },
-  { id: 13, name: 'Heathrow Airport', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'PLANE' },
+  { id: 13, name: 'Heathrow Station', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'TRAIN' },
   { id: 14, name: 'Berlin', country: 'Germany', type: 'property', group: 'ORANGE', price: 180, rent: [14, 70, 200, 550, 750, 950], houseCost: 100, mortgage: 90 },
   { id: 15, name: 'Lucky Chest', type: 'community-chest', iconKey: 'CHEST', subtext: 'Mystery Bonus' },
   { id: 16, name: 'Sydney', country: 'Australia', type: 'property', group: 'ORANGE', price: 180, rent: [14, 70, 200, 550, 750, 950], houseCost: 100, mortgage: 90 },
@@ -115,7 +115,7 @@ export const BOARD_36_WORLD = [
   { id: 20, name: 'Surprise Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Random Fate' },
   { id: 21, name: 'Singapore', country: 'Singapore', type: 'property', group: 'RED', price: 220, rent: [18, 90, 250, 700, 875, 1050], houseCost: 150, mortgage: 110 },
   { id: 22, name: 'Tokyo', country: 'Japan', type: 'property', group: 'RED', price: 240, rent: [20, 100, 300, 750, 925, 1100], houseCost: 150, mortgage: 120 },
-  { id: 23, name: 'Dubai Airport', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'PLANE' },
+  { id: 23, name: 'Dubai Station', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'TRAIN' },
   { id: 24, name: 'Amsterdam', country: 'Netherlands', type: 'property', group: 'YELLOW', price: 260, rent: [22, 110, 330, 800, 975, 1150], houseCost: 150, mortgage: 130 },
   { id: 25, name: 'Hydro Power', type: 'utility', group: 'UTILITY', price: 150, mortgage: 75, iconKey: 'WATER' },
   { id: 26, name: 'Hong Kong', country: 'Hong Kong', type: 'property', group: 'YELLOW', price: 280, rent: [24, 120, 360, 850, 1025, 1200], houseCost: 150, mortgage: 140 },
@@ -126,7 +126,7 @@ export const BOARD_36_WORLD = [
   { id: 28, name: 'Paris', country: 'France', type: 'property', group: 'GREEN', price: 300, rent: [26, 130, 390, 900, 1100, 1275], houseCost: 200, mortgage: 150 },
   { id: 29, name: 'Lucky Chest', type: 'community-chest', iconKey: 'CHEST', subtext: 'Mystery Bonus' },
   { id: 30, name: 'London', country: 'UK', type: 'property', group: 'GREEN', price: 320, rent: [28, 150, 450, 1000, 1200, 1400], houseCost: 200, mortgage: 160 },
-  { id: 31, name: 'Haneda Airport', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'PLANE' },
+  { id: 31, name: 'Haneda Station', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'TRAIN' },
   { id: 32, name: 'Surprise Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Random Fate' },
   { id: 33, name: 'Geneva', country: 'Switzerland', type: 'property', group: 'DARK_BLUE', price: 350, rent: [35, 175, 500, 1100, 1300, 1500], houseCost: 200, mortgage: 175 },
   { id: 34, name: 'Wealth Tax', type: 'tax', amount: 100, iconKey: 'DIAMOND' },

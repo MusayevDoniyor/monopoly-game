@@ -77,7 +77,7 @@ export class AiPlayer {
       }
     }
 
-    // 3. Station / Airport synergy
+    // 3. Railroad Station synergy
     if (tile.type === "railroad") {
       const railroads = BOARD_TILES.filter((t) => t.group === "RAILROAD");
       const ownedStations = railroads.filter(

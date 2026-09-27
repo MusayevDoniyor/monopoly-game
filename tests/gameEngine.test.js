@@ -380,5 +380,20 @@ test('strict solvency prevents negative cash: auto-mortgages properties or trans
   assert.equal(engine.board[8].owner, human.id, 'Creditor received Vermont Ave');
 });
 
+test('all transit tiles and chance cards use consistent Station terminology without legacy Airport remnants', () => {
+  const engine = createEngine('world');
+  const worldStations = Array.from({ length: engine.getBoardLength() }, (_, i) => engine.getTileAt(i))
+    .filter(t => t.group === 'RAILROAD');
+  assert.equal(worldStations.length, 4);
+  assert.ok(worldStations.every(t => t.name.includes('Station') && t.iconKey === 'TRAIN'));
+  assert.ok(worldStations.every(t => !t.name.toLowerCase().includes('airport')));
+
+  const transitCard = CHANCE_CARDS.find(c => c.action?.type === 'MOVE_NEAREST_RAILROAD');
+  assert.ok(transitCard);
+  assert.equal(transitCard.badge, 'NEAREST STATION');
+  assert.ok(!transitCard.title.toLowerCase().includes('airport'));
+  assert.ok(!transitCard.text.toLowerCase().includes('airport'));
+});
+
 
 

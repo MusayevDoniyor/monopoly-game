@@ -235,7 +235,7 @@ export class GameEngine {
       return tile.rent[0];
     }
 
-    // Dynamic Airport / Station rent (User formula: 1 = 50, 2 = 100, 3 = 150, 4 = 200)
+    // Dynamic Railroad / Station rent (User formula: 1 = 50, 2 = 100, 3 = 150, 4 = 200)
     if (tile.type === "railroad") {
       const railroads = BOARD_TILES.filter((t) => t.group === "RAILROAD");
       const ownedCount = railroads.filter(

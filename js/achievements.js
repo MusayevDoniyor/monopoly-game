@@ -8,7 +8,7 @@ export const ACHIEVEMENTS_LIST = {
   jailbreak: { id: 'jailbreak', iconKey: 'JAIL', title: 'The Great Escape', desc: 'Successfully escaped Jail by rolling doubles or bail!' },
   high_roller: { id: 'high_roller', iconKey: 'DIAMOND', title: 'Centibillionaire', desc: 'Accumulated over $3,000 in cash!' },
   ruthless: { id: 'ruthless', iconKey: 'POLICE', title: 'Hostile Takeover', desc: 'Bankrupted an opposing player!' },
-  aviation_mogul: { id: 'aviation_mogul', iconKey: 'PLANE', title: 'Global Aviation Mogul', desc: 'Owned 3 or more Airports/Stations simultaneously!' },
+  aviation_mogul: { id: 'aviation_mogul', iconKey: 'TRAIN', title: 'Transit Mogul', desc: 'Owned 3 or more Railroad Stations simultaneously!' },
   jackpot_winner: { id: 'jackpot_winner', iconKey: 'CHEST', title: 'Jackpot Strike', desc: 'Won +$250 or more from a single Lucky Chest card!' }
 };
 

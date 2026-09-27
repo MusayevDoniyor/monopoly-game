@@ -562,7 +562,7 @@ export class MonopolyUI {
           : null;
         const railroadVisual = railroadArtwork
           ? `<img class="tile-railroad-art" src="${railroadArtwork.tileSrc}" alt="" decoding="async">`
-          : `<div class="tile-icon-svg">${getIcon(tile.iconKey || "PLANE")}</div>`;
+          : `<div class="tile-icon-svg">${getIcon(tile.iconKey || "TRAIN")}</div>`;
         innerHTML += `
           <div class="tile-content tile-railroad-content">
             ${railroadVisual}
@@ -1346,7 +1346,7 @@ export class MonopolyUI {
       const rentSchedule = isClassicBoard
         ? tile.rent || [25, 50, 100, 200]
         : [bRent, bRent + sRent, bRent + sRent * 2, bRent + sRent * 3];
-      const stationLabel = isClassicBoard ? "Railroads" : "Airports / Stations";
+      const stationLabel = isClassicBoard ? "Railroads" : "Stations";
       const railroadArtwork = isClassicBoard
         ? CLASSIC_RAILROAD_ARTWORK[tile.name]
         : null;
@@ -1356,7 +1356,7 @@ export class MonopolyUI {
           ${
             railroadArtwork
               ? `<div class="deed-railroad-hero"><img src="${railroadArtwork.src}" alt="${railroadArtwork.alt}" width="1200" height="800" decoding="async"></div>`
-              : `<div class="deed-silhouette-icon">${getIcon(tile.iconKey || "PLANE")}</div>`
+              : `<div class="deed-silhouette-icon">${getIcon(tile.iconKey || "TRAIN")}</div>`
           }
           <div class="deed-railroad-body">
             <div class="deed-railroad-title">${tile.name.toUpperCase()}</div>
@@ -3290,8 +3290,8 @@ export class MonopolyUI {
         </div>
 
         <div class="rules-card">
-          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("TRAIN")}</span> <span>Railroads / International Airports</span></div>
-          <p>Rent depends on how many stations/airports are owned by that tycoon:</p>
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("TRAIN")}</span> <span>Railroad & Transit Stations</span></div>
+          <p>Rent depends on how many stations are owned by that tycoon:</p>
           <table class="rules-table">
             <thead>
               <tr><th>Stations Owned</th><th>Classic Rent</th><th>Custom World Rent</th></tr>

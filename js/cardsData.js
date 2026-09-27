@@ -24,11 +24,11 @@ export const DYNAMIC_CHANCE_CARDS = [
     action: { type: 'MOVE_TO', targets: { classic: 24, world: 22 }, collectGo: true }
   },
   {
-    id: 'ch_airport',
-    title: 'AIRPORT EXPRESS',
+    id: 'ch_station',
+    title: 'TRANSIT EXPRESS',
     category: 'TRAVEL',
-    badge: 'NEAREST AIRPORT',
-    text: 'Advance to the nearest Transit Station or International Airport. If owned, pay owner double standard rent.',
+    badge: 'NEAREST STATION',
+    text: 'Advance to the nearest Railroad Station. If owned, pay owner double standard rent.',
     action: { type: 'MOVE_NEAREST_RAILROAD' }
   },
   {
