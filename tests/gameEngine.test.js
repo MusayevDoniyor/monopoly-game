@@ -266,3 +266,62 @@ test('smart net worth accurately calculates cash, unmortgaged, mortgaged equity,
   assert.equal(nw.total, 0);
 });
 
+test('activity feed tracks match history with categories and exports complete match JSON report', () => {
+  const engine = createEngine('classic');
+  const p1 = engine.players[0];
+  const p2 = engine.players[1];
+
+  // Initial event logged at game start
+  assert.ok(engine.matchHistory.length >= 1);
+  assert.equal(engine.matchHistory[0].id, 1);
+
+  // Add sample events of different categories
+  engine.log(`${p1.name} rolled 5 and 3 (Total: 8).`);
+  engine.log(`${p1.name} bought Mediterranean Avenue for $60.`);
+  engine.log(`${p2.name} paid $20 rent to ${p1.name}.`);
+  engine.log(`[TRADE] Trade completed between ${p1.name} and ${p2.name}!`, 'success');
+  engine.log(`${p1.name} mortgaged Boardwalk for $200.`);
+  engine.log(`Card Drawn: "Advance to GO. Collect +$200."`, 'info');
+  engine.log(`${p2.name} was arrested and sent to JAIL!`, 'warning');
+  engine.log(`${p2.name} went bankrupt!`, 'danger');
+  engine.log(`[CHAMPION] GAME OVER! ${p1.name} IS THE MONOPOLY CHAMPION!`, 'success');
+
+  // Verify categories
+  assert.equal(engine.detectCategory('rolled 4 and 4', 'info'), 'DICE');
+  assert.equal(engine.detectCategory('bought Vermont Avenue', 'info'), 'BUY');
+  assert.equal(engine.detectCategory('paid $50 rent to Bob', 'info'), 'RENT');
+  assert.equal(engine.detectCategory('[TRADE] Trade accepted', 'success'), 'TRADE');
+  assert.equal(engine.detectCategory('mortgaged Boardwalk', 'info'), 'MORTGAGE');
+  assert.equal(engine.detectCategory('built 2 houses on Park Place', 'info'), 'BUILD');
+  assert.equal(engine.detectCategory('Card Drawn: "Doctor\'s Fee"', 'info'), 'CARD');
+  assert.equal(engine.detectCategory('sent to JAIL!', 'warning'), 'JAIL');
+  assert.equal(engine.detectCategory('bankrupt player eliminated', 'danger'), 'BANKRUPT');
+  assert.equal(engine.detectCategory('GAME OVER! Champion crowned', 'success'), 'CHAMPION');
+
+  // Verify match history chronological order
+  assert.ok(engine.matchHistory.length >= 10);
+  assert.equal(engine.logs[0].text, `[CHAMPION] GAME OVER! ${p1.name} IS THE MONOPOLY CHAMPION!`);
+
+  // Verify match report export data
+  engine.gameOver = true;
+  engine.winner = p1;
+  const exportData = engine.getMatchLogExportData();
+
+  assert.equal(exportData.gameTitle, 'Monopoly Master - Official Match Activity Report');
+  assert.equal(typeof exportData.exportedAt, 'string');
+  assert.equal(exportData.matchStats.boardEdition, 'Classic 40-Tile Edition');
+  assert.equal(exportData.matchStats.isGameOver, true);
+  assert.equal(exportData.matchStats.winner.name, p1.name);
+  assert.equal(exportData.finalStandings[0].name, p1.name);
+  assert.equal(exportData.finalStandings[0].isWinner, true);
+  assert.ok(Array.isArray(exportData.matchEvents));
+  assert.equal(exportData.matchEvents.length, engine.matchHistory.length);
+
+  // Validate JSON stringification
+  const jsonStr = JSON.stringify(exportData);
+  assert.ok(jsonStr.length > 500);
+  const parsed = JSON.parse(jsonStr);
+  assert.equal(parsed.matchStats.winner.name, p1.name);
+});
+
+

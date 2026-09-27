@@ -441,12 +441,23 @@
             <div class="panel-title-left">
               <span class="icon-wrap gold-icon" id="logTitleIcon"></span>
               <span>Live Activity Feed</span>
+              <span class="log-count-pill" id="logCountPill">0</span>
             </div>
-            <span class="panel-subtitle">Real-Time</span>
+            <div class="panel-title-right">
+              <button class="btn-panel-action" id="btnExportFeedJson" title="Export Match Activity Log (JSON)">
+                <span class="icon-wrap" id="exportLogIcon"></span>
+                <span>JSON</span>
+              </button>
+            </div>
           </div>
           <div class="log-box" id="logBox">
             <!-- Dynamically populated -->
           </div>
+          <button class="log-jump-latest" id="logJumpLatestBtn" style="display: none;" title="Scroll to latest event">
+            <span class="icon-wrap" id="jumpLatestIcon"></span>
+            <span>Latest</span>
+            <span class="unread-count" id="logUnreadCount">0</span>
+          </button>
         </div>
       </aside>
     </main>

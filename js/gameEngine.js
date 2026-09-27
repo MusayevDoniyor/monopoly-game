@@ -57,6 +57,8 @@ export class GameEngine {
     this.chanceDeck = this.shuffleDeck([...CHANCE_CARDS]);
     this.communityChestDeck = this.shuffleDeck([...COMMUNITY_CHEST_CARDS]);
     this.logs = [];
+    this.matchHistory = [];
+    this._logCounter = 0;
     this.gameOver = false;
     this.winner = null;
     this.lastGlobalRollWasDoubles = false;
@@ -86,6 +88,10 @@ export class GameEngine {
   }
 
   initPlayers(playerConfigs) {
+    this.matchStartTime = Date.now();
+    this.logs = [];
+    this.matchHistory = [];
+    this._logCounter = 0;
     const startingCash = gameSettings.startingCash || 1500;
     this.players = playerConfigs.map((cfg, index) => {
       // Player names are rendered in several HTML templates, including the
@@ -126,18 +132,48 @@ export class GameEngine {
     return this.players.filter((p) => !p.bankrupt);
   }
 
-  log(msg, type = "info") {
+  detectCategory(msg, type) {
+    if (msg.includes("[CHAMPION]") || msg.includes("GAME OVER")) return "CHAMPION";
+    if (msg.includes("[TRADE]")) return "TRADE";
+    if (msg.includes("[AI Advisor]")) return "ADVISOR";
+    if (msg.includes("[CHAT]")) return "CHAT";
+    if (msg.includes("bankrupt") || msg.includes("BANKRUPT")) return "BANKRUPT";
+    if (msg.includes("JAIL") || msg.includes("jailed") || msg.includes("bail") || msg.includes("Arrested") || msg.includes("ARRESTED")) return "JAIL";
+    if (msg.includes("Card Drawn") || msg.includes("CHEST") || msg.includes("CHANCE") || msg.includes("COMMUNITY")) return "CARD";
+    if (msg.includes("mortgage") || msg.includes("Mortgage")) return "MORTGAGE";
+    if (msg.includes("built") || msg.includes("house") || msg.includes("hotel")) return "BUILD";
+    if (msg.includes("rent") || msg.includes("Rent")) return "RENT";
+    if (msg.includes("bought") || msg.includes("purchased") || msg.includes("acquired")) return "BUY";
+    if (msg.includes("rolled") || msg.includes("doubles")) return "DICE";
+    if (msg.includes("Tax") || msg.includes("tax") || msg.includes("START") || msg.includes("GO")) return "SPECIAL";
+    if (type === "danger") return "ALERT";
+    if (type === "warning") return "WARNING";
+    if (type === "success") return "SUCCESS";
+    return "EVENT";
+  }
+
+  log(msg, type = "info", category = null) {
+    const activePlayer = this.getCurrentPlayer();
     const entry = {
+      id: ++this._logCounter,
       text: msg,
       type,
+      category: category || this.detectCategory(msg, type),
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
       }),
+      timestamp: Date.now(),
+      turn: this.turnCount,
+      round: this.roundCount,
+      playerId: activePlayer ? activePlayer.id : null,
+      playerName: activePlayer ? activePlayer.name : null,
+      playerColor: activePlayer ? activePlayer.color : null,
     };
     this.logs.unshift(entry);
     if (this.logs.length > 100) this.logs.pop();
+    this.matchHistory.push(entry);
   }
 
   getRandomInt(min, max) {
@@ -235,6 +271,14 @@ export class GameEngine {
       return false;
     const groupTiles = BOARD_TILES.filter((t) => t.group === groupKey);
     return groupTiles.every((t) => this.board[t.id]?.owner === playerId);
+  }
+
+  getPlayerMonopolies(playerId) {
+    const props = this.getPlayerProperties(playerId);
+    const distinctGroups = [
+      ...new Set(props.map((p) => p.group).filter(Boolean)),
+    ];
+    return distinctGroups.filter((g) => this.hasMonopoly(playerId, g));
   }
 
   getPlayerProperties(playerId) {
@@ -1140,5 +1184,109 @@ export class GameEngine {
     );
     sounds.playCash(p1.isAi && !p2.isAi ? p2 : p1);
     return true;
+  }
+
+  getMatchLogExportData() {
+    const durationSec = this.getMatchDurationSeconds();
+    const durationMin = Math.floor(durationSec / 60);
+    const durationRemSec = durationSec % 60;
+    const durationFormatted = `${durationMin}m ${durationRemSec}s`;
+
+    const winnerData = this.winner
+      ? {
+          id: this.winner.id,
+          name: this.winner.name,
+          token: this.winner.token,
+          color: this.winner.color,
+          finalCash: this.winner.cash,
+          netWorth: this.getPlayerNetWorth(this.winner.id).total,
+          propertiesCount: this.getPlayerProperties(this.winner.id).length,
+          monopoliesCount: this.getPlayerMonopolies(this.winner.id).length,
+        }
+      : null;
+
+    const standings = [...this.players]
+      .sort((a, b) => {
+        if (this.winner && a.id === this.winner.id) return -1;
+        if (this.winner && b.id === this.winner.id) return 1;
+        if (a.bankrupt && !b.bankrupt) return 1;
+        if (!a.bankrupt && b.bankrupt) return -1;
+        return (
+          this.getPlayerNetWorth(b.id).total -
+          this.getPlayerNetWorth(a.id).total
+        );
+      })
+      .map((p, idx) => {
+        const nw = this.getPlayerNetWorth(p.id);
+        const props = this.getPlayerProperties(p.id);
+        return {
+          rank: idx + 1,
+          id: p.id,
+          name: p.name,
+          token: p.token,
+          color: p.color,
+          isWinner: this.winner ? p.id === this.winner.id : false,
+          bankrupt: p.bankrupt,
+          finalCash: p.cash,
+          netWorth: nw.total,
+          netWorthBreakdown: {
+            cash: nw.cash,
+            unmortgagedPropertiesValue: nw.unmortgagedValue,
+            mortgagedEquity: nw.mortgagedEquity,
+            mortgageDebt: nw.mortgageDebt,
+            buildingsValue: nw.buildingsValue,
+            jailCardsValue: nw.jailCardsValue,
+          },
+          propertiesCount: props.length,
+          properties: props.map((prop) => ({
+            id: prop.id,
+            name: prop.name,
+            group: prop.group,
+            mortgaged: prop.mortgaged,
+            houses: prop.houses,
+            isHotel: prop.houses >= 5,
+          })),
+          monopolies: this.getPlayerMonopolies(p.id),
+        };
+      });
+
+    return {
+      gameTitle: "Monopoly Master - Official Match Activity Report",
+      exportedAt: new Date().toISOString(),
+      matchDuration: {
+        seconds: durationSec,
+        formatted: durationFormatted,
+      },
+      matchStats: {
+        boardEdition:
+          BOARD_TILES.length === 36
+            ? "World 36-Tile Edition"
+            : "Classic 40-Tile Edition",
+        totalTiles: BOARD_TILES.length,
+        totalRounds: this.roundCount,
+        totalTurns: this.turnCount,
+        totalEventsLogged: this.matchHistory.length,
+        isGameOver: this.gameOver,
+        winner: winnerData,
+      },
+      settings: {
+        startingCash: gameSettings.startingCash || 1500,
+        jailBailFee: gameSettings.jailBailFee || 150,
+        doubleRentOnMonopolies: gameSettings.doubleRentOnMonopolies ?? true,
+        evenBuildRule: gameSettings.evenBuildRule ?? true,
+      },
+      finalStandings: standings,
+      matchEvents: this.matchHistory.map((item, idx) => ({
+        eventIndex: idx + 1,
+        time: item.time,
+        timestamp: item.timestamp,
+        turn: item.turn,
+        round: item.round,
+        player: item.playerName,
+        category: item.category,
+        type: item.type,
+        message: item.text,
+      })),
+    };
   }
 }

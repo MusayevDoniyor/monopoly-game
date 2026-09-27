@@ -1163,7 +1163,7 @@ class MonopolyApp {
       roundCount: this.engine.roundCount,
       gameOver: this.engine.gameOver,
       winnerId: this.engine.winner?.id ?? null,
-      logs: Array.isArray(this.engine.logs) ? this.engine.logs.slice(-50) : [],
+      logs: Array.isArray(this.engine.logs) ? this.engine.logs.slice(0, 50) : [],
     });
   }
 
@@ -1590,6 +1590,21 @@ class MonopolyApp {
         : null;
       if (payload.logs && Array.isArray(payload.logs)) {
         this.engine.logs = payload.logs;
+        if (!this.engine.matchHistory || this.engine.matchHistory.length === 0) {
+          this.engine.matchHistory = [...payload.logs].reverse();
+        } else {
+          const knownKeys = new Set(
+            this.engine.matchHistory.map((m) => m.id || `${m.time}_${m.text}`),
+          );
+          const incomingChronological = [...payload.logs].reverse();
+          incomingChronological.forEach((entry) => {
+            const key = entry.id || `${entry.time}_${entry.text}`;
+            if (!knownKeys.has(key)) {
+              this.engine.matchHistory.push(entry);
+              knownKeys.add(key);
+            }
+          });
+        }
       }
 
       this.ui.updateBoardState();
