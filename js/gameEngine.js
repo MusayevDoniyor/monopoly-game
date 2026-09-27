@@ -42,7 +42,10 @@ export class GameEngine {
     reloadActiveBoard();
     this.players = [];
     this.board = {}; // tileId -> { owner: null, houses: 0, mortgaged: false }
-    this.bank = { houses: 32, hotels: 12 };
+    this.bank = {
+      houses: gameSettings.bankHouses ?? 32,
+      hotels: gameSettings.bankHotels ?? 18,
+    };
     this.turnCount = 0;
     this.roundCount = 1;
     this.currentTurn = {

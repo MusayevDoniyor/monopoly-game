@@ -395,5 +395,11 @@ test('all transit tiles and chance cards use consistent Station terminology with
   assert.ok(!transitCard.text.toLowerCase().includes('airport'));
 });
 
+test('bank starts with 18 hotels (1.5x scaled from classic 12) to accommodate luxury builds', () => {
+  const engine = createEngine('classic');
+  assert.equal(engine.bank.houses, 32);
+  assert.equal(engine.bank.hotels, 18);
+});
+
 
 

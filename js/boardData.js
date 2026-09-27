@@ -21,7 +21,9 @@ export const DEFAULT_SETTINGS = {
   startingCash: 1500,
   goReward: 200,
   turnTimerSeconds: 25,     // 25s per player turn (0 = off)
-  approvalTimerSeconds: 15  // 15s per approval prompt modal (0 = off)
+  approvalTimerSeconds: 15, // 15s per approval prompt modal (0 = off)
+  bankHouses: 32,
+  bankHotels: 18            // 1.5x scaling from classic 12 to 18 hotels
 };
 
 export let gameSettings = { ...DEFAULT_SETTINGS };
