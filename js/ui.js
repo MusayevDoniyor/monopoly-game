@@ -1497,7 +1497,7 @@ export class MonopolyUI {
       }
     })();
 
-    this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon(iconKey)}</span> <span>${isChance ? "SURPRISE CHANCE" : "LUCKY CHEST"}</span>`;
+    this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon(iconKey)}</span> <span>${isChance ? "CHANCE" : "COMMUNITY CHEST"}</span>`;
 
     this.modalBody.innerHTML = `
       <div class="luxury-card-scene">
@@ -1505,12 +1505,12 @@ export class MonopolyUI {
           <button class="deed-card-close" id="cardCloseCrossBtn" title="Close">✕</button>
           <div class="card-inner-frame">
             <div class="card-top-row">
-              <span class="card-deck-tag">${isChance ? "SURPRISE CHANCE" : "LUCKY CHEST"}</span>
+              <span class="card-deck-tag">${isChance ? "CHANCE" : "COMMUNITY CHEST"}</span>
               <span class="card-cat-pill ${cat}">${card.category || "EVENT"}</span>
             </div>
 
             <div class="card-title-banner">
-              <h3>${card.title || (isChance ? "FATE STRIKES" : "TREASURY ORDER")}</h3>
+              <h3>${card.title || (isChance ? "CHANCE" : "COMMUNITY CHEST")}</h3>
             </div>
 
             <div class="card-art-container card-art-${cat}" aria-label="${cardArt.label}">
