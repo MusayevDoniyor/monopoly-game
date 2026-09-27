@@ -241,6 +241,131 @@ export class GameEngine {
     return BOARD_TILES.filter((t) => this.board[t.id]?.owner === playerId);
   }
 
+  getPlayerNetWorth(playerId) {
+    const player = this.players[playerId];
+    if (!player) {
+      return {
+        total: 0,
+        cash: 0,
+        propertiesValue: 0,
+        unmortgagedValue: 0,
+        mortgagedEquity: 0,
+        mortgageDebt: 0,
+        buildingsValue: 0,
+        totalHouses: 0,
+        totalHotels: 0,
+        jailCardsValue: 0,
+        jailCardsCount: 0,
+        monopoliesCount: 0,
+        totalProperties: 0,
+        breakdownText: "Net Worth: $0",
+      };
+    }
+
+    if (player.bankrupt) {
+      return {
+        total: 0,
+        cash: 0,
+        propertiesValue: 0,
+        unmortgagedValue: 0,
+        mortgagedEquity: 0,
+        mortgageDebt: 0,
+        buildingsValue: 0,
+        totalHouses: 0,
+        totalHotels: 0,
+        jailCardsValue: 0,
+        jailCardsCount: 0,
+        monopoliesCount: 0,
+        totalProperties: 0,
+        breakdownText: "Bankrupt: $0",
+      };
+    }
+
+    const cash = player.cash || 0;
+    const props = this.getPlayerProperties(playerId);
+
+    let unmortgagedValue = 0;
+    let mortgagedEquity = 0;
+    let mortgageDebt = 0;
+    let buildingsValue = 0;
+    let totalHouses = 0;
+    let totalHotels = 0;
+
+    props.forEach((prop) => {
+      const state = this.board[prop.id];
+      const price = prop.price || 0;
+      const mortgageVal =
+        prop.mortgage !== undefined
+          ? prop.mortgage
+          : Math.floor(price / 2);
+
+      if (state?.mortgaged) {
+        mortgagedEquity += price - mortgageVal;
+        mortgageDebt += mortgageVal;
+      } else {
+        unmortgagedValue += price;
+      }
+
+      if (state && state.houses > 0) {
+        const hCost = prop.houseCost || 50;
+        buildingsValue += state.houses * hCost;
+        if (state.houses <= 4) {
+          totalHouses += state.houses;
+        } else if (state.houses === 5) {
+          totalHotels += 1;
+        } else if (state.houses === 6) {
+          totalHotels += 2;
+        }
+      }
+    });
+
+    const jailCardsCount = player.getOutOfJailCards || 0;
+    const jailCardsValue = jailCardsCount * (gameSettings.jailBailFee || 50);
+
+    const propertiesValue = unmortgagedValue + mortgagedEquity;
+    const total = cash + propertiesValue + buildingsValue + jailCardsValue;
+
+    const distinctGroups = [
+      ...new Set(
+        props.filter((p) => p.type === "property").map((p) => p.group),
+      ),
+    ];
+    const monopoliesCount = distinctGroups.filter((g) =>
+      this.hasMonopoly(playerId, g),
+    ).length;
+
+    const parts = [
+      `Cash: $${cash.toLocaleString()}`,
+      `Real Estate: $${propertiesValue.toLocaleString()}`,
+    ];
+    if (mortgageDebt > 0) {
+      parts.push(`Mortgage Debt: -$${mortgageDebt.toLocaleString()}`);
+    }
+    if (buildingsValue > 0) {
+      parts.push(`Buildings: $${buildingsValue.toLocaleString()}`);
+    }
+    if (jailCardsValue > 0) {
+      parts.push(`VIP Tickets: $${jailCardsValue.toLocaleString()}`);
+    }
+
+    return {
+      total: Math.round(total),
+      cash,
+      propertiesValue,
+      unmortgagedValue,
+      mortgagedEquity,
+      mortgageDebt,
+      buildingsValue,
+      totalHouses,
+      totalHotels,
+      jailCardsValue,
+      jailCardsCount,
+      monopoliesCount,
+      totalProperties: props.length,
+      breakdownText: parts.join(" | "),
+    };
+  }
+
   getBuildStatus(playerId, tileId) {
     const tile = BOARD_TILES[tileId];
     const state = this.board[tileId];

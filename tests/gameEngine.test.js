@@ -217,3 +217,52 @@ test('paying Jail bail does not trigger the sad payment voice', () => {
     sounds.playPay = originalPlayPay;
   }
 });
+
+test('smart net worth accurately calculates cash, unmortgaged, mortgaged equity, buildings, and VIP cards', () => {
+  const engine = createEngine('classic');
+  const player = engine.players[0];
+  player.cash = 1500;
+
+  // 1. Initial net worth with starting cash
+  let nw = engine.getPlayerNetWorth(player.id);
+  assert.equal(nw.total, 1500);
+  assert.equal(nw.cash, 1500);
+  assert.equal(nw.propertiesValue, 0);
+
+  // 2. Buy property (Boardwalk id 39, price: 400)
+  engine.board[39].owner = player.id;
+  player.cash = 1100;
+  nw = engine.getPlayerNetWorth(player.id);
+  assert.equal(nw.total, 1500); // 1100 cash + 400 property
+  assert.equal(nw.propertiesValue, 400);
+  assert.equal(nw.mortgageDebt, 0);
+
+  // 3. Mortgage property: gets $200 cash, equity is $200, mortgage debt is $200
+  assert.equal(engine.mortgageProperty(player.id, 39), true);
+  assert.equal(player.cash, 1300); // 1100 + 200
+  nw = engine.getPlayerNetWorth(player.id);
+  // Smart test: mortgaging must NOT falsely inflate net worth!
+  assert.equal(nw.total, 1500); // 1300 cash + 200 equity
+  assert.equal(nw.mortgageDebt, 200);
+  assert.equal(nw.mortgagedEquity, 200);
+
+  // 4. Build houses on Mediterranean Avenue (id 1, price 60, houseCost 50) and Baltic Avenue (id 3)
+  engine.board[1].owner = player.id;
+  engine.board[3].owner = player.id;
+  engine.board[1].houses = 3;
+  engine.board[3].houses = 3;
+  // Houses value: 6 * 50 = 300
+  nw = engine.getPlayerNetWorth(player.id);
+  assert.equal(nw.buildingsValue, 300);
+
+  // 5. VIP / Get Out of Jail Free card (worth $150 bail fee each)
+  player.getOutOfJailCards = 2;
+  nw = engine.getPlayerNetWorth(player.id);
+  assert.equal(nw.jailCardsValue, 300);
+
+  // 6. Bankruptcy resets net worth to 0
+  player.bankrupt = true;
+  nw = engine.getPlayerNetWorth(player.id);
+  assert.equal(nw.total, 0);
+});
+

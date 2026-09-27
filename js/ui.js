@@ -909,16 +909,7 @@ export class MonopolyUI {
       card.style.borderLeftColor = p.color;
 
       const props = this.engine.getPlayerProperties(p.id);
-
-      // Calculate Net Worth
-      let netWorth = p.cash;
-      props.forEach((prop) => {
-        netWorth += prop.price || 0;
-        const st = this.engine.board[prop.id];
-        if (st && st.houses) {
-          netWorth += st.houses * (prop.houseCost || 50);
-        }
-      });
+      const nw = this.engine.getPlayerNetWorth(p.id);
 
       card.innerHTML = `
         <div class="player-row-top">
@@ -934,12 +925,12 @@ export class MonopolyUI {
           </div>
           <div class="player-cash-badge" style="${p.cash < 0 ? "color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,0.18);" : ""}">
             <span class="icon-wrap" style="width: 1.1rem; height: 1.1rem; color: ${p.cash < 0 ? "#ef4444" : "#34d399"};">${getIcon("COIN")}</span>
-            <span>$${p.cash}</span>
+            <span>$${p.cash.toLocaleString()}</span>
           </div>
         </div>
 
         <div class="player-stats-subrow">
-          <span>Net Worth: <strong>$${netWorth}</strong></span>
+          <span title="${escapeHtml(nw.breakdownText)}" style="cursor: help;">Net Worth: <strong>$${nw.total.toLocaleString()}</strong></span>
           <span>Properties: <strong>${props.length}</strong></span>
           ${p.getOutOfJailCards > 0 ? `<span style="display: inline-flex; align-items: center; gap: 4px; color: var(--gold);">${getIcon("TICKET", "icon-sm")} VIP Ticket: ${p.getOutOfJailCards}</span>` : ""}
         </div>
@@ -1601,9 +1592,11 @@ export class MonopolyUI {
     const developedCount = props.filter(
       (tile) => (this.engine.board[tile.id]?.houses || 0) > 0,
     ).length;
+    const nw = this.engine.getPlayerNetWorth(player.id);
     let html = `
       <div class="property-management-content">
         <section class="mgmt-overview" aria-label="Portfolio overview">
+          <div class="mgmt-stat"><span title="${escapeHtml(nw.breakdownText)}" style="cursor: help;">Total net worth</span><strong class="mgmt-cash" style="color: var(--gold);">$${nw.total.toLocaleString()}</strong></div>
           <div class="mgmt-stat"><span>Available cash</span><strong class="mgmt-cash">$${player.cash.toLocaleString()}</strong></div>
           <div class="mgmt-stat"><span>Properties</span><strong>${props.length}</strong></div>
           <div class="mgmt-stat"><span>Monopolies · developed</span><strong>${monopolyCount} · ${developedCount}</strong></div>
@@ -2823,6 +2816,8 @@ export class MonopolyUI {
     const propsOwned = winner
       ? this.engine.getPlayerProperties(winner.id).length
       : 0;
+    const nw = winner ? this.engine.getPlayerNetWorth(winner.id) : null;
+    const winnerNetWorth = nw ? nw.total : winnerCash;
 
     this.modalBody.innerHTML = `
       <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding: 12px 0;">
@@ -2839,14 +2834,18 @@ export class MonopolyUI {
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 320px; margin-top: 8px;">
-          <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Final Cash</div>
-            <div style="font-size: 1.25rem; font-weight: 800; color: #34d399; font-family: var(--font-mono);">$${winnerCash}</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; max-width: 380px; margin-top: 8px;">
+          <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border: 1px solid rgba(212,175,55,0.3);">
+            <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">Net Worth</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--gold); font-family: var(--font-mono);">$${winnerNetWorth.toLocaleString()}</div>
           </div>
-          <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Properties</div>
-            <div style="font-size: 1.25rem; font-weight: 800; color: #60a5fa; font-family: var(--font-mono);">${propsOwned}</div>
+          <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">Final Cash</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: #34d399; font-family: var(--font-mono);">$${winnerCash.toLocaleString()}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">Properties</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: #60a5fa; font-family: var(--font-mono);">${propsOwned}</div>
           </div>
         </div>
       </div>
