@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Monopoly Master - Professional 2D Desktop Edition</title>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="css/style.css?v=4.14" />
+  <link rel="stylesheet" href="css/style.css?v=4.16" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎩</text></svg>">
 </head>
 <body oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
@@ -137,8 +137,14 @@
         <div class="board-center">
 
           <div class="classic-center-art" aria-hidden="true">
-            <div class="classic-art-diamond classic-art-community">COMMUNITY<br>CHEST</div>
-            <div class="classic-art-diamond classic-art-chance">CHANCE</div>
+            <div class="classic-art-card classic-art-community">
+              <img src="images/chest-bg.jpg" alt="" />
+              <span>COMMUNITY<br>CHEST</span>
+            </div>
+            <div class="classic-art-card classic-art-chance">
+              <img src="images/chance-bg.jpg" alt="" />
+              <span>CHANCE</span>
+            </div>
           </div>
           
           <div class="center-logo-wrap">
@@ -341,6 +347,6 @@
   <!-- Particle / Canvas Layer for Visual FX -->
   <canvas id="fxCanvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 9999;"></canvas>
 
-  <script type="module" src="js/app.js?v=4.14"></script>
+  <script type="module" src="js/app.js?v=4.16"></script>
 </body>
 </html>
