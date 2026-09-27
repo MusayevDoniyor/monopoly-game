@@ -1,5 +1,5 @@
 import { GameEngine } from './gameEngine.js?v=5.1';
-import { MonopolyUI } from './ui.js?v=5.4';
+import { MonopolyUI } from './ui.js?v=5.5';
 import { AiPlayer } from './aiPlayer.js?v=5.1';
 import { sounds } from './audio.js?v=5.1';
 import { geminiAdvisor } from './geminiAdvisor.js?v=5.1';
@@ -393,68 +393,78 @@ class MonopolyApp {
   }
 
   showSetupModal() {
-    this.ui.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon('REFRESH')}</span> <span>Monopoly Master - Game Setup</span>`;
+    this.ui.modalCard.classList.add('setup-modal');
+    this.ui.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon('REFRESH')}</span> <span>Set Up Your Table</span>`;
 
     const tokenOptionsHtml = (selected) => TOKEN_KEYS.map(k => `<option value="${k}" ${k === selected ? 'selected' : ''}>${TOKEN_LABELS[k]}</option>`).join('');
 
     this.ui.modalBody.innerHTML = `
-      <div style="display: flex; flex-direction: column; gap: 14px;">
-        
-        <div class="tab-row">
-          <button class="tab-btn active" id="tabLocal">Local / AI Match</button>
+      <div class="setup-flow">
+        <div class="setup-intro">
+          <span class="setup-eyebrow">BEFORE THE FIRST ROLL</span>
+          <p>Choose a board, invite your table, and set each player's piece.</p>
+        </div>
+
+        <div class="tab-row setup-tabs">
+          <button class="tab-btn active" id="tabLocal">Local Game</button>
           <button class="tab-btn" id="tabHost">Host Online Room</button>
           <button class="tab-btn" id="tabJoin">Join Room</button>
         </div>
 
-        <div>
-          <label style="font-size: 0.85rem; color: #94a3b8; display: block; margin-bottom: 4px;">Select Board Edition:</label>
-          <select class="select-ctrl" id="boardEditionSelect" style="width: 100%; font-weight: bold;">
+        <div class="setup-board-field">
+          <label class="setup-field-label" for="boardEditionSelect">Board edition</label>
+          <select class="select-ctrl" id="boardEditionSelect">
             <option value="classic" ${gameSettings.boardTheme === 'classic' ? 'selected' : ''}>Classic Atlantic City (GO, Jail, Free Parking - 40 Tiles)</option>
             <option value="world" ${gameSettings.boardTheme === 'world' ? 'selected' : ''}>World Mega-Cities (Cairo, Tokyo, Paris, Monaco - 36 Tiles)</option>
           </select>
         </div>
 
-        <div id="sectionLocal" style="display: flex; flex-direction: column; gap: 10px;">
-          <p style="font-size: 0.85rem; color: #cbd5e1;">Configure players (Play hot-seat with friends or solo with AI bots):</p>
+        <div id="sectionLocal" class="setup-local-section">
+          <div class="setup-section-heading">
+            <div><h4>Players</h4><p>Set a name, piece, and seat for each player.</p></div>
+            <label class="setup-count-field" for="playerCountSelect">Seats
+              <select class="select-ctrl" id="playerCountSelect">
+                <option value="4">4</option>
+                <option value="3">3</option>
+                <option value="2">2</option>
+              </select>
+            </label>
+          </div>
           
-          <div class="player-config-row">
+          <div class="setup-player-list">
+          <div class="player-config-row" data-player-index="0">
             <select class="select-ctrl" id="token-0">${tokenOptionsHtml('TOP_HAT')}</select>
             <input type="text" class="input-text" id="name-0" value="You" />
             <select class="select-ctrl" id="type-0"><option value="human">Human</option><option value="ai">AI Bot</option></select>
             <input type="color" value="#3b82f6" id="color-0" class="color-picker-input" />
           </div>
 
-          <div class="player-config-row">
+          <div class="player-config-row" data-player-index="1">
             <select class="select-ctrl" id="token-1">${tokenOptionsHtml('CAR')}</select>
             <input type="text" class="input-text" id="name-1" value="Tycoon Bot" />
             <select class="select-ctrl" id="type-1"><option value="ai">AI Bot</option><option value="human">Human</option></select>
             <input type="color" value="#ef4444" id="color-1" class="color-picker-input" />
           </div>
 
-          <div class="player-config-row">
+          <div class="player-config-row" data-player-index="2">
             <select class="select-ctrl" id="token-2">${tokenOptionsHtml('DOG')}</select>
             <input type="text" class="input-text" id="name-2" value="WallStreet Bot" />
             <select class="select-ctrl" id="type-2"><option value="ai">AI Bot</option><option value="human">Human</option></select>
             <input type="color" value="#10b981" id="color-2" class="color-picker-input" />
           </div>
 
-          <div class="player-config-row">
+          <div class="player-config-row" data-player-index="3">
             <select class="select-ctrl" id="token-3">${tokenOptionsHtml('PLANE')}</select>
             <input type="text" class="input-text" id="name-3" value="Banker Bot" />
             <select class="select-ctrl" id="type-3"><option value="ai">AI Bot</option><option value="human">Human</option></select>
             <input type="color" value="#f59e0b" id="color-3" class="color-picker-input" />
           </div>
 
-          <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Player count:</div>
-          <select class="select-ctrl" id="playerCountSelect" style="font-weight: bold;">
-            <option value="4">4 Players</option>
-            <option value="3">3 Players</option>
-            <option value="2">2 Players</option>
-          </select>
+          </div>
         </div>
 
-        <div id="sectionHost" style="display: none; flex-direction: column; gap: 12px;">
-          <p style="font-size: 0.85rem; color: #cbd5e1;">Create a room so friends can join from other devices or browsers:</p>
+        <div id="sectionHost" class="setup-remote-section" style="display: none;">
+          <p>Create a room so friends can join from another device.</p>
           <div style="display: grid; grid-template-columns: 1fr 130px; gap: 8px;">
             <input type="text" class="input-text" id="hostPlayerName" placeholder="Your Name" value="Host Player" />
             <select class="select-ctrl" id="hostPlayerToken">${tokenOptionsHtml('TOP_HAT')}</select>
@@ -462,8 +472,8 @@ class MonopolyApp {
           <button class="btn-primary" id="btnCreateRoomSubmit">Create Multiplayer Room</button>
         </div>
 
-        <div id="sectionJoin" style="display: none; flex-direction: column; gap: 12px;">
-          <p style="font-size: 0.85rem; color: #cbd5e1;">Enter the 4-letter room code shared by your friend:</p>
+        <div id="sectionJoin" class="setup-remote-section" style="display: none;">
+          <p>Enter the four-letter room code shared by your friend.</p>
           <input type="text" class="input-text" id="joinRoomCodeInput" placeholder="e.g. PARK" maxlength="4" style="text-transform: uppercase; font-size: 1.4rem; letter-spacing: 4px; text-align: center;" />
           <div style="display: grid; grid-template-columns: 1fr 130px; gap: 8px;">
             <input type="text" class="input-text" id="joinPlayerName" placeholder="Your Name" value="Guest Player" />
@@ -476,8 +486,8 @@ class MonopolyApp {
     `;
 
     this.ui.modalFooter.innerHTML = `
-      <button class="btn-secondary" id="setupViewRulesBtn">Rules & Guide</button>
-      <button class="btn-primary" id="startGameBtn" style="flex: 1;">Start Match</button>
+      <button class="btn-secondary" id="setupViewRulesBtn">How to Play</button>
+      <button class="btn-primary setup-start-btn" id="startGameBtn">Start Match <span aria-hidden="true">→</span></button>
     `;
 
     document.getElementById('setupViewRulesBtn').onclick = () => this.ui.showRulesModal();
@@ -489,6 +499,15 @@ class MonopolyApp {
     const secHost = document.getElementById('sectionHost');
     const secJoin = document.getElementById('sectionJoin');
     const footerBtn = document.getElementById('startGameBtn');
+    const playerCountSelect = document.getElementById('playerCountSelect');
+    const syncVisiblePlayerRows = () => {
+      const count = Number(playerCountSelect.value);
+      document.querySelectorAll('.player-config-row[data-player-index]').forEach((row) => {
+        row.style.display = Number(row.dataset.playerIndex) < count ? 'grid' : 'none';
+      });
+    };
+    playerCountSelect.addEventListener('change', syncVisiblePlayerRows);
+    syncVisiblePlayerRows();
 
     tabLocal.onclick = () => {
       tabLocal.classList.add('active'); tabHost.classList.remove('active'); tabJoin.classList.remove('active');

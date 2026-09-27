@@ -568,6 +568,14 @@ export class MonopolyUI {
       );
       if (targetContainer) targetContainer.appendChild(tokenEl);
     });
+    this.syncTokenStacks();
+  }
+
+  syncTokenStacks() {
+    document.querySelectorAll(".tokens-container").forEach((container) => {
+      const count = container.querySelectorAll(".player-token").length;
+      container.dataset.tokenCount = String(count);
+    });
   }
 
   async animateMovement(player, targetPos, onFinish, backwards = false, startPosOverride = null) {
@@ -580,6 +588,18 @@ export class MonopolyUI {
       return;
     }
 
+    const speed = Math.max(1, Number(this.app?.gameSpeed) || 1);
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms / speed));
+    const step = (container) => {
+      if (!container) return;
+      container.appendChild(tokenEl);
+      this.syncTokenStacks();
+      tokenEl.classList.remove("step-pop");
+      void tokenEl.offsetWidth;
+      tokenEl.classList.add("step-pop");
+      sounds.playStep(player);
+    };
+
     tokenEl.classList.add("moving");
 
     if (backwards) {
@@ -588,11 +608,9 @@ export class MonopolyUI {
       for (let i = 0; i < totalSteps; i++) {
         current = (current - 1 + total) % total;
         const container = document.getElementById(`tokens-${current}`);
-        if (container) {
-          container.appendChild(tokenEl);
-          sounds.playStep(player);
-        }
-        await new Promise((r) => setTimeout(r, 260));
+        step(container);
+        const progress = (i + 1) / totalSteps;
+        await wait(330 + Math.floor(progress * 180));
       }
     } else {
       const totalSteps = (targetPos - startPos + total) % total;
@@ -600,23 +618,19 @@ export class MonopolyUI {
       for (let i = 0; i < totalSteps; i++) {
         current = (current + 1) % total;
         const container = document.getElementById(`tokens-${current}`);
-        if (container) {
-          container.appendChild(tokenEl);
-          sounds.playStep(player);
-        }
-        // Smooth eased movement: start fast, slow down at end (like real board game piece sliding)
-        const progress = i / totalSteps;
-        const baseDelay = 240;
-        const easeDelay = baseDelay + Math.floor(progress * 160);
-        await new Promise((r) => setTimeout(r, easeDelay));
+        step(container);
+        // Let each square read as a deliberate move, with a gentle deceleration
+        // toward the destination. Fast/Turbo settings remain proportionally faster.
+        const progress = (i + 1) / totalSteps;
+        await wait(330 + Math.floor(progress * 180));
       }
     }
 
-    // Brief dramatic pause on landing tile
-    await new Promise((r) => setTimeout(r, 300));
+    await wait(420);
 
-    tokenEl.classList.remove("moving");
+    tokenEl.classList.remove("moving", "step-pop");
     player.position = targetPos;
+    this.syncTokenStacks();
     if (onFinish) onFinish();
   }
 
@@ -1294,11 +1308,22 @@ export class MonopolyUI {
       </div>
     `;
 
-    document.getElementById("confirmBuyBtn").onclick = () => {
+    let purchaseDecisionMade = false;
+    document.getElementById("confirmBuyBtn").onclick = async (event) => {
+      const button = event.currentTarget;
+      if (purchaseDecisionMade || button.disabled) return;
+      purchaseDecisionMade = true;
+      this.clearModalTimer();
+      button.disabled = true;
+      button.classList.add("is-confirming");
+      button.querySelector("span:last-child").textContent = "Adding to portfolio…";
+      await new Promise((resolve) => setTimeout(resolve, 420));
       this.closeModal();
       onBuy();
     };
     document.getElementById("passBuyBtn").onclick = () => {
+      if (purchaseDecisionMade) return;
+      purchaseDecisionMade = true;
       this.closeModal();
       onPass();
     };
@@ -1306,6 +1331,8 @@ export class MonopolyUI {
     const crossBtn = document.getElementById("deedCloseCrossBtn");
     if (crossBtn) {
       crossBtn.onclick = () => {
+        if (purchaseDecisionMade) return;
+        purchaseDecisionMade = true;
         this.closeModal();
         onPass();
       };
@@ -1315,6 +1342,8 @@ export class MonopolyUI {
     this.startModalTimer(
       timerSec,
       () => {
+        if (purchaseDecisionMade) return;
+        purchaseDecisionMade = true;
         this.engine.log(
           `⏱️ [TIME'S UP] ${player.name} did not decide on ${tile.name} in time (Passed).`,
           "warning",
@@ -2794,6 +2823,6 @@ export class MonopolyUI {
     if (this.closeModalCrossBtn) this.closeModalCrossBtn.style.display = "";
     this.isInspectModal = false;
     this.modalOverlay.classList.remove("active");
-    if (this.modalCard) this.modalCard.classList.remove("naked-modal");
+    if (this.modalCard) this.modalCard.classList.remove("naked-modal", "setup-modal");
   }
 }
