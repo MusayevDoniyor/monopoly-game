@@ -17,6 +17,29 @@ const escapeHtml = (value) => String(value ?? "")
   .replace(/\"/g, "&quot;")
   .replace(/'/g, "&#039;");
 
+const CLASSIC_RAILROAD_ARTWORK = Object.freeze({
+  "Reading Railroad": {
+    src: "images/reading-railroad.webp",
+    tileSrc: "images/reading-railroad-tile.webp",
+    alt: "Vintage engraved steam locomotive for Reading Railroad",
+  },
+  "Pennsylvania Railroad": {
+    src: "images/pennsylvania-railroad.webp",
+    tileSrc: "images/pennsylvania-railroad-tile.webp",
+    alt: "Vintage engraved steam locomotive at a railway station for Pennsylvania Railroad",
+  },
+  "B. & O. Railroad": {
+    src: "images/bo-railroad.webp",
+    tileSrc: "images/bo-railroad-tile.webp",
+    alt: "Vintage engraved steam train crossing a stone railway bridge for B. & O. Railroad",
+  },
+  "Short Line": {
+    src: "images/short-line-railroad.webp",
+    tileSrc: "images/short-line-railroad-tile.webp",
+    alt: "Vintage engraved short-line steam train at a rural station",
+  },
+});
+
 export class MonopolyUI {
   constructor(engine) {
     this.engine = engine;
@@ -373,6 +396,7 @@ export class MonopolyUI {
 
   renderBoard() {
     const total = this.engine.getBoardLength();
+    const isClassicBoard = total === 40;
     this.boardEl.className = `board-container ${total === 36 ? "grid-10" : "grid-11"}`;
 
     if (this.editionTagEl) {
@@ -471,6 +495,20 @@ export class MonopolyUI {
           <div class="tile-content event-tile ${eventClass}">
             <div class="tile-name event-tile-name">${tile.name}</div>
             <div class="tile-subtext event-tile-subtext">${tile.subtext || ""}</div>
+          </div>
+        `;
+      } else if (tile.type === "railroad") {
+        const railroadArtwork = isClassicBoard
+          ? CLASSIC_RAILROAD_ARTWORK[tile.name]
+          : null;
+        const railroadVisual = railroadArtwork
+          ? `<img class="tile-railroad-art" src="${railroadArtwork.tileSrc}" alt="" decoding="async">`
+          : `<div class="tile-icon-svg">${getIcon(tile.iconKey || "PLANE")}</div>`;
+        innerHTML += `
+          <div class="tile-content tile-railroad-content">
+            ${railroadVisual}
+            <div class="tile-name">${tile.name}</div>
+            ${tile.price ? `<div class="tile-price">$${tile.price}</div>` : ""}
           </div>
         `;
       } else {
@@ -1044,20 +1082,7 @@ export class MonopolyUI {
         : [bRent, bRent + sRent, bRent + sRent * 2, bRent + sRent * 3];
       const stationLabel = isClassicBoard ? "Railroads" : "Airports / Stations";
       const railroadArtwork = isClassicBoard
-        ? {
-            "Reading Railroad": {
-              src: "images/reading-railroad.webp",
-              alt: "Vintage engraved steam locomotive for Reading Railroad",
-            },
-            "Pennsylvania Railroad": {
-              src: "images/pennsylvania-railroad.webp",
-              alt: "Vintage engraved steam locomotive at a railway station for Pennsylvania Railroad",
-            },
-            "B. & O. Railroad": {
-              src: "images/bo-railroad.webp",
-              alt: "Vintage engraved steam train crossing a stone railway bridge for B. & O. Railroad",
-            },
-          }[tile.name]
+        ? CLASSIC_RAILROAD_ARTWORK[tile.name]
         : null;
       return `
         <div class="deed-card-view${railroadArtwork ? " deed-railroad-card" : ""}">

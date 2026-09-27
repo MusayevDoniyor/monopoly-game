@@ -536,6 +536,28 @@ header {
   transition: transform 0.2s;
 }
 
+.tile-railroad-content {
+  justify-content: space-evenly;
+  gap: 2px;
+  padding: 2px 1px;
+}
+
+.tile-railroad-art {
+  display: block;
+  width: 100%;
+  height: clamp(25px, 4.4vw, 40px);
+  flex: 0 0 auto;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 3px;
+  background: #eee3cb;
+}
+
+.tile-railroad-content .tile-name {
+  font-size: clamp(0.38rem, 0.62vw, 0.55rem);
+  margin: 0;
+}
+
 .tile:hover .tile-icon-svg {
   transform: scale(1.1);
 }
