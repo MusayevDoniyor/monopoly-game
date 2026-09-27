@@ -1109,6 +1109,10 @@ class MonopolyApp {
       if ((targetPos < oldPos || landedOnGo) && !player.inJail) {
         const goReward = gameSettings.goReward || 200;
         player.cash += goReward;
+        if (!player.stats) this.engine.initPlayerStats(player);
+        player.stats.salaryCollected += goReward;
+        player.stats.lapsCompleted += 1;
+        player.stats.peakCash = Math.max(player.stats.peakCash, player.cash);
         this.engine.log(
           `[START] ${player.name} passed START and collected $${goReward}!`,
           "success",

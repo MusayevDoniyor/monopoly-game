@@ -576,7 +576,7 @@ export class MonopolyUI {
           <div class="tile-content">
             <div class="tile-icon-svg">${iconSvg}</div>
             <div class="tile-name">${tile.name}</div>
-            ${tile.price ? `<div class="tile-price">$${tile.price}</div>` : ""}
+            ${tile.price && !tile.amount ? `<div class="tile-price">$${tile.price}</div>` : ""}
             ${tile.amount ? `<div class="tile-price">PAY $${tile.amount}</div>` : ""}
             ${tile.subtext && !tile.amount ? `<div class="tile-subtext">${tile.subtext}</div>` : ""}
           </div>
@@ -2997,8 +2997,11 @@ export class MonopolyUI {
   }
 
   showGameOverModal(winner) {
-    if (this.modalCard) this.modalCard.classList.remove("naked-modal");
-    this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon("TROPHY")}</span> <span>VICTORY & CHAMPION!</span>`;
+    if (this.modalCard) {
+      this.modalCard.classList.remove("naked-modal", "setup-modal", "property-management-modal", "rules-modal");
+      this.modalCard.classList.add("game-over-modal-card");
+    }
+    this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon("TROPHY")}</span> <span>MATCH COMPLETE</span>`;
 
     // Confetti rain bursts synchronized with victory-fanfare.mp3 (6.72s)
     particles.burstConfetti();
@@ -3009,65 +3012,357 @@ export class MonopolyUI {
       clearInterval(confettiInterval);
     }, 6720);
 
-    const winnerName = winner ? winner.name : "Champion";
-    const winnerColor = winner ? winner.color : "#d4af37";
-    const winnerCash = winner ? winner.cash : 0;
-    const propsOwned = winner
-      ? this.engine.getPlayerProperties(winner.id).length
-      : 0;
-    const nw = winner ? this.engine.getPlayerNetWorth(winner.id) : null;
-    const winnerNetWorth = nw ? nw.total : winnerCash;
+    const summary = this.engine.getMatchSummary();
+    const st = summary.standings;
+    const winnerEntry = st.find((s) => s.isWinner) || st[0];
+    const winnerName = winnerEntry ? winnerEntry.name : "Champion";
+    const winnerColor = winnerEntry ? winnerEntry.color : "#d4af37";
 
+    // ── Rank Badges ──
+    const rankBadge = (rank) => {
+      if (rank === 1) return `<span class="go-rank go-rank-gold">🥇</span>`;
+      if (rank === 2) return `<span class="go-rank go-rank-silver">🥈</span>`;
+      if (rank === 3) return `<span class="go-rank go-rank-bronze">🥉</span>`;
+      return `<span class="go-rank">#${rank}</span>`;
+    };
+
+    // ── Helper: stat card ──
+    const statCard = (label, value, color = "#e2e8f0", icon = "") => `
+      <div class="go-stat-card">
+        ${icon ? `<div class="go-stat-icon">${icon}</div>` : ""}
+        <div class="go-stat-value" style="color:${color}">${value}</div>
+        <div class="go-stat-label">${label}</div>
+      </div>`;
+
+    // ════════════════════════════════════════════════════
+    // TAB 1: STANDINGS
+    // ════════════════════════════════════════════════════
+    const standingsRows = st
+      .map(
+        (p) => `
+      <tr class="${p.isWinner ? "go-winner-row" : ""} ${p.bankrupt ? "go-bankrupt-row" : ""}">
+        <td>${rankBadge(p.rank)}</td>
+        <td>
+          <span class="go-player-dot" style="background:${p.color}"></span>
+          <span class="go-player-name">${escapeHtml(p.name)}</span>
+          ${p.isAi ? '<span class="go-ai-badge">AI</span>' : ""}
+          ${p.isWinner ? '<span class="go-winner-badge">CHAMPION</span>' : ""}
+          ${p.bankrupt ? '<span class="go-bankrupt-badge">BANKRUPT</span>' : ""}
+        </td>
+        <td class="go-td-mono">$${p.netWorth.toLocaleString()}</td>
+        <td class="go-td-mono">$${p.finalCash.toLocaleString()}</td>
+        <td class="go-td-mono">${p.propertiesCount}</td>
+      </tr>`,
+      )
+      .join("");
+
+    const tab1 = `
+      <div class="go-tab-content" id="goTabStandings">
+        <div class="go-champion-banner">
+          <div class="go-trophy-glow">🏆</div>
+          <div class="go-champion-title">MONOPOLY CHAMPION</div>
+          <div class="go-champion-name" style="color:${winnerColor}">${escapeHtml(winnerName)}</div>
+          <div class="go-champion-subtitle">All opponents eliminated — Total economic domination!</div>
+        </div>
+
+        <div class="go-meta-bar">
+          ${statCard("Duration", summary.durationFormatted, "#fbbf24", "⏱️")}
+          ${statCard("Rounds", summary.totalRounds, "#60a5fa", "🔄")}
+          ${statCard("Turns", summary.totalTurns, "#a78bfa", "🎲")}
+        </div>
+
+        <div class="go-standings-table-wrap">
+          <table class="go-standings-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Net Worth</th>
+                <th>Cash</th>
+                <th>Props</th>
+              </tr>
+            </thead>
+            <tbody>${standingsRows}</tbody>
+          </table>
+        </div>
+
+        ${
+          summary.globalCrownJewel
+            ? `<div class="go-crown-jewel">
+                <span>👑</span>
+                <span><strong>Crown Jewel:</strong> ${escapeHtml(summary.globalCrownJewel.name)} — earned $${summary.globalCrownJewel.rentCollected.toLocaleString()} in rent for ${escapeHtml(summary.globalCrownJewel.ownerName)}</span>
+              </div>`
+            : ""
+        }
+      </div>`;
+
+    // ════════════════════════════════════════════════════
+    // TAB 2: ANALYTICS
+    // ════════════════════════════════════════════════════
+    const analyticsPlayerChips = st
+      .map(
+        (p, i) => `
+      <button class="go-analytics-chip ${i === 0 ? "active" : ""}" data-player-idx="${i}">
+        <span class="go-player-dot" style="background:${p.color}"></span>
+        ${escapeHtml(p.name)}
+      </button>`,
+      )
+      .join("");
+
+    const analyticsContents = st
+      .map((p, i) => {
+        const s = p.stats;
+        const totalIncome =
+          s.rentCollected + s.salaryCollected + s.cardEarnings;
+        const totalExpenses =
+          s.rentPaid +
+          s.taxesPaid +
+          s.cardPenalties +
+          s.buildingSpend +
+          s.propertySpend +
+          s.jailBailPaid;
+        const netProfit = totalIncome - totalExpenses;
+        const doublesPercent =
+          s.diceRolls > 0
+            ? ((s.doublesRolled / s.diceRolls) * 100).toFixed(1)
+            : "0.0";
+
+        return `
+        <div class="go-analytics-panel ${i === 0 ? "active" : ""}" id="goAnalyticsPanel${i}">
+          <div class="go-section-title">💰 Financial Flow</div>
+          <div class="go-analytics-grid">
+            ${statCard("Rent Collected", "$" + s.rentCollected.toLocaleString(), "#34d399")}
+            ${statCard("Rent Paid", "$" + s.rentPaid.toLocaleString(), "#f87171")}
+            ${statCard("GO Salary", "$" + s.salaryCollected.toLocaleString(), "#fbbf24")}
+            ${statCard("Taxes Paid", "$" + s.taxesPaid.toLocaleString(), "#fb923c")}
+            ${statCard("Card Earnings", "$" + s.cardEarnings.toLocaleString(), "#4ade80")}
+            ${statCard("Card Penalties", "$" + s.cardPenalties.toLocaleString(), "#f472b6")}
+          </div>
+
+          <div class="go-profit-bar ${netProfit >= 0 ? "positive" : "negative"}">
+            <span>Net Profit</span>
+            <strong>${netProfit >= 0 ? "+" : ""}$${netProfit.toLocaleString()}</strong>
+          </div>
+
+          <div class="go-section-title">🏗️ Construction Portfolio</div>
+          <div class="go-analytics-grid">
+            ${statCard("Houses Built", s.housesBuilt, "#60a5fa")}
+            ${statCard("Hotels Built", s.hotelsBuilt, "#c084fc")}
+            ${statCard("Building Spend", "$" + s.buildingSpend.toLocaleString(), "#fb923c")}
+            ${statCard("Properties Bought", s.propertiesBought, "#2dd4bf")}
+            ${statCard("Property Spend", "$" + s.propertySpend.toLocaleString(), "#fbbf24")}
+            ${statCard("Crown Jewel", p.crownJewelName || "None", "#d4af37")}
+          </div>
+
+          <div class="go-section-title">🎲 Activity Metrics</div>
+          <div class="go-analytics-grid">
+            ${statCard("Dice Rolls", s.diceRolls, "#818cf8")}
+            ${statCard("Doubles Rate", doublesPercent + "%", "#a78bfa")}
+            ${statCard("Laps Completed", s.lapsCompleted, "#38bdf8")}
+            ${statCard("Jail Visits", s.jailVisits, "#94a3b8")}
+            ${statCard("Bail Paid", "$" + s.jailBailPaid.toLocaleString(), "#f59e0b")}
+            ${statCard("Peak Net Worth", "$" + (s.peakNetWorth || 0).toLocaleString(), "#d4af37")}
+          </div>
+
+          <div class="go-totals-bar">
+            <div><span>Total Income:</span> <strong style="color:#34d399">$${totalIncome.toLocaleString()}</strong></div>
+            <div><span>Total Expenses:</span> <strong style="color:#f87171">$${totalExpenses.toLocaleString()}</strong></div>
+            <div><span>Peak Cash:</span> <strong style="color:#fbbf24">$${(s.peakCash || 0).toLocaleString()}</strong></div>
+          </div>
+        </div>`;
+      })
+      .join("");
+
+    const tab2 = `
+      <div class="go-tab-content" id="goTabAnalytics" style="display:none">
+        <div class="go-analytics-chips">${analyticsPlayerChips}</div>
+        ${analyticsContents}
+      </div>`;
+
+    // ════════════════════════════════════════════════════
+    // TAB 3: CERTIFICATE
+    // ════════════════════════════════════════════════════
+    const certPlayerChips = st
+      .map(
+        (p, i) => `
+      <button class="go-cert-chip ${i === 0 ? "active" : ""}" data-cert-idx="${i}">
+        <span class="go-player-dot" style="background:${p.color}"></span>
+        ${escapeHtml(p.name)}
+      </button>`,
+      )
+      .join("");
+
+    const today = new Date();
+    const dateStr = today.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const certificates = st
+      .map((p, i) => {
+        const s = p.stats;
+        return `
+        <div class="go-cert-panel ${i === 0 ? "active" : ""}" id="goCertPanel${i}">
+          <div class="tycoon-certificate" id="tycoonCert${i}">
+            <div class="cert-corner cert-corner-tl"></div>
+            <div class="cert-corner cert-corner-tr"></div>
+            <div class="cert-corner cert-corner-bl"></div>
+            <div class="cert-corner cert-corner-br"></div>
+
+            <div class="cert-header">CERTIFICATE OF ACHIEVEMENT</div>
+            <div class="cert-divider">✦ ✦ ✦</div>
+
+            <div class="cert-body">
+              <div class="cert-presented">This is to certify that</div>
+              <div class="cert-player-name" style="color:${p.color}">${escapeHtml(p.name)}</div>
+              <div class="cert-title-banner">
+                <span class="cert-grade">${p.grade}</span>
+                <span class="cert-title-text">${p.title}</span>
+              </div>
+
+              <div class="cert-stats-grid">
+                <div class="cert-stat"><span class="cert-stat-val">$${p.netWorth.toLocaleString()}</span><span class="cert-stat-lbl">Net Worth</span></div>
+                <div class="cert-stat"><span class="cert-stat-val">${p.propertiesCount}</span><span class="cert-stat-lbl">Properties</span></div>
+                <div class="cert-stat"><span class="cert-stat-val">${s.housesBuilt + s.hotelsBuilt}</span><span class="cert-stat-lbl">Buildings</span></div>
+                <div class="cert-stat"><span class="cert-stat-val">${s.lapsCompleted}</span><span class="cert-stat-lbl">Laps</span></div>
+              </div>
+
+              <div class="cert-highlight">
+                <span>🏅 Finished Rank #${p.rank}</span>
+                <span>•</span>
+                <span>${summary.durationFormatted} Match</span>
+                <span>•</span>
+                <span>${s.diceRolls} Dice Rolls</span>
+              </div>
+            </div>
+
+            <div class="cert-footer">
+              <div class="cert-seal">
+                <div class="cert-seal-inner">
+                  <div class="cert-seal-icon">🏛️</div>
+                  <div class="cert-seal-text">OFFICIAL</div>
+                </div>
+              </div>
+              <div class="cert-date">
+                <div class="cert-date-label">Issued</div>
+                <div class="cert-date-value">${dateStr}</div>
+              </div>
+              <div class="cert-signature">
+                <div class="cert-sig-line"></div>
+                <div class="cert-sig-label">Monopoly Master™</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      })
+      .join("");
+
+    const tab3 = `
+      <div class="go-tab-content" id="goTabCertificate" style="display:none">
+        <div class="go-cert-chips">${certPlayerChips}</div>
+        ${certificates}
+        <button class="go-print-btn" id="goPrintCertBtn">
+          🖨️ Print Certificate
+        </button>
+      </div>`;
+
+    // ════════════════════════════════════════════════════
+    // COMPOSE MODAL
+    // ════════════════════════════════════════════════════
     this.modalBody.innerHTML = `
-      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding: 12px 0;">
-        <div style="font-size: 3.5rem; filter: drop-shadow(0 0 20px rgba(212,175,55,0.7));">🏆</div>
-        <div>
-          <div style="font-size: 1.6rem; font-weight: 900; font-family: var(--font-display); color: var(--gold); letter-spacing: 1px;">
-            MONOPOLY CHAMPION!
-          </div>
-          <div style="font-size: 1.25rem; font-weight: 800; color: ${winnerColor}; margin-top: 6px;">
-            ${winnerName}
-          </div>
-          <div style="font-size: 0.9rem; color: #94a3b8; margin-top: 4px;">
-            All opponents have gone bankrupt! Complete economic domination!
-          </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; max-width: 380px; margin-top: 8px;">
-          <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border: 1px solid rgba(212,175,55,0.3);">
-            <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">Net Worth</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: var(--gold); font-family: var(--font-mono);">$${winnerNetWorth.toLocaleString()}</div>
-          </div>
-          <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">Final Cash</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: #34d399; font-family: var(--font-mono);">$${winnerCash.toLocaleString()}</div>
-          </div>
-          <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">Properties</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: #60a5fa; font-family: var(--font-mono);">${propsOwned}</div>
-          </div>
-        </div>
+      <div class="go-tabs-bar">
+        <button class="go-tab-btn active" data-tab="goTabStandings">🏆 Standings</button>
+        <button class="go-tab-btn" data-tab="goTabAnalytics">📊 Analytics</button>
+        <button class="go-tab-btn" data-tab="goTabCertificate">📜 Certificate</button>
       </div>
+      ${tab1}${tab2}${tab3}
     `;
 
     this.modalFooter.innerHTML = `
       <div style="display: flex; flex-direction: column; gap: 9px; width: 100%;">
         <button class="btn-primary" id="downloadGameOverMatchLogBtn" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #0284c7, #2563eb); border: 1px solid rgba(56, 189, 248, 0.45); box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);">
           <span class="icon-wrap" style="width: 18px; height: 18px;">${getIcon("DOWNLOAD")}</span>
-          <span>Download Complete Match Log (.JSON)</span>
+          <span>Download Match Log (.JSON)</span>
         </button>
         <button class="btn-primary" id="restartNewGameBtn" style="width: 100%; justify-content: center;">
           <span class="icon-wrap" style="width: 18px; height: 18px;">${getIcon("REFRESH")}</span>
-          <span>Start New Game (Play Again)</span>
+          <span>Start New Game</span>
         </button>
       </div>
     `;
 
+    // ── Tab Switching ──
+    this.modalBody.querySelectorAll(".go-tab-btn").forEach((btn) => {
+      btn.onclick = () => {
+        this.modalBody
+          .querySelectorAll(".go-tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        this.modalBody
+          .querySelectorAll(".go-tab-content")
+          .forEach((c) => (c.style.display = "none"));
+        const target = document.getElementById(btn.dataset.tab);
+        if (target) target.style.display = "block";
+      };
+    });
+
+    // ── Analytics Player Chips ──
+    this.modalBody.querySelectorAll(".go-analytics-chip").forEach((chip) => {
+      chip.onclick = () => {
+        this.modalBody
+          .querySelectorAll(".go-analytics-chip")
+          .forEach((c) => c.classList.remove("active"));
+        chip.classList.add("active");
+        this.modalBody
+          .querySelectorAll(".go-analytics-panel")
+          .forEach((p) => p.classList.remove("active"));
+        const panel = document.getElementById(
+          `goAnalyticsPanel${chip.dataset.playerIdx}`,
+        );
+        if (panel) panel.classList.add("active");
+      };
+    });
+
+    // ── Certificate Player Chips ──
+    this.modalBody.querySelectorAll(".go-cert-chip").forEach((chip) => {
+      chip.onclick = () => {
+        this.modalBody
+          .querySelectorAll(".go-cert-chip")
+          .forEach((c) => c.classList.remove("active"));
+        chip.classList.add("active");
+        this.modalBody
+          .querySelectorAll(".go-cert-panel")
+          .forEach((p) => p.classList.remove("active"));
+        const panel = document.getElementById(
+          `goCertPanel${chip.dataset.certIdx}`,
+        );
+        if (panel) panel.classList.add("active");
+      };
+    });
+
+    // ── Print Certificate ──
+    const printBtn = document.getElementById("goPrintCertBtn");
+    if (printBtn) {
+      printBtn.onclick = () => {
+        const activeCert = this.modalBody.querySelector(
+          ".go-cert-panel.active .tycoon-certificate",
+        );
+        if (activeCert) {
+          activeCert.classList.add("printing");
+          window.print();
+          setTimeout(() => activeCert.classList.remove("printing"), 500);
+        }
+      };
+    }
+
+    // ── Footer Buttons ──
     document.getElementById("downloadGameOverMatchLogBtn").onclick = () => {
       this.downloadMatchLogJSON();
     };
 
     document.getElementById("restartNewGameBtn").onclick = () => {
+      if (this.modalCard) this.modalCard.classList.remove("game-over-modal-card");
       this.closeModal();
       if (this.app) {
         this.app.showSetupModal();

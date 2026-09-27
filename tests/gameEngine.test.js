@@ -401,5 +401,35 @@ test('bank starts with 18 hotels (1.5x scaled from classic 12) to accommodate lu
   assert.equal(engine.bank.hotels, 18);
 });
 
+test('player stats track financial metrics and getMatchSummary outputs standings with certificate grades', () => {
+  const engine = createEngine('classic');
+  const p1 = engine.players[0];
+  const p2 = engine.players[1];
+
+  assert.ok(p1.stats, 'Player stats initialized');
+  assert.equal(p1.stats.rentCollected, 0);
+
+  // Simulate rent transaction
+  p1.stats.rentCollected += 350;
+  p1.stats.rentPerProperty[1] = 350;
+  p2.stats.rentPaid += 350;
+  p1.stats.housesBuilt += 3;
+  p1.stats.buildingSpend += 150;
+
+  engine.winner = p1;
+  const summary = engine.getMatchSummary();
+
+  assert.ok(summary.durationFormatted, 'Duration formatted exists');
+  assert.equal(summary.standings.length, 2);
+  assert.equal(summary.standings[0].id, p1.id);
+  assert.equal(summary.standings[0].grade, 'S+');
+  assert.equal(summary.standings[0].title, 'Grand Monopoly Champion');
+  assert.equal(summary.standings[0].stats.rentCollected, 350);
+  assert.equal(summary.standings[0].stats.housesBuilt, 3);
+  assert.equal(summary.standings[1].stats.rentPaid, 350);
+  assert.ok(summary.globalCrownJewel, 'Global crown jewel detected');
+  assert.equal(summary.globalCrownJewel.rentCollected, 350);
+});
+
 
 

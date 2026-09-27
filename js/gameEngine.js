@@ -66,6 +66,7 @@ export class GameEngine {
     this.winner = null;
     this.lastGlobalRollWasDoubles = false;
     this.matchStartTime = Date.now();
+    this.bankruptcyCounter = 0;
 
     BOARD_TILES.forEach((tile) => {
       this.board[tile.id] = {
@@ -74,6 +75,33 @@ export class GameEngine {
         mortgaged: false,
       };
     });
+  }
+
+  initPlayerStats(player) {
+    if (!player) return null;
+    player.stats = {
+      rentPaid: 0,
+      rentCollected: 0,
+      taxesPaid: 0,
+      salaryCollected: 0,
+      cardEarnings: 0,
+      cardPenalties: 0,
+      housesBuilt: 0,
+      hotelsBuilt: 0,
+      buildingSpend: 0,
+      propertiesBought: 0,
+      propertySpend: 0,
+      jailVisits: 0,
+      jailBailPaid: 0,
+      diceRolls: 0,
+      doublesRolled: 0,
+      lapsCompleted: 0,
+      bankruptciesCaused: 0,
+      peakCash: player.cash || 1500,
+      peakNetWorth: player.cash || 1500,
+      rentPerProperty: {},
+    };
+    return player.stats;
   }
 
   getMatchDurationSeconds() {
@@ -95,6 +123,7 @@ export class GameEngine {
     this.logs = [];
     this.matchHistory = [];
     this._logCounter = 0;
+    this.bankruptcyCounter = 0;
     const startingCash = gameSettings.startingCash || 1500;
     this.players = playerConfigs.map((cfg, index) => {
       // Player names are rendered in several HTML templates, including the
@@ -108,7 +137,7 @@ export class GameEngine {
           .trim()
           .slice(0, 24) || `Player ${index + 1}`;
 
-      return {
+      const p = {
         id: index,
         name: safeName,
         token: cfg.token || "TOP_HAT",
@@ -121,6 +150,8 @@ export class GameEngine {
         getOutOfJailCards: 0,
         bankrupt: false,
       };
+      this.initPlayerStats(p);
+      return p;
     });
     this.log(
       `Game started with ${this.players.length} players! Each received $${startingCash}.`,
@@ -211,6 +242,13 @@ export class GameEngine {
       this.currentTurn.doublesCount++;
     } else {
       this.currentTurn.doublesCount = 0;
+    }
+
+    const activePlayer = this.getCurrentPlayer();
+    if (activePlayer) {
+      if (!activePlayer.stats) this.initPlayerStats(activePlayer);
+      activePlayer.stats.diceRolls += 1;
+      if (isDoubles) activePlayer.stats.doublesRolled += 1;
     }
 
     return { d1, d2, sum: d1 + d2, isDoubles };
@@ -540,10 +578,13 @@ export class GameEngine {
     const player = this.players[playerId];
 
     player.cash -= tile.houseCost;
+    if (!player.stats) this.initPlayerStats(player);
+    player.stats.buildingSpend += tile.houseCost;
 
     if (state.houses < 4) {
       this.bank.houses -= 1;
       state.houses += 1;
+      player.stats.housesBuilt += 1;
       this.log(
         `${player.name} built a new house on ${tile.name} ($${tile.houseCost}). Current: ${state.houses}/4 houses.`,
         "success",
@@ -552,6 +593,7 @@ export class GameEngine {
       this.bank.houses += 4;
       this.bank.hotels -= 1;
       state.houses = 5;
+      player.stats.hotelsBuilt += 1;
       this.log(
         `${player.name} upgraded ${tile.name} to 1-HOTEL (paid $${tile.houseCost}, returned 4 houses)!`,
         "success",
@@ -559,6 +601,7 @@ export class GameEngine {
     } else if (state.houses === 5) {
       this.bank.hotels -= 1;
       state.houses = 6;
+      player.stats.hotelsBuilt += 1;
       this.log(
         `${player.name} purchased a 2nd HOTEL (Grand Hotel) on ${tile.name} for $${tile.houseCost}!`,
         "success",
@@ -677,6 +720,8 @@ export class GameEngine {
   }
 
   sendToJail(player) {
+    if (!player.stats) this.initPlayerStats(player);
+    player.stats.jailVisits += 1;
     player.position = this.getJailTileId();
     player.inJail = true;
     player.jailTurns = 0;
@@ -695,6 +740,8 @@ export class GameEngine {
     const bail = gameSettings.jailBailFee || 150;
     if (!player.inJail || player.cash < bail) return false;
     player.cash -= bail;
+    if (!player.stats) this.initPlayerStats(player);
+    player.stats.jailBailPaid += bail;
     player.inJail = false;
     player.jailTurns = 0;
     this.log(
@@ -732,6 +779,9 @@ export class GameEngine {
       case "CASH":
         if (action.amount >= 0) {
           player.cash += action.amount;
+          if (!player.stats) this.initPlayerStats(player);
+          player.stats.cardEarnings += action.amount;
+          player.stats.peakCash = Math.max(player.stats.peakCash, player.cash);
           sounds.playCash(player);
         } else {
           const penalty = Math.abs(action.amount);
@@ -741,6 +791,9 @@ export class GameEngine {
             null,
             card.title || "penalty fee",
           );
+          if (!player.stats) this.initPlayerStats(player);
+          player.stats.cardPenalties +=
+            res.amountPaid !== undefined ? res.amountPaid : penalty;
           if (res.success) {
             sounds.playPay(player);
           }
@@ -757,6 +810,10 @@ export class GameEngine {
         if (action.collectGo && target < oldPos) {
           const goRew = gameSettings.goReward || 200;
           player.cash += goRew;
+          if (!player.stats) this.initPlayerStats(player);
+          player.stats.salaryCollected += goRew;
+          player.stats.lapsCompleted += 1;
+          player.stats.peakCash = Math.max(player.stats.peakCash, player.cash);
           this.log(
             `${player.name} collected $${goRew} for passing START!`,
             "success",
@@ -784,6 +841,10 @@ export class GameEngine {
           nextRR = railroads[0];
           const goRew = gameSettings.goReward || 200;
           player.cash += goRew;
+          if (!player.stats) this.initPlayerStats(player);
+          player.stats.salaryCollected += goRew;
+          player.stats.lapsCompleted += 1;
+          player.stats.peakCash = Math.max(player.stats.peakCash, player.cash);
           this.log(
             `${player.name} passed START and collected $${goRew}.`,
             "success",
@@ -820,8 +881,16 @@ export class GameEngine {
           null,
           card.title || "payment to players",
         );
+        if (!player.stats) this.initPlayerStats(player);
+        player.stats.cardPenalties +=
+          res.amountPaid !== undefined ? res.amountPaid : totalCost;
         if (res.success) {
-          others.forEach((p) => (p.cash += action.amount));
+          others.forEach((p) => {
+            p.cash += action.amount;
+            if (!p.stats) this.initPlayerStats(p);
+            p.stats.cardEarnings += action.amount;
+            p.stats.peakCash = Math.max(p.stats.peakCash, p.cash);
+          });
           sounds.playPay(player);
         }
         if (onComplete) onComplete();
@@ -833,13 +902,26 @@ export class GameEngine {
           (p) => p.id !== player.id,
         );
         others.forEach((p) => {
-          this.processPayment(
+          const res = this.processPayment(
             p,
             action.amount,
             player,
             card.title || "collection fee",
           );
+          const collected =
+            res.amountPaid !== undefined
+              ? res.amountPaid
+              : res.success
+                ? action.amount
+                : 0;
+          if (!p.stats) this.initPlayerStats(p);
+          p.stats.cardPenalties += collected;
+          if (!player.stats) this.initPlayerStats(player);
+          player.stats.cardEarnings += collected;
         });
+        if (player.stats) {
+          player.stats.peakCash = Math.max(player.stats.peakCash, player.cash);
+        }
         sounds.playCash(player);
         if (onComplete) onComplete();
         break;
@@ -864,6 +946,9 @@ export class GameEngine {
           null,
           "property repairs",
         );
+        if (!player.stats) this.initPlayerStats(player);
+        player.stats.buildingSpend +=
+          res.amountPaid !== undefined ? res.amountPaid : cost;
         if (res.success) {
           this.log(
             `${player.name} paid $${cost} for repairs (${housesCount} houses, ${hotelsCount} hotels).`,
@@ -927,6 +1012,9 @@ export class GameEngine {
 
     if (tile.type === "tax") {
       const res = this.processPayment(player, tile.amount, null, tile.name);
+      if (!player.stats) this.initPlayerStats(player);
+      player.stats.taxesPaid +=
+        res.amountPaid !== undefined ? res.amountPaid : tile.amount;
       if (res.success) {
         this.log(
           `${player.name} paid $${tile.amount} in ${tile.name}.`,
@@ -971,6 +1059,9 @@ export class GameEngine {
             if (player.cash >= tile.price) {
               player.cash -= tile.price;
               state.owner = player.id;
+              if (!player.stats) this.initPlayerStats(player);
+              player.stats.propertiesBought += 1;
+              player.stats.propertySpend += tile.price;
               this.log(
                 `${player.name} purchased ${tile.name} for $${tile.price}!`,
                 "success",
@@ -1007,6 +1098,22 @@ export class GameEngine {
           owner,
           `rent on ${tile.name}`,
         );
+        const actualPaid =
+          res.amountPaid !== undefined
+            ? res.amountPaid
+            : res.success
+              ? rent
+              : 0;
+        if (actualPaid > 0) {
+          if (!player.stats) this.initPlayerStats(player);
+          if (!owner.stats) this.initPlayerStats(owner);
+          player.stats.rentPaid += actualPaid;
+          owner.stats.rentCollected += actualPaid;
+          owner.stats.rentPerProperty = owner.stats.rentPerProperty || {};
+          owner.stats.rentPerProperty[tile.id] =
+            (owner.stats.rentPerProperty[tile.id] || 0) + actualPaid;
+          owner.stats.peakCash = Math.max(owner.stats.peakCash, owner.cash);
+        }
         if (res.success) {
           const rentBreakdown = options.doubleRent
             ? ` (double-rent card: $${baseRent} × 2)`
@@ -1187,8 +1294,14 @@ export class GameEngine {
   declareBankruptcy(player, creditor = null) {
     if (player.bankrupt) return;
     player.bankrupt = true;
+    this.bankruptcyCounter = (this.bankruptcyCounter || 0) + 1;
+    player.bankruptcyOrder = this.bankruptcyCounter;
+    player.bankruptcyRound = this.roundCount;
 
     if (creditor && !creditor.bankrupt && creditor.id !== player.id) {
+      if (!creditor.stats) this.initPlayerStats(creditor);
+      creditor.stats.bankruptciesCaused =
+        (creditor.stats.bankruptciesCaused || 0) + 1;
       this.log(
         `[BANKRUPT] ${player.name} went bankrupt to ${creditor.name} and is eliminated!`,
         "danger",
@@ -1393,6 +1506,7 @@ export class GameEngine {
             isHotel: prop.houses >= 5,
           })),
           monopolies: this.getPlayerMonopolies(p.id),
+          stats: p.stats || this.initPlayerStats(p),
         };
       });
 
@@ -1433,6 +1547,120 @@ export class GameEngine {
         type: item.type,
         message: item.text,
       })),
+    };
+  }
+
+  getMatchSummary() {
+    const durationSec = this.getMatchDurationSeconds();
+    const mins = Math.floor(durationSec / 60);
+    const secs = durationSec % 60;
+    const durationFormatted = `${mins}m ${secs.toString().padStart(2, "0")}s`;
+
+    this.players.forEach((p) => {
+      if (!p.stats) this.initPlayerStats(p);
+      const nw = this.getPlayerNetWorth(p.id);
+      p.stats.peakNetWorth = Math.max(p.stats.peakNetWorth || 0, nw.total);
+      p.stats.peakCash = Math.max(p.stats.peakCash || 0, p.cash);
+    });
+
+    const standings = [...this.players]
+      .sort((a, b) => {
+        if (this.winner && a.id === this.winner.id) return -1;
+        if (this.winner && b.id === this.winner.id) return 1;
+        if (!a.bankrupt && b.bankrupt) return -1;
+        if (a.bankrupt && !b.bankrupt) return 1;
+        if (!a.bankrupt && !b.bankrupt) {
+          return (
+            this.getPlayerNetWorth(b.id).total -
+            this.getPlayerNetWorth(a.id).total
+          );
+        }
+        return (b.bankruptcyOrder || 0) - (a.bankruptcyOrder || 0);
+      })
+      .map((p, idx) => {
+        const nw = this.getPlayerNetWorth(p.id);
+        const props = this.getPlayerProperties(p.id);
+        const isWinner = this.winner ? p.id === this.winner.id : false;
+
+        let title = "Real Estate Investor";
+        let grade = "A";
+        if (isWinner) {
+          title = "Grand Monopoly Champion";
+          grade = "S+";
+        } else if (idx === 1 && !p.bankrupt) {
+          title = "Distinguished Vice Tycoon";
+          grade = "S";
+        } else if (!p.bankrupt) {
+          title = "Prominent Capitalist";
+          grade = "A+";
+        } else {
+          title = "Fallen Enterprise Pioneer";
+          grade = "B";
+        }
+
+        let bestProp = null;
+        let maxRent = 0;
+        Object.entries(p.stats.rentPerProperty || {}).forEach(
+          ([tId, rentAmt]) => {
+            if (rentAmt > maxRent) {
+              maxRent = rentAmt;
+              bestProp = BOARD_TILES[tId]?.name || `Tile #${tId}`;
+            }
+          },
+        );
+
+        return {
+          rank: idx + 1,
+          id: p.id,
+          name: p.name,
+          token: p.token,
+          color: p.color,
+          isAi: p.isAi,
+          isWinner,
+          title,
+          grade,
+          bankrupt: p.bankrupt,
+          finalCash: p.cash,
+          netWorth: nw.total,
+          netWorthBreakdown: nw,
+          propertiesCount: props.length,
+          properties: props,
+          monopolies: this.getPlayerMonopolies(p.id),
+          crownJewel: bestProp
+            ? `${bestProp} ($${maxRent.toLocaleString()})`
+            : "None",
+          crownJewelName: bestProp,
+          crownJewelRent: maxRent,
+          stats: { ...p.stats },
+        };
+      });
+
+    let globalCrownJewel = null;
+    let globalMaxRent = 0;
+    this.players.forEach((p) => {
+      Object.entries(p.stats?.rentPerProperty || {}).forEach(
+        ([tId, rentAmt]) => {
+          if (rentAmt > globalMaxRent) {
+            globalMaxRent = rentAmt;
+            globalCrownJewel = {
+              tileId: tId,
+              name: BOARD_TILES[tId]?.name || `Tile #${tId}`,
+              rentCollected: rentAmt,
+              ownerName: p.name,
+            };
+          }
+        },
+      );
+    });
+
+    return {
+      durationSec,
+      durationFormatted,
+      totalRounds: this.roundCount,
+      totalTurns: this.turnCount,
+      winner: this.winner,
+      standings,
+      globalCrownJewel,
     };
   }
 }
