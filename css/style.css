@@ -452,8 +452,8 @@ header {
   background:
     linear-gradient(rgba(4, 18, 11, 0.16), rgba(4, 18, 11, 0.28)),
     url("../images/table-bg.webp") center/cover no-repeat;
-  padding: 16px 24px;
-  gap: 22px;
+  padding: 12px 20px;
+  gap: 16px;
   max-width: 1840px;
   margin: 0 auto;
   width: 100%;
@@ -473,12 +473,11 @@ header {
 
 /* Luxurious Casino Felt Table Frame */
 .board-container {
-  /* Reserve room for the header, app padding, and the board's shadow so the
-     full 40-tile frame remains visible on compact desktop windows. */
-  width: min(calc(100dvh - 180px), 87vw, 860px);
-  height: min(calc(100dvh - 180px), 87vw, 860px);
+  /* Generous sizing ensuring tiles have comfortable breathing room while keeping full frame visible */
+  width: min(calc(100dvh - 120px), 90vw, 920px);
+  height: min(calc(100dvh - 120px), 90vw, 920px);
   background: #d8e5d4;
-  border: 10px solid #0d1e15;
+  border: 8px solid #0d1e15;
   box-shadow:
     inset 0 0 24px rgba(0, 0, 0, 0.8),
     0 20px 50px rgba(0, 0, 0, 0.8),
@@ -596,47 +595,51 @@ header {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 3px 2px;
+  padding: 2px 2px;
   width: 100%;
   z-index: 2;
+  gap: 1px;
 }
 
 .tile-country {
-  font-size: 0.52rem;
+  font-size: clamp(0.48rem, 0.65vw, 0.56rem);
   color: #475569;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
+  line-height: 1;
 }
 
 .tile-name {
-  font-size: 0.6rem;
+  font-size: clamp(0.55rem, 0.72vw, 0.64rem);
   font-weight: 900;
-  line-height: 1.1;
+  line-height: 1.12;
   text-transform: uppercase;
   color: #09131d;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .tile-price {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: clamp(0.62rem, 0.75vw, 0.72rem);
   font-weight: 900;
   color: #15803d;
   background: rgba(22, 163, 74, 0.12);
   padding: 1px 4px;
   border-radius: 4px;
+  line-height: 1.1;
 }
 
 .tile-subtext {
-  font-size: 0.55rem;
+  font-size: clamp(0.48rem, 0.6vw, 0.56rem);
   color: #64748b;
   font-weight: 700;
+  line-height: 1.05;
 }
 
 .tile-icon-svg {
-  width: 24px;
-  height: 24px;
+  width: clamp(20px, 2.4vw, 26px);
+  height: clamp(20px, 2.4vw, 26px);
   margin: 1px 0;
   color: #1e293b;
   transition: transform 0.2s;
@@ -1438,10 +1441,10 @@ header {
 
 /* Spacious Side HUD Panel */
 .hud-panel {
-  width: 450px;
+  width: 410px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 }
 
 .panel-card {
@@ -4140,11 +4143,11 @@ header {
     width: 100%;
   }
   .board-container {
-    width: min(94vw, 720px);
-    height: min(94vw, 720px);
+    width: min(96vw, 780px);
+    height: min(96vw, 780px);
   }
   .hud-panel {
-    width: min(94vw, 720px);
+    width: min(96vw, 780px);
   }
   .hud-log-card {
     height: 220px;
