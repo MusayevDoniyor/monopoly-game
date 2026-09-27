@@ -14,6 +14,7 @@ import { particles } from "./particles.js?v=5.1";
 import { achievements } from "./achievements.js?v=5.1";
 import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=5.1";
 import { TurnTimer } from "./turnTimer.js";
+import { initCustomSelects } from "./ui/customSelect.js";
 
 class MonopolyApp {
   constructor() {
@@ -478,6 +479,8 @@ class MonopolyApp {
       <button class="btn-secondary" id="cancelSettingsBtn">Close</button>
     `;
 
+    initCustomSelects(this.ui.modalBody);
+
     document.getElementById("saveSettingsBtn").onclick = () => {
       const newSettings = {
         boardTheme: document.getElementById("settingTheme").value,
@@ -648,6 +651,8 @@ class MonopolyApp {
       <button class="btn-secondary" id="setupViewRulesBtn">How to Play</button>
       <button class="btn-primary setup-start-btn" id="startGameBtn">Start Match <span aria-hidden="true">→</span></button>
     `;
+
+    initCustomSelects(this.ui.modalBody);
 
     document.getElementById("setupViewRulesBtn").onclick = () =>
       this.ui.showRulesModal();

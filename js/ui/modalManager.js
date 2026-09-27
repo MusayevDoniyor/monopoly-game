@@ -7,6 +7,7 @@ import { particles } from "../particles.js?v=5.1";
 import { geminiAdvisor } from "../geminiAdvisor.js?v=5.1";
 import { CLASSIC_RAILROAD_ARTWORK } from "./railroadArtwork.js";
 import { escapeHtml, formatMoney, formatTime } from "../utils.js";
+import { initCustomSelects } from "./customSelect.js";
 
 export class ModalManager extends UIComponent {
   startModalTimer(seconds, onTimeout, statusText = "Auto in") {
@@ -1499,6 +1500,8 @@ export class ModalManager extends UIComponent {
           </div>
         </div>
       `;
+
+      initCustomSelects(this.modalBody);
 
       // Partner selector
       document.getElementById("tradePartnerSelect").onchange = (e) => {

@@ -383,8 +383,9 @@ textarea {
 }
 
 .player-config-row {
-  grid-template-columns: 126px minmax(0, 1fr) 82px 34px;
-  gap: 10px;
+  grid-template-columns: 130px minmax(0, 1fr) 98px 34px;
+  gap: 8px;
+  align-items: center;
 }
 
 .input-text,
