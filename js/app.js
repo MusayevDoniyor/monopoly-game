@@ -884,10 +884,21 @@ class MonopolyApp {
   }
 
   triggerTurnStart() {
+    // Proactively verify solvency for all active players
+    this.engine.players.forEach((p) => {
+      if (!p.bankrupt && p.cash < 0) {
+        this.engine.ensureSolvency(p);
+      }
+    });
+
     this.ui.updateHUD();
     const player = this.engine.getCurrentPlayer();
-    if (!player || this.engine.gameOver) {
+    if (!player || player.bankrupt || this.engine.gameOver) {
       this.stopTurnTimer();
+      if (!this.engine.gameOver && player && player.bankrupt) {
+        this.engine.endTurn();
+        this.triggerTurnStart();
+      }
       return;
     }
 
@@ -931,6 +942,15 @@ class MonopolyApp {
     if (this.isAiTurnRunning) return;
     this.isAiTurnRunning = true;
 
+    if (player.cash < 0) {
+      this.engine.ensureSolvency(player);
+      if (player.bankrupt) {
+        this.isAiTurnRunning = false;
+        this.handleEndTurn();
+        return;
+      }
+    }
+
     const delay = (ms) =>
       new Promise((r) => setTimeout(r, ms / this.gameSpeed));
     await delay(1200);
@@ -970,10 +990,25 @@ class MonopolyApp {
 
   async handleRollDice(isAi = false) {
     const player = this.engine.getCurrentPlayer();
+    if (!player || player.bankrupt) return;
+
+    if (player.cash < 0) {
+      if (player.isAi) {
+        this.engine.ensureSolvency(player);
+        if (player.cash < 0 || player.bankrupt) return;
+      } else {
+        const debtStatus = this.engine.checkBankruptcy(player);
+        if (debtStatus.inDebt) {
+          this.stopTurnTimer();
+          await new Promise((resolve) => {
+            this.ui.showDebtResolutionModal(player, resolve, resolve);
+          });
+          if (player.cash < 0) return;
+        }
+      }
+    }
+
     if (
-      !player ||
-      player.bankrupt ||
-      player.cash < 0 ||
       this.engine.currentTurn.hasRolled ||
       this._isRollingAnimation
     )
@@ -1097,10 +1132,7 @@ class MonopolyApp {
 
       if (player.cash < 0) {
         if (isAi) {
-          this.engine.autoLiquidateForPlayer(player);
-          if (player.cash < 0) {
-            this.engine.declareBankruptcy(player);
-          }
+          this.engine.ensureSolvency(player);
         } else {
           const debtStatus = this.engine.checkBankruptcy(player);
           if (debtStatus.inDebt) {
@@ -1458,10 +1490,7 @@ class MonopolyApp {
         );
         return;
       } else {
-        this.engine.autoLiquidateForPlayer(current);
-        if (current.cash < 0) {
-          this.engine.declareBankruptcy(current);
-        }
+        this.engine.ensureSolvency(current);
       }
     }
 

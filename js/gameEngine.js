@@ -727,11 +727,20 @@ export class GameEngine {
 
     switch (action.type) {
       case "CASH":
-        player.cash += action.amount;
-        if (action.amount > 0) {
+        if (action.amount >= 0) {
+          player.cash += action.amount;
           sounds.playCash(player);
         } else {
-          sounds.playPay(player);
+          const penalty = Math.abs(action.amount);
+          const res = this.processPayment(
+            player,
+            penalty,
+            null,
+            card.title || "penalty fee",
+          );
+          if (res.success) {
+            sounds.playPay(player);
+          }
         }
         if (onComplete) onComplete();
         break;
@@ -802,9 +811,16 @@ export class GameEngine {
           (p) => p.id !== player.id,
         );
         const totalCost = action.amount * others.length;
-        player.cash -= totalCost;
-        others.forEach((p) => (p.cash += action.amount));
-        sounds.playPay(player);
+        const res = this.processPayment(
+          player,
+          totalCost,
+          null,
+          card.title || "payment to players",
+        );
+        if (res.success) {
+          others.forEach((p) => (p.cash += action.amount));
+          sounds.playPay(player);
+        }
         if (onComplete) onComplete();
         break;
       }
@@ -814,8 +830,12 @@ export class GameEngine {
           (p) => p.id !== player.id,
         );
         others.forEach((p) => {
-          p.cash -= action.amount;
-          player.cash += action.amount;
+          this.processPayment(
+            p,
+            action.amount,
+            player,
+            card.title || "collection fee",
+          );
         });
         sounds.playCash(player);
         if (onComplete) onComplete();
@@ -835,12 +855,19 @@ export class GameEngine {
         });
         const cost =
           housesCount * action.perHouse + hotelsCount * action.perHotel;
-        player.cash -= cost;
-        this.log(
-          `${player.name} paid $${cost} for repairs (${housesCount} houses, ${hotelsCount} hotels).`,
-          "warning",
+        const res = this.processPayment(
+          player,
+          cost,
+          null,
+          "property repairs",
         );
-        sounds.playPay(player);
+        if (res.success) {
+          this.log(
+            `${player.name} paid $${cost} for repairs (${housesCount} houses, ${hotelsCount} hotels).`,
+            "warning",
+          );
+          sounds.playPay(player);
+        }
         if (onComplete) onComplete();
         break;
       }
@@ -896,13 +923,15 @@ export class GameEngine {
     }
 
     if (tile.type === "tax") {
-      player.cash -= tile.amount;
-      this.log(
-        `${player.name} paid $${tile.amount} in ${tile.name}.`,
-        "warning",
-      );
-      sounds.playPay(player);
-      if (onFinished) onFinished();
+      const res = this.processPayment(player, tile.amount, null, tile.name);
+      if (res.success) {
+        this.log(
+          `${player.name} paid $${tile.amount} in ${tile.name}.`,
+          "warning",
+        );
+        sounds.playPay(player);
+      }
+      if (onFinished) onFinished(res);
       return;
     }
 
@@ -969,17 +998,23 @@ export class GameEngine {
         );
         const rent = options.doubleRent ? baseRent * 2 : baseRent;
 
-        player.cash -= rent;
-        owner.cash += rent;
-        const rentBreakdown = options.doubleRent
-          ? ` (double-rent card: $${baseRent} × 2)`
-          : "";
-        this.log(
-          `${player.name} paid $${rent} rent to ${owner.name} for landing on ${tile.name}${rentBreakdown}.`,
-          "warning",
+        const res = this.processPayment(
+          player,
+          rent,
+          owner,
+          `rent on ${tile.name}`,
         );
-        sounds.playPay(player);
-        if (onFinished) onFinished();
+        if (res.success) {
+          const rentBreakdown = options.doubleRent
+            ? ` (double-rent card: $${baseRent} × 2)`
+            : "";
+          this.log(
+            `${player.name} paid $${rent} rent to ${owner.name} for landing on ${tile.name}${rentBreakdown}.`,
+            "warning",
+          );
+          sounds.playPay(player);
+        }
+        if (onFinished) onFinished(res);
         return;
       } else {
         this.log(
@@ -1009,12 +1044,13 @@ export class GameEngine {
     return value;
   }
 
-  autoLiquidateForPlayer(player) {
-    if (player.cash >= 0) return true;
+  autoLiquidateForPlayer(player, targetAmount = 0) {
+    const requiredCash = Math.max(0, targetAmount);
+    if (player.cash >= requiredCash) return true;
 
-    // 1. Sell houses/hotels until cash >= 0
+    // 1. Sell houses/hotels until cash >= requiredCash
     let progress = true;
-    while (player.cash < 0 && progress) {
+    while (player.cash < requiredCash && progress) {
       progress = false;
       const propsWithHouses = this.getPlayerProperties(player.id).filter(
         (p) =>
@@ -1028,7 +1064,7 @@ export class GameEngine {
       }
     }
 
-    if (player.cash >= 0) return true;
+    if (player.cash >= requiredCash) return true;
 
     // 2. Mortgage unmonopolized properties
     const unmonopolized = this.getPlayerProperties(player.id).filter(
@@ -1037,22 +1073,96 @@ export class GameEngine {
         this.canMortgage(player.id, p.id),
     );
     for (const p of unmonopolized) {
-      if (player.cash >= 0) break;
+      if (player.cash >= requiredCash) break;
       this.mortgageProperty(player.id, p.id);
     }
 
-    if (player.cash >= 0) return true;
+    if (player.cash >= requiredCash) return true;
 
     // 3. Mortgage monopolized properties
     const monopolized = this.getPlayerProperties(player.id).filter((p) =>
       this.canMortgage(player.id, p.id),
     );
     for (const p of monopolized) {
-      if (player.cash >= 0) break;
+      if (player.cash >= requiredCash) break;
       this.mortgageProperty(player.id, p.id);
     }
 
-    return player.cash >= 0;
+    return player.cash >= requiredCash;
+  }
+
+  ensureSolvency(player) {
+    if (!player || player.bankrupt) return true;
+    if (player.cash >= 0) return true;
+
+    if (player.isAi) {
+      this.autoLiquidateForPlayer(player, 0);
+      if (player.cash < 0) {
+        this.declareBankruptcy(player);
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  processPayment(debtor, amount, creditor = null, reason = "payment") {
+    if (amount <= 0 || debtor.bankrupt) {
+      return { success: true, bankrupt: false };
+    }
+
+    // 1. Debtor has sufficient cash
+    if (debtor.cash >= amount) {
+      debtor.cash -= amount;
+      if (creditor && !creditor.bankrupt) {
+        creditor.cash += amount;
+      }
+      return { success: true, bankrupt: false };
+    }
+
+    // 2. Debtor is AI -> Proactively raise cash by selling houses / mortgaging properties
+    if (debtor.isAi) {
+      this.autoLiquidateForPlayer(debtor, amount);
+
+      if (debtor.cash >= amount) {
+        debtor.cash -= amount;
+        if (creditor && !creditor.bankrupt) {
+          creditor.cash += amount;
+        }
+        return { success: true, bankrupt: false };
+      }
+
+      // Debtor cannot pay even after full liquidation: BANKRUPTCY!
+      this.log(
+        `[INSOLVENCY] ${debtor.name} cannot afford $${amount} for ${reason} and is bankrupt!`,
+        "danger",
+      );
+      this.declareBankruptcy(debtor, creditor);
+      return { success: false, bankrupt: true };
+    }
+
+    // 3. Debtor is Human
+    const totalLiquidatable = debtor.cash + this.getLiquidatableAssets(debtor.id);
+    if (totalLiquidatable < amount) {
+      // Insolvent even with all assets liquidated
+      this.log(
+        `[INSOLVENCY] ${debtor.name} cannot afford $${amount} for ${reason} and is bankrupt!`,
+        "danger",
+      );
+      this.declareBankruptcy(debtor, creditor);
+      return { success: false, bankrupt: true };
+    }
+
+    // Human can liquidate to pay
+    return {
+      success: false,
+      bankrupt: false,
+      pendingDebt: true,
+      amount,
+      deficit: amount - debtor.cash,
+      creditor,
+      reason,
+    };
   }
 
   checkBankruptcy(player) {
@@ -1071,22 +1181,55 @@ export class GameEngine {
     return { bankrupt: false, inDebt: true, deficit: Math.abs(player.cash) };
   }
 
-  declareBankruptcy(player) {
+  declareBankruptcy(player, creditor = null) {
+    if (player.bankrupt) return;
     player.bankrupt = true;
-    this.log(
-      `[BANKRUPT] ${player.name} has gone bankrupt and is eliminated!`,
-      "danger",
-    );
+
+    if (creditor && !creditor.bankrupt && creditor.id !== player.id) {
+      this.log(
+        `[BANKRUPT] ${player.name} went bankrupt to ${creditor.name} and is eliminated!`,
+        "danger",
+      );
+      // Transfer remaining cash to creditor
+      if (player.cash > 0) {
+        creditor.cash += player.cash;
+        this.log(
+          `${player.name} surrendered remaining $${player.cash} to ${creditor.name}.`,
+          "info",
+        );
+      }
+      // Transfer all properties to creditor
+      BOARD_TILES.forEach((t) => {
+        if (this.board[t.id]?.owner === player.id) {
+          this.board[t.id].owner = creditor.id;
+          if (this.board[t.id].houses > 0) {
+            const refund = this.board[t.id].houses * Math.floor((t.houseCost || 0) / 2);
+            creditor.cash += refund;
+            this.board[t.id].houses = 0;
+          }
+        }
+      });
+      this.log(
+        `All properties owned by ${player.name} were surrendered to ${creditor.name}!`,
+        "warning",
+      );
+    } else {
+      this.log(
+        `[BANKRUPT] ${player.name} has gone bankrupt to the Bank and is eliminated!`,
+        "danger",
+      );
+      BOARD_TILES.forEach((t) => {
+        if (this.board[t.id]?.owner === player.id) {
+          this.board[t.id].owner = null;
+          this.board[t.id].houses = 0;
+          this.board[t.id].mortgaged = false;
+        }
+      });
+    }
+
+    player.cash = 0;
     sounds.playBankrupt(player);
     if (this.onBankruptcy) this.onBankruptcy(player);
-
-    BOARD_TILES.forEach((t) => {
-      if (this.board[t.id]?.owner === player.id) {
-        this.board[t.id].owner = null;
-        this.board[t.id].houses = 0;
-        this.board[t.id].mortgaged = false;
-      }
-    });
 
     const active = this.getActivePlayers();
     if (active.length === 1) {

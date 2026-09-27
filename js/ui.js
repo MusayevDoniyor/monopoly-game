@@ -933,9 +933,9 @@ export class MonopolyUI {
             </span>
             ${p.inJail ? '<span style="font-size: 0.72rem; background: #ea580c; color: #fff; padding: 2px 7px; border-radius: 4px; font-weight: bold;">JAIL</span>' : ""}
           </div>
-          <div class="player-cash-badge" style="${p.cash < 0 ? "color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,0.18);" : ""}">
-            <span class="icon-wrap" style="width: 1.1rem; height: 1.1rem; color: ${p.cash < 0 ? "#ef4444" : "#34d399"};">${getIcon("COIN")}</span>
-            <span>$${p.cash.toLocaleString()}</span>
+          <div class="player-cash-badge" style="${p.bankrupt ? "color: #94a3b8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.05);" : p.cash < 0 ? "color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,0.18);" : ""}">
+            <span class="icon-wrap" style="width: 1.1rem; height: 1.1rem; color: ${p.bankrupt ? "#94a3b8" : p.cash < 0 ? "#ef4444" : "#34d399"};">${getIcon("COIN")}</span>
+            <span>$${Math.max(0, p.cash).toLocaleString()}</span>
           </div>
         </div>
 

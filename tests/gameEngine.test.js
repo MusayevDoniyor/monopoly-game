@@ -324,4 +324,61 @@ test('activity feed tracks match history with categories and exports complete ma
   assert.equal(parsed.matchStats.winner.name, p1.name);
 });
 
+test('strict solvency prevents negative cash: auto-mortgages properties or transfers to creditor on bankruptcy', () => {
+  const engine = createEngine('classic');
+  const human = engine.players[0]; // Human
+  const bot = engine.players[1];   // AI Bot (like WallStreet Bot)
+  bot.isAi = true;
+
+  // Scenario 1: Bot has $32 cash and owns Mediterranean Ave (id 1, price 60, mortgage 30).
+  // Bot lands on human's property and owes $50 rent.
+  engine.board[1].owner = bot.id;
+  engine.board[1].mortgaged = false;
+  bot.cash = 32;
+  const initialHumanCash = human.cash;
+
+  const res1 = engine.processPayment(bot, 50, human, 'rent for property');
+  assert.equal(res1.success, true);
+  assert.equal(res1.bankrupt, false);
+  // Bot auto-mortgaged Mediterranean Ave: 32 + 30 = 62, then paid 50 -> 12 cash remaining!
+  assert.equal(engine.board[1].mortgaged, true);
+  assert.equal(bot.cash, 12, 'Bot cash must stay positive (never negative!)');
+  assert.equal(human.cash - initialHumanCash, 50, 'Creditor received full rent');
+
+  // Scenario 2: Tax deduction exceeding cash
+  // Bot has $12 cash and owns Baltic Ave (id 3, mortgage 30).
+  // Bot lands on Luxury Tax ($100).
+  engine.board[3].owner = bot.id;
+  engine.board[3].mortgaged = false;
+  // Total liquidatable = 12 cash + 30 mortgage = 42. Since 42 < 100, bot cannot pay and goes bankrupt!
+  const res2 = engine.processPayment(bot, 100, null, 'Luxury Tax');
+  assert.equal(res2.bankrupt, true);
+  assert.equal(bot.bankrupt, true);
+  assert.equal(bot.cash, 0, 'Bankrupt player cash must be reset to 0 (never negative!)');
+  // Properties return to bank
+  assert.equal(engine.board[1].owner, null);
+  assert.equal(engine.board[3].owner, null);
+
+  // Scenario 3: Bankruptcy to a player creditor surrenders properties to that creditor
+  const bot2 = engine.players[2] || { id: 2, name: 'Bot 2', isAi: true, cash: 20, bankrupt: false };
+  if (!engine.players[2]) engine.players.push(bot2);
+  bot2.isAi = true;
+  bot2.cash = 20;
+  bot2.bankrupt = false;
+  engine.board[6].owner = bot2.id; // Oriental Ave
+  engine.board[6].mortgaged = false;
+  engine.board[8].owner = bot2.id; // Vermont Ave
+  engine.board[8].mortgaged = false;
+
+  // Bot 2 owes $1000 rent to Human (cannot afford)
+  const res3 = engine.processPayment(bot2, 1000, human, 'Boardwalk rent');
+  assert.equal(res3.bankrupt, true);
+  assert.equal(bot2.bankrupt, true);
+  assert.equal(bot2.cash, 0, 'Bankrupt cash must be 0');
+  // Properties transferred to human creditor
+  assert.equal(engine.board[6].owner, human.id, 'Creditor received Oriental Ave');
+  assert.equal(engine.board[8].owner, human.id, 'Creditor received Vermont Ave');
+});
+
+
 
