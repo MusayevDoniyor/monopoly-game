@@ -195,15 +195,6 @@ class MonopolyApp {
           e.preventDefault();
           return false;
         }
-
-        // Intercept F5 and Ctrl+R / Ctrl+Shift+R during active game
-        if (e.key === "F5" || (e.ctrlKey && (e.key === "r" || e.key === "R"))) {
-          if (this.isGameInProgress()) {
-            e.preventDefault();
-            this.promptExitConfirmation(true);
-            return false;
-          }
-        }
       },
       { capture: true },
     );

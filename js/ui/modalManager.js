@@ -2405,19 +2405,23 @@ export class ModalManager extends UIComponent {
     const titleText = isReload ? "Reload Game Session?" : "Exit Current Match?";
     const iconName = isReload ? "WARNING" : "EXIT";
 
-    this.modalTitle.innerHTML = `<span class="icon-wrap" style="color: #ef4444;">${getIcon(iconName)}</span> <span>${titleText}</span>`;
+    this.modalTitle.innerHTML = `<span class="icon-wrap" style="color: #f59e0b;">${getIcon(iconName)}</span> <span>${titleText}</span>`;
     
+    const heading = isReload ? "Unsaved Match Progress" : "Abandon Active Match?";
     const message = isReload
       ? "Are you sure you want to refresh the page? Your ongoing match, player turns, and board progress will be lost."
       : "Are you sure you want to exit the current match? Any in-progress board states, properties, and cash balances will be discarded.";
 
     this.modalBody.innerHTML = `
-      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding: 20px 8px;">
-        <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); border: 2px solid rgba(239, 68, 68, 0.45); display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 2rem;">
-          ${getIcon(iconName)}
+      <div class="exit-modal-card">
+        <div class="exit-modal-glow-badge">
+          <span class="icon-wrap">${getIcon(iconName)}</span>
         </div>
-        <div style="font-size: 1.05rem; font-weight: 700; color: #f8fafc; line-height: 1.5; max-width: 420px;">
-          ${message}
+        <h4 class="exit-modal-title">${heading}</h4>
+        <p class="exit-modal-message">${message}</p>
+        <div class="exit-modal-notice">
+          <span class="icon-wrap">${getIcon("ALERT_CIRCLE")}</span>
+          <span>Active property deeds, cash balances, and match history will be discarded.</span>
         </div>
       </div>
     `;
@@ -2427,7 +2431,7 @@ export class ModalManager extends UIComponent {
       <button class="btn-secondary" id="exitCancelBtn" style="flex: 1; justify-content: center;">
         Stay in Game
       </button>
-      <button class="btn-primary" id="exitConfirmBtn" style="flex: 1; justify-content: center; background: linear-gradient(135deg, #ef4444, #b91c1c); border-color: #ef4444; color: #fff;">
+      <button class="btn-primary btn-danger-action" id="exitConfirmBtn" style="flex: 1; justify-content: center;">
         ${confirmLabel}
       </button>
     `;
