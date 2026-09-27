@@ -10,12 +10,13 @@ import { ICONS, TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=5.1";
 import { ACHIEVEMENTS_LIST, achievements } from "./achievements.js?v=5.1";
 import { particles } from "./particles.js?v=5.1";
 
-const escapeHtml = (value) => String(value ?? "")
-  .replace(/&/g, "&amp;")
-  .replace(/</g, "&lt;")
-  .replace(/>/g, "&gt;")
-  .replace(/\"/g, "&quot;")
-  .replace(/'/g, "&#039;");
+const escapeHtml = (value) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 
 const CLASSIC_RAILROAD_ARTWORK = Object.freeze({
   "Reading Railroad": {
@@ -51,7 +52,9 @@ export class MonopolyUI {
     this.managePropsBtn = document.getElementById("managePropsBtn");
     this.tradeBtn = document.getElementById("tradeBtn");
     this.editionTagEl = document.getElementById("editionTag");
-    this.boardEditionSubtitleEl = document.getElementById("boardEditionSubtitle");
+    this.boardEditionSubtitleEl = document.getElementById(
+      "boardEditionSubtitle",
+    );
     this.boardRulesDescEl = document.getElementById("boardRulesDesc");
 
     this.turnPlayerNameEl = document.getElementById("turnPlayerName");
@@ -106,6 +109,7 @@ export class MonopolyUI {
     setIcon("muteIconWrap", "SPEAKER");
     setIcon("rulesHeaderIconWrap", "BOOK");
     setIcon("fullscreenIconWrap", "EXPAND");
+    setIcon("exitIconWrap", "EXIT");
     setIcon("menuIconWrap", "MENU");
     setIcon("drawerHeaderIcon", "TOP_HAT");
     setIcon("closeDrawerIconWrap", "CLOSE");
@@ -320,26 +324,30 @@ export class MonopolyUI {
     const segmentAngle = 360 / count;
     const safePlayerColor = (color, fallback = "#64748b") =>
       /^#[0-9a-f]{6}$/i.test(color || "") ? color : fallback;
-    const wheelStops = players.map((player, index) => {
-      const start = (index * segmentAngle).toFixed(2);
-      const end = ((index + 1) * segmentAngle).toFixed(2);
-      const color = safePlayerColor(player.color);
-      return `${color} ${start}deg ${end}deg`;
-    }).join(", ");
+    const wheelStops = players
+      .map((player, index) => {
+        const start = (index * segmentAngle).toFixed(2);
+        const end = ((index + 1) * segmentAngle).toFixed(2);
+        const color = safePlayerColor(player.color);
+        return `${color} ${start}deg ${end}deg`;
+      })
+      .join(", ");
 
-    const tokenMarkup = players.map((player, index) => {
-      const angle = segmentAngle * index - 90;
-      const radius = count === 2 ? 34 : 38;
-      const x = 50 + Math.cos(angle * Math.PI / 180) * radius;
-      const y = 50 + Math.sin(angle * Math.PI / 180) * radius;
-      const playerColor = safePlayerColor(player.color);
-      return `
+    const tokenMarkup = players
+      .map((player, index) => {
+        const angle = segmentAngle * index - 90;
+        const radius = count === 2 ? 34 : 38;
+        const x = 50 + Math.cos((angle * Math.PI) / 180) * radius;
+        const y = 50 + Math.sin((angle * Math.PI) / 180) * radius;
+        const playerColor = safePlayerColor(player.color);
+        return `
         <div class="start-selector-token" data-player-index="${index}" style="left: ${x}%; top: ${y}%; --player-color: ${playerColor};">
           <div class="start-selector-token-icon">${getIcon(player.token || "TOP_HAT")}</div>
           <span>${escapeHtml(player.name)}</span>
         </div>
       `;
-    }).join("");
+      })
+      .join("");
 
     this.modalBody.innerHTML = `
       <div class="starting-player-selector">
@@ -363,7 +371,9 @@ export class MonopolyUI {
     const arena = this.modalBody.querySelector(".selector-arena");
     const wheel = this.modalBody.querySelector("#selectorWheel");
     const status = document.getElementById("startingSelectorStatus");
-    const winnerToken = this.modalBody.querySelector(`[data-player-index="${winnerIndex}"]`);
+    const winnerToken = this.modalBody.querySelector(
+      `[data-player-index="${winnerIndex}"]`,
+    );
     const totalRotation = 360 * 5 - segmentAngle * winnerIndex;
 
     requestAnimationFrame(() => {
@@ -374,7 +384,8 @@ export class MonopolyUI {
     window.setTimeout(() => {
       arena?.classList.remove("is-spinning");
       winnerToken?.classList.add("winner");
-      if (status) status.innerHTML = `<strong style="color: var(--gold);">${escapeHtml(players[winnerIndex].name)}</strong> will roll first!`;
+      if (status)
+        status.innerHTML = `<strong style="color: var(--gold);">${escapeHtml(players[winnerIndex].name)}</strong> will roll first!`;
       const button = document.getElementById("startingSelectorButton");
       if (button) {
         button.disabled = false;
@@ -402,12 +413,15 @@ export class MonopolyUI {
     if (this.editionTagEl) {
       this.editionTagEl.innerText = `${gameSettings.boardTheme === "classic" ? "Classic Atlantic" : "World Mega-Cities"} (${total} Tiles)`;
     }
-    const editionLabel = total === 40 ? "Classic 40-Tile Rules" : "World 36-Tile Rules";
-    if (this.boardEditionSubtitleEl) this.boardEditionSubtitleEl.innerText = editionLabel;
+    const editionLabel =
+      total === 40 ? "Classic 40-Tile Rules" : "World 36-Tile Rules";
+    if (this.boardEditionSubtitleEl)
+      this.boardEditionSubtitleEl.innerText = editionLabel;
     if (this.boardRulesDescEl) {
-      this.boardRulesDescEl.innerText = total === 40
-        ? "40-tile classic layout, $150 bail, official railroad rents"
-        : "36-tile world layout, $150 bail, linear station rents";
+      this.boardRulesDescEl.innerText =
+        total === 40
+          ? "40-tile classic layout, $150 bail, official railroad rents"
+          : "36-tile world layout, $150 bail, linear station rents";
     }
 
     // Clean existing tiles
@@ -484,7 +498,10 @@ export class MonopolyUI {
             <div class="free-parking-caption">NO FEE <span>•</span> TAKE A BREATHER</div>
           </div>
         `;
-      } else if (tile.name.includes("SAFE") || (this.engine.getBoardLength() === 36 && tile.id === 18)) {
+      } else if (
+        tile.name.includes("SAFE") ||
+        (this.engine.getBoardLength() === 36 && tile.id === 18)
+      ) {
         tileEl.classList.add("corner-safe-zone");
         innerHTML = `
           <div class="safe-zone-wrapper">
@@ -504,7 +521,8 @@ export class MonopolyUI {
           </div>
         `;
       } else if (tile.type === "chance" || tile.type === "community-chest") {
-        const eventClass = tile.type === "chance" ? "event-tile-chance" : "event-tile-chest";
+        const eventClass =
+          tile.type === "chance" ? "event-tile-chance" : "event-tile-chest";
         innerHTML = `
           <div class="tile-content event-tile ${eventClass}">
             <div class="tile-name event-tile-name">${tile.name}</div>
@@ -592,8 +610,16 @@ export class MonopolyUI {
     });
   }
 
-  async animateMovement(player, targetPos, onFinish, backwards = false, startPosOverride = null) {
-    const startPos = Number.isInteger(startPosOverride) ? startPosOverride : player.position;
+  async animateMovement(
+    player,
+    targetPos,
+    onFinish,
+    backwards = false,
+    startPosOverride = null,
+  ) {
+    const startPos = Number.isInteger(startPosOverride)
+      ? startPosOverride
+      : player.position;
     const total = this.engine.getBoardLength();
     const tokenEl = this.tokenElements[player.id];
 
@@ -603,7 +629,8 @@ export class MonopolyUI {
     }
 
     const speed = Math.max(1, Number(this.app?.gameSpeed) || 1);
-    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms / speed));
+    const wait = (ms) =>
+      new Promise((resolve) => setTimeout(resolve, ms / speed));
     const step = (container) => {
       if (!container) return;
       container.appendChild(tokenEl);
@@ -683,11 +710,11 @@ export class MonopolyUI {
 
     this.dice1El.style.setProperty(
       "--target-rot",
-      `rotateX(${rot1.x}deg) rotateY(${rot1.y}deg)`
+      `rotateX(${rot1.x}deg) rotateY(${rot1.y}deg)`,
     );
     this.dice2El.style.setProperty(
       "--target-rot",
-      `rotateX(${rot2.x}deg) rotateY(${rot2.y}deg)`
+      `rotateX(${rot2.x}deg) rotateY(${rot2.y}deg)`,
     );
 
     // Realistic bounce and settle impact
@@ -793,9 +820,10 @@ export class MonopolyUI {
       this.turnPlayerTokenEl.style.borderColor = current.color;
       this.turnPlayerTokenEl.style.backgroundColor = `${current.color}25`;
 
-      const isRolling = !!(this.app?._isRollingAnimation);
+      const isRolling = !!this.app?._isRollingAnimation;
       const isOnline = !!this.app?.multiplayer?.isOnline;
-      const isLocalTurn = !isOnline || this.app.multiplayer.localPlayerId === current.id;
+      const isLocalTurn =
+        !isOnline || this.app.multiplayer.localPlayerId === current.id;
 
       if (this.engine.gameOver) {
         this.turnStatusEl.innerText = `Champion: ${this.engine.winner?.name || "Game Over"}`;
@@ -803,8 +831,8 @@ export class MonopolyUI {
         this.endTurnBtn.disabled = true;
       } else if (!isLocalTurn) {
         const actionDesc = this.engine.currentTurn?.awaitingActionDesc;
-        if (actionDesc?.type === 'buy_prompt') {
-          this.turnStatusEl.innerText = `${current.name} is deciding whether to buy ${actionDesc.tileName || 'Property'} ($${actionDesc.tilePrice || ''})...`;
+        if (actionDesc?.type === "buy_prompt") {
+          this.turnStatusEl.innerText = `${current.name} is deciding whether to buy ${actionDesc.tileName || "Property"} ($${actionDesc.tilePrice || ""})...`;
         } else {
           this.turnStatusEl.innerText = `Waiting for ${current.name}...`;
         }
@@ -848,7 +876,10 @@ export class MonopolyUI {
       }
 
       const rollIcon = document.getElementById("btnRollDiceIcon");
-      if (rollIcon && (!rollIcon.innerHTML || rollIcon.innerText === "Roll Dice")) {
+      if (
+        rollIcon &&
+        (!rollIcon.innerHTML || rollIcon.innerText === "Roll Dice")
+      ) {
         rollIcon.innerHTML = getIcon("DICE");
       }
     }
@@ -884,8 +915,8 @@ export class MonopolyUI {
             </span>
             ${p.inJail ? '<span style="font-size: 0.72rem; background: #ea580c; color: #fff; padding: 2px 7px; border-radius: 4px; font-weight: bold;">JAIL</span>' : ""}
           </div>
-          <div class="player-cash-badge" style="${p.cash < 0 ? 'color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,0.18);' : ''}">
-            <span class="icon-wrap" style="width: 1.1rem; height: 1.1rem; color: ${p.cash < 0 ? '#ef4444' : '#34d399'};">${getIcon("COIN")}</span>
+          <div class="player-cash-badge" style="${p.cash < 0 ? "color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,0.18);" : ""}">
+            <span class="icon-wrap" style="width: 1.1rem; height: 1.1rem; color: ${p.cash < 0 ? "#ef4444" : "#34d399"};">${getIcon("COIN")}</span>
             <span>$${p.cash}</span>
           </div>
         </div>
@@ -1106,7 +1137,7 @@ export class MonopolyUI {
       const sRent = gameSettings.stationStepRent || 50;
       const isClassicBoard = this.engine.getBoardLength() === 40;
       const rentSchedule = isClassicBoard
-        ? (tile.rent || [25, 50, 100, 200])
+        ? tile.rent || [25, 50, 100, 200]
         : [bRent, bRent + sRent, bRent + sRent * 2, bRent + sRent * 3];
       const stationLabel = isClassicBoard ? "Railroads" : "Airports / Stations";
       const railroadArtwork = isClassicBoard
@@ -1177,8 +1208,15 @@ export class MonopolyUI {
   }
 
   getLocalPlayer() {
-    if (this.app?.multiplayer?.isOnline && this.app.multiplayer.localPlayerId !== null && this.app.multiplayer.localPlayerId !== undefined) {
-      return this.engine.players[this.app.multiplayer.localPlayerId] || this.engine.getCurrentPlayer();
+    if (
+      this.app?.multiplayer?.isOnline &&
+      this.app.multiplayer.localPlayerId !== null &&
+      this.app.multiplayer.localPlayerId !== undefined
+    ) {
+      return (
+        this.engine.players[this.app.multiplayer.localPlayerId] ||
+        this.engine.getCurrentPlayer()
+      );
     }
     const current = this.engine.getCurrentPlayer();
     if (current && !current.isAi) {
@@ -1200,7 +1238,10 @@ export class MonopolyUI {
     this.modalFooter.innerHTML = "";
 
     const state = this.engine.board[tileId];
-    const owner = state && state.owner !== null && state.owner !== undefined ? this.engine.players[state.owner] : null;
+    const owner =
+      state && state.owner !== null && state.owner !== undefined
+        ? this.engine.players[state.owner]
+        : null;
     const viewerPlayer = this.getLocalPlayer();
 
     let floatingActionsHTML = "";
@@ -1211,14 +1252,29 @@ export class MonopolyUI {
     } else if (viewerPlayer && owner.id === viewerPlayer.id) {
       // Owned by viewer (You): ALWAYS show "You own this property" & "Manage Property".
       // NEVER show "Propose Trade" against yourself!
+      const unmortgageCost = state?.mortgaged
+        ? Math.round(tile.mortgage * 1.1)
+        : 0;
+      const canUnmortgage =
+        state?.mortgaged && this.engine.canUnmortgage(viewerPlayer.id, tile.id);
       floatingActionsHTML = `
         <div class="deed-floating-bar">
           <div class="deed-owner-pill" style="border-color: var(--gold); background: rgba(212, 175, 55, 0.12);">
             <span class="icon-wrap gold-icon" style="width: 16px; height: 16px;">${getIcon("STAR")}</span>
             <span style="color: var(--gold-light);">You own this property</span>
-            ${state?.mortgaged ? '<span style="color: #ef4444; font-size: 0.75rem; margin-left: 4px;">(MORTGAGED)</span>' : ''}
+            ${state?.mortgaged ? '<span style="color: #ef4444; font-size: 0.75rem; margin-left: 4px;">(MORTGAGED)</span>' : ""}
           </div>
           <div class="deed-actions-row">
+            ${
+              state?.mortgaged
+                ? `
+              <button class="btn-unmortgage-card" id="deedUnmortgageActionBtn" ${!canUnmortgage || this.engine.gameOver ? "disabled" : ""}>
+                <span class="icon-wrap" style="width: 16px; height: 16px;">${getIcon("CHECK")}</span>
+                <span>Unmortgage ($${unmortgageCost})</span>
+              </button>
+            `
+                : ""
+            }
             <button class="btn-manage-card" id="deedManageActionBtn">
               <span class="icon-wrap" style="width: 16px; height: 16px;">${getIcon("HOUSE")}</span>
               <span>Manage Property</span>
@@ -1235,10 +1291,10 @@ export class MonopolyUI {
               ${getIcon(owner.token || "USER", "icon-emoji")}
             </span>
             <span>Owned by <strong>${owner.name}</strong></span>
-            ${state?.mortgaged ? '<span style="color: #ef4444; font-size: 0.75rem; margin-left: 4px;">(MORTGAGED)</span>' : ''}
+            ${state?.mortgaged ? '<span style="color: #ef4444; font-size: 0.75rem; margin-left: 4px;">(MORTGAGED)</span>' : ""}
           </div>
           <div class="deed-actions-row">
-            <button class="btn-trade" id="deedTradeActionBtn" ${this.engine.gameOver || viewerPlayer?.bankrupt ? 'disabled' : ''}>
+            <button class="btn-trade" id="deedTradeActionBtn" ${this.engine.gameOver || viewerPlayer?.bankrupt ? "disabled" : ""}>
               <span class="icon-wrap" style="width: 16px; height: 16px;">${getIcon("HANDSHAKE")}</span>
               <span>Propose Trade</span>
             </button>
@@ -1272,6 +1328,21 @@ export class MonopolyUI {
       manageBtn.onclick = () => {
         this.closeModal();
         this.showPropertyManagementModal(viewerPlayer || owner);
+      };
+    }
+
+    const unmortgageBtn = document.getElementById("deedUnmortgageActionBtn");
+    if (unmortgageBtn) {
+      unmortgageBtn.onclick = () => {
+        if (
+          !viewerPlayer ||
+          !this.engine.unmortgageProperty(viewerPlayer.id, tileId)
+        )
+          return;
+        this.updateBoardState();
+        this.updateHUD();
+        if (this.app?.syncGameState) this.app.syncGameState();
+        this.showDeedModal(tileId);
       };
     }
 
@@ -1330,7 +1401,8 @@ export class MonopolyUI {
       this.clearModalTimer();
       button.disabled = true;
       button.classList.add("is-confirming");
-      button.querySelector("span:last-child").textContent = "Adding to portfolio…";
+      button.querySelector("span:last-child").textContent =
+        "Adding to portfolio…";
       await new Promise((resolve) => setTimeout(resolve, 420));
       this.closeModal();
       onBuy();
@@ -1374,27 +1446,37 @@ export class MonopolyUI {
   showCardModal(cardType, card, onContinue) {
     sounds.playCard();
     if (this.modalCard) this.modalCard.classList.add("naked-modal");
-    
+
     const isChance = cardType === "chance";
     const iconKey = isChance ? "CHANCE" : "CHEST";
     const cat = (card.category || "EVENT").toLowerCase();
     const impactPositive = !card.badge || !card.badge.includes("-");
     const cardArt = (() => {
       switch (card.action?.type) {
-        case "CASH": return impactPositive
-          ? { icon: "COIN", label: "BANK REWARD" }
-          : { icon: "TAX", label: "EXPENSE" };
-        case "MOVE_TO": return card.action.target === 0
-          ? { icon: "START_ARROW", label: "BACK TO START" }
-          : { icon: "PLANE", label: "ADVANCE" };
-        case "MOVE_RELATIVE": return { icon: "LIGHTNING", label: "MOVE" };
-        case "MOVE_NEAREST_RAILROAD": return { icon: "TRAIN", label: "TRANSIT" };
-        case "GO_TO_JAIL": return { icon: "JAIL", label: "DETENTION" };
-        case "GET_OUT_OF_JAIL": return { icon: "KEY", label: "GET OUT" };
-        case "PAY_PLAYERS": return { icon: "HANDSHAKE", label: "PAY THE TABLE" };
-        case "COLLECT_FROM_PLAYERS": return { icon: "TROPHY", label: "COLLECT" };
-        case "REPAIRS": return { icon: "HOUSE", label: "PROPERTY REPAIRS" };
-        default: return { icon: iconKey, label: isChance ? "CHANCE" : "COMMUNITY" };
+        case "CASH":
+          return impactPositive
+            ? { icon: "COIN", label: "BANK REWARD" }
+            : { icon: "TAX", label: "EXPENSE" };
+        case "MOVE_TO":
+          return card.action.target === 0
+            ? { icon: "START_ARROW", label: "BACK TO START" }
+            : { icon: "PLANE", label: "ADVANCE" };
+        case "MOVE_RELATIVE":
+          return { icon: "LIGHTNING", label: "MOVE" };
+        case "MOVE_NEAREST_RAILROAD":
+          return { icon: "TRAIN", label: "TRANSIT" };
+        case "GO_TO_JAIL":
+          return { icon: "JAIL", label: "DETENTION" };
+        case "GET_OUT_OF_JAIL":
+          return { icon: "KEY", label: "GET OUT" };
+        case "PAY_PLAYERS":
+          return { icon: "HANDSHAKE", label: "PAY THE TABLE" };
+        case "COLLECT_FROM_PLAYERS":
+          return { icon: "TROPHY", label: "COLLECT" };
+        case "REPAIRS":
+          return { icon: "HOUSE", label: "PROPERTY REPAIRS" };
+        default:
+          return { icon: iconKey, label: isChance ? "CHANCE" : "COMMUNITY" };
       }
     })();
 
@@ -1461,11 +1543,7 @@ export class MonopolyUI {
     const continueBtn = document.getElementById("cardContinueBtn");
     if (continueBtn) continueBtn.onclick = handleContinue;
 
-    this.startModalTimer(
-      10,
-      handleContinue,
-      "Auto-continue in",
-    );
+    this.startModalTimer(10, handleContinue, "Auto-continue in");
 
     this.isInspectModal = true;
     this.modalOverlay.classList.add("active");
@@ -1482,22 +1560,30 @@ export class MonopolyUI {
     if (props.length === 0) {
       this.modalBody.innerHTML = `<div class="mgmt-empty-state"><span class="icon-wrap">${getIcon("HOUSE")}</span><strong>No properties yet</strong><span>Buy a property to start building your portfolio.</span></div>`;
       this.modalFooter.innerHTML = `<button class="btn-primary" id="closeManageBtn">Close</button>`;
-      document.getElementById("closeManageBtn").onclick = () => this.closeModal();
+      document.getElementById("closeManageBtn").onclick = () =>
+        this.closeModal();
       this.modalOverlay.classList.add("active");
       return;
     }
 
     // Group properties by their color group or category
     const grouped = {};
-    props.forEach(tile => {
-      const gKey = tile.group || 'OTHER';
+    props.forEach((tile) => {
+      const gKey = tile.group || "OTHER";
       if (!grouped[gKey]) grouped[gKey] = [];
       grouped[gKey].push(tile);
     });
 
-    const monopolyCount = [...new Set(props.filter(tile => tile.type === "property").map(tile => tile.group))]
-      .filter(groupKey => this.engine.hasMonopoly(player.id, groupKey)).length;
-    const developedCount = props.filter(tile => (this.engine.board[tile.id]?.houses || 0) > 0).length;
+    const monopolyCount = [
+      ...new Set(
+        props
+          .filter((tile) => tile.type === "property")
+          .map((tile) => tile.group),
+      ),
+    ].filter((groupKey) => this.engine.hasMonopoly(player.id, groupKey)).length;
+    const developedCount = props.filter(
+      (tile) => (this.engine.board[tile.id]?.houses || 0) > 0,
+    ).length;
     let html = `
       <div class="property-management-content">
         <section class="mgmt-overview" aria-label="Portfolio overview">
@@ -1508,23 +1594,25 @@ export class MonopolyUI {
         </section>
         <div id="mgmtNoticeBanner" class="mgmt-notice" role="status" aria-live="polite"></div>
         <nav class="mgmt-group-nav" aria-label="Jump to property group">
-          ${Object.keys(grouped).map(groupKey => {
-            const groupConfig = COLOR_GROUPS[groupKey];
-            return `<button type="button" class="mgmt-group-chip" data-mgmt-target="mgmt-group-${groupKey}" style="--group-color:${groupConfig?.hex || "#64748b"}">${groupConfig?.name || groupKey}<span>${grouped[groupKey].length}</span></button>`;
-          }).join("")}
+          ${Object.keys(grouped)
+            .map((groupKey) => {
+              const groupConfig = COLOR_GROUPS[groupKey];
+              return `<button type="button" class="mgmt-group-chip" data-mgmt-target="mgmt-group-${groupKey}" style="--group-color:${groupConfig?.hex || "#64748b"}">${groupConfig?.name || groupKey}<span>${grouped[groupKey].length}</span></button>`;
+            })
+            .join("")}
         </nav>
         <div class="mgmt-groups">
     `;
 
-    Object.keys(grouped).forEach(groupKey => {
+    Object.keys(grouped).forEach((groupKey) => {
       const groupTiles = grouped[groupKey];
       const groupConfig = COLOR_GROUPS[groupKey];
       const isMonopoly = this.engine.hasMonopoly(player.id, groupKey);
-      const allCategoryTiles = BOARD_TILES.filter(t => t.group === groupKey);
-      const isDevelopable = groupTiles[0].type === 'property';
+      const allCategoryTiles = BOARD_TILES.filter((t) => t.group === groupKey);
+      const isDevelopable = groupTiles[0].type === "property";
 
       html += `
-        <section class="mgmt-group" id="mgmt-group-${groupKey}" style="--group-color:${groupConfig?.hex || '#64748b'}">
+        <section class="mgmt-group" id="mgmt-group-${groupKey}" style="--group-color:${groupConfig?.hex || "#64748b"}">
           <div class="mgmt-group-heading">
             <div class="mgmt-group-title">
               <span class="mgmt-color-swatch" aria-hidden="true"></span>
@@ -1532,43 +1620,51 @@ export class MonopolyUI {
               <span class="mgmt-group-count">${groupTiles.length} of ${allCategoryTiles.length}</span>
             </div>
             <div class="mgmt-group-status">
-              ${isDevelopable ? (
-                isMonopoly
-                  ? '<span style="background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.4); padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800;">⭐ FULL MONOPOLY (Building Allowed)</span>'
-                  : `<span style="background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">⚠️ Incomplete (${groupTiles.length}/${allCategoryTiles.length}) — Cannot Build</span>`
-              ) : '<span style="background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Commercial Property</span>'}
+              ${
+                isDevelopable
+                  ? isMonopoly
+                    ? '<span style="background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.4); padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800;">⭐ FULL MONOPOLY (Building Allowed)</span>'
+                    : `<span style="background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">⚠️ Incomplete (${groupTiles.length}/${allCategoryTiles.length}) — Cannot Build</span>`
+                  : '<span style="background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Commercial Property</span>'
+              }
             </div>
           </div>
 
           <div class="mgmt-property-list">
       `;
 
-      groupTiles.forEach(tile => {
+      groupTiles.forEach((tile) => {
         const state = this.engine.board[tile.id];
         const rent = this.engine.calculateRent(tile.id);
         const canSell = this.engine.canSellHouse(player.id, tile.id);
         const canMort = this.engine.canMortgage(player.id, tile.id);
         const canUnmort = this.engine.canUnmortgage(player.id, tile.id);
 
-        let levelBadge = '';
-        if (tile.type === 'property') {
+        let levelBadge = "";
+        if (tile.type === "property") {
           if (state.houses === 0) {
-            levelBadge = '<span style="color: #94a3b8; font-size: 0.78rem;">No Houses (0/4)</span>';
+            levelBadge =
+              '<span style="color: #94a3b8; font-size: 0.78rem;">No Houses (0/4)</span>';
           } else if (state.houses >= 1 && state.houses <= 3) {
             levelBadge = `<span style="color: #38bdf8; font-size: 0.78rem; font-weight: 700;">🏠 ${state.houses}/4 Houses</span>`;
           } else if (state.houses === 4) {
-            levelBadge = '<span style="color: #fbbf24; font-size: 0.78rem; font-weight: 800;">⭐ 4/4 Houses (Ready for Hotel!)</span>';
+            levelBadge =
+              '<span style="color: #fbbf24; font-size: 0.78rem; font-weight: 800;">⭐ 4/4 Houses (Ready for Hotel!)</span>';
           } else if (state.houses === 5) {
-            levelBadge = '<span style="color: #f87171; font-size: 0.78rem; font-weight: 800;">🏨 1 Hotel</span>';
+            levelBadge =
+              '<span style="color: #f87171; font-size: 0.78rem; font-weight: 800;">🏨 1 Hotel</span>';
           } else if (state.houses === 6) {
-            levelBadge = '<span style="color: #f59e0b; font-size: 0.78rem; font-weight: 900;">👑 2 Hotels (MAX LEVEL)</span>';
+            levelBadge =
+              '<span style="color: #f59e0b; font-size: 0.78rem; font-weight: 900;">👑 2 Hotels (MAX LEVEL)</span>';
           }
         } else {
-          levelBadge = '<span style="color: #94a3b8; font-size: 0.78rem;">Commercial</span>';
+          levelBadge =
+            '<span style="color: #94a3b8; font-size: 0.78rem;">Commercial</span>';
         }
 
         if (state.mortgaged) {
-          levelBadge += ' • <span style="color: #ef4444; font-weight: 800; font-size: 0.78rem;">🔒 Mortgaged</span>';
+          levelBadge +=
+            ' • <span style="color: #ef4444; font-weight: 800; font-size: 0.78rem;">🔒 Mortgaged</span>';
         }
 
         html += `
@@ -1585,11 +1681,11 @@ export class MonopolyUI {
             <div class="mgmt-property-actions">
         `;
 
-        if (tile.type === 'property') {
+        if (tile.type === "property") {
           // 1. House Construction Button (if < 4 houses)
           if (state.houses < 4) {
             html += `
-              <button class="btn-secondary" style="padding: 6px 10px; font-size: 0.78rem; font-weight: 700;" id="build-house-${tile.id}" ${!isMonopoly ? 'title="Monopoly Required"' : ''}>
+              <button class="btn-secondary" style="padding: 6px 10px; font-size: 0.78rem; font-weight: 700;" id="build-house-${tile.id}" ${!isMonopoly ? 'title="Monopoly Required"' : ""}>
                 + House ($${tile.houseCost})
               </button>
             `;
@@ -1665,12 +1761,15 @@ export class MonopolyUI {
     html += `</div></div>`;
     this.modalBody.innerHTML = html;
     this.modalFooter.innerHTML = `<span class="mgmt-footer-hint">Changes apply immediately and sync to the table.</span><button class="btn-primary" id="closeManageBtn">Done</button>`;
-    requestAnimationFrame(() => { this.modalBody.scrollTop = restoreScrollTop; });
+    requestAnimationFrame(() => {
+      this.modalBody.scrollTop = restoreScrollTop;
+    });
 
-    this.modalBody.querySelectorAll("[data-mgmt-target]").forEach(button => {
+    this.modalBody.querySelectorAll("[data-mgmt-target]").forEach((button) => {
       button.onclick = () => {
         const target = document.getElementById(button.dataset.mgmtTarget);
-        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (target)
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
       };
     });
 
@@ -1678,16 +1777,20 @@ export class MonopolyUI {
       const banner = document.getElementById("mgmtNoticeBanner");
       if (banner) {
         banner.style.display = "block";
-        banner.style.background = isError ? "rgba(239, 68, 68, 0.2)" : "rgba(16, 185, 129, 0.2)";
-        banner.style.border = isError ? "1px solid #ef4444" : "1px solid #10b981";
+        banner.style.background = isError
+          ? "rgba(239, 68, 68, 0.2)"
+          : "rgba(16, 185, 129, 0.2)";
+        banner.style.border = isError
+          ? "1px solid #ef4444"
+          : "1px solid #10b981";
         banner.style.color = isError ? "#fca5a5" : "#6ee7b7";
         banner.innerHTML = msg;
-        banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        banner.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
     };
 
     // Bind event handlers
-    props.forEach(tile => {
+    props.forEach((tile) => {
       // House building
       const hBtn = document.getElementById(`build-house-${tile.id}`);
       if (hBtn) {
@@ -1707,15 +1810,23 @@ export class MonopolyUI {
       }
 
       // Hotel attempt when < 4 houses
-      const attemptBtn = document.getElementById(`build-hotel-attempt-${tile.id}`);
+      const attemptBtn = document.getElementById(
+        `build-hotel-attempt-${tile.id}`,
+      );
       if (attemptBtn) {
         attemptBtn.onclick = () => {
           const state = this.engine.board[tile.id];
           sounds.playBuzzer();
           if (!this.engine.hasMonopoly(player.id, tile.group)) {
-            showNotice(`⚠️ Denied: You must own all properties in the ${tile.group} group (Monopoly) to build a Hotel!`, true);
+            showNotice(
+              `⚠️ Denied: You must own all properties in the ${tile.group} group (Monopoly) to build a Hotel!`,
+              true,
+            );
           } else {
-            showNotice(`⚠️ Denied: You must build 4 houses on this property before building a Hotel! (Currently: ${state.houses}/4 houses)`, true);
+            showNotice(
+              `⚠️ Denied: You must build 4 houses on this property before building a Hotel! (Currently: ${state.houses}/4 houses)`,
+              true,
+            );
           }
         };
       }
@@ -1847,39 +1958,45 @@ export class MonopolyUI {
       const isCleared = player.cash >= 0;
 
       // 1. Properties with houses that can be sold
-      const propsWithHouses = this.engine.getPlayerProperties(player.id)
-        .filter(p => this.engine.board[p.id]?.houses > 0);
+      const propsWithHouses = this.engine
+        .getPlayerProperties(player.id)
+        .filter((p) => this.engine.board[p.id]?.houses > 0);
 
       // 2. Properties that can be mortgaged
-      const propsCanMortgage = this.engine.getPlayerProperties(player.id)
-        .filter(p => this.engine.canMortgage(player.id, p.id));
+      const propsCanMortgage = this.engine
+        .getPlayerProperties(player.id)
+        .filter((p) => this.engine.canMortgage(player.id, p.id));
 
       const totalLiquidatable = this.engine.getLiquidatableAssets(player.id);
-      const canEverClear = (player.cash + totalLiquidatable) >= 0;
+      const canEverClear = player.cash + totalLiquidatable >= 0;
 
       let html = `
         <div style="display: flex; flex-direction: column; gap: 14px; max-height: 480px; overflow-y: auto; padding-right: 4px;">
           
-          <div style="background: ${isCleared ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; border: 1.5px solid ${isCleared ? '#10b981' : '#ef4444'}; border-radius: 12px; padding: 14px 16px;">
+          <div style="background: ${isCleared ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)"}; border: 1.5px solid ${isCleared ? "#10b981" : "#ef4444"}; border-radius: 12px; padding: 14px 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
               <div>
-                <div style="font-size: 0.78rem; text-transform: uppercase; font-weight: 800; color: ${isCleared ? '#34d399' : '#fca5a5'};">
-                  ${isCleared ? 'Debt Cleared' : 'Insolvency Notice'}
+                <div style="font-size: 0.78rem; text-transform: uppercase; font-weight: 800; color: ${isCleared ? "#34d399" : "#fca5a5"};">
+                  ${isCleared ? "Debt Cleared" : "Insolvency Notice"}
                 </div>
-                <div style="font-size: 1.35rem; font-weight: 900; font-family: var(--font-mono); color: ${isCleared ? '#34d399' : '#ef4444'}; margin-top: 2px;">
+                <div style="font-size: 1.35rem; font-weight: 900; font-family: var(--font-mono); color: ${isCleared ? "#34d399" : "#ef4444"}; margin-top: 2px;">
                   ${isCleared ? `Current Balance: +$${player.cash}` : `Deficit Owed: -$${deficit}`}
                 </div>
               </div>
               <div style="text-align: right; font-size: 0.8rem; color: #cbd5e1;">
-                ${isCleared
-                  ? '<span style="color: #34d399; font-weight: 800;">✓ Ready to continue turn</span>'
-                  : `Liquidatable Value: <strong style="color: var(--gold);">$${totalLiquidatable}</strong>`}
+                ${
+                  isCleared
+                    ? '<span style="color: #34d399; font-weight: 800;">✓ Ready to continue turn</span>'
+                    : `Liquidatable Value: <strong style="color: var(--gold);">$${totalLiquidatable}</strong>`
+                }
               </div>
             </div>
             <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 8px; line-height: 1.45;">
-              ${isCleared
-                ? 'Your balance is now non-negative. You have satisfied your obligations and may continue your turn.'
-                : 'Under Monopoly rules, you cannot remain in debt. Sell houses back to the bank for a 50% refund or mortgage unencumbered properties to raise the required cash.'}
+              ${
+                isCleared
+                  ? "Your balance is now non-negative. You have satisfied your obligations and may continue your turn."
+                  : "Under Monopoly rules, you cannot remain in debt. Sell houses back to the bank for a 50% refund or mortgage unencumbered properties to raise the required cash."
+              }
             </div>
           </div>
 
@@ -1889,30 +2006,38 @@ export class MonopolyUI {
               <span class="icon-wrap gold-icon" style="width: 16px; height: 16px;">${getIcon("HOUSE")}</span>
               <span>1. Sell Houses & Hotels to Bank (50% Refund)</span>
             </div>
-            ${propsWithHouses.length === 0
-              ? '<div style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; font-size: 0.82rem; color: #94a3b8; text-align: center;">No houses or hotels currently built to sell.</div>'
-              : `
+            ${
+              propsWithHouses.length === 0
+                ? '<div style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; font-size: 0.82rem; color: #94a3b8; text-align: center;">No houses or hotels currently built to sell.</div>'
+                : `
                 <div style="display: flex; flex-direction: column; gap: 8px;">
-                  ${propsWithHouses.map(p => {
-                    const st = this.engine.board[p.id];
-                    const canSell = this.engine.canSellHouse(player.id, p.id);
-                    const refund = Math.floor(p.houseCost / 2);
-                    const levelLabel = st.houses === 6 ? '2nd Hotel' : st.houses === 5 ? '1 Hotel' : `${st.houses} Houses`;
-                    return `
+                  ${propsWithHouses
+                    .map((p) => {
+                      const st = this.engine.board[p.id];
+                      const canSell = this.engine.canSellHouse(player.id, p.id);
+                      const refund = Math.floor(p.houseCost / 2);
+                      const levelLabel =
+                        st.houses === 6
+                          ? "2nd Hotel"
+                          : st.houses === 5
+                            ? "1 Hotel"
+                            : `${st.houses} Houses`;
+                      return `
                       <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                          <div style="width: 8px; height: 28px; border-radius: 4px; background: ${COLOR_GROUPS[p.group]?.hex || '#fff'};"></div>
+                          <div style="width: 8px; height: 28px; border-radius: 4px; background: ${COLOR_GROUPS[p.group]?.hex || "#fff"};"></div>
                           <div>
                             <div style="font-weight: 800; font-size: 0.88rem; color: #fff;">${p.name}</div>
                             <div style="font-size: 0.75rem; color: #94a3b8;">${levelLabel} • House Cost: $${p.houseCost}</div>
                           </div>
                         </div>
-                        <button class="btn-sell-house-debt" data-tile-id="${p.id}" ${!canSell ? 'disabled title="Even building rule: sell highest house in group first"' : ''} style="background: #e11d48; color: #fff; border: none; font-weight: 800; font-size: 0.8rem; padding: 7px 12px; border-radius: 6px; cursor: ${canSell ? 'pointer' : 'not-allowed'}; opacity: ${canSell ? '1' : '0.5'};">
+                        <button class="btn-sell-house-debt" data-tile-id="${p.id}" ${!canSell ? 'disabled title="Even building rule: sell highest house in group first"' : ""} style="background: #e11d48; color: #fff; border: none; font-weight: 800; font-size: 0.8rem; padding: 7px 12px; border-radius: 6px; cursor: ${canSell ? "pointer" : "not-allowed"}; opacity: ${canSell ? "1" : "0.5"};">
                           Sell 1 House (+ $${refund})
                         </button>
                       </div>
                     `;
-                  }).join('')}
+                    })
+                    .join("")}
                 </div>
               `
             }
@@ -1924,14 +2049,17 @@ export class MonopolyUI {
               <span class="icon-wrap gold-icon" style="width: 16px; height: 16px;">${getIcon("STAR")}</span>
               <span>2. Mortgage Properties (Immediate Cash)</span>
             </div>
-            ${propsCanMortgage.length === 0
-              ? '<div style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; font-size: 0.82rem; color: #94a3b8; text-align: center;">No eligible properties available to mortgage (must sell all houses in group first).</div>'
-              : `
+            ${
+              propsCanMortgage.length === 0
+                ? '<div style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; font-size: 0.82rem; color: #94a3b8; text-align: center;">No eligible properties available to mortgage (must sell all houses in group first).</div>'
+                : `
                 <div style="display: flex; flex-direction: column; gap: 8px;">
-                  ${propsCanMortgage.map(p => `
+                  ${propsCanMortgage
+                    .map(
+                      (p) => `
                     <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                       <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 8px; height: 28px; border-radius: 4px; background: ${COLOR_GROUPS[p.group]?.hex || '#fff'};"></div>
+                        <div style="width: 8px; height: 28px; border-radius: 4px; background: ${COLOR_GROUPS[p.group]?.hex || "#fff"};"></div>
                         <div>
                           <div style="font-weight: 800; font-size: 0.88rem; color: #fff;">${p.name}</div>
                           <div style="font-size: 0.75rem; color: #94a3b8;">Mortgage Value: $${p.mortgage}</div>
@@ -1941,7 +2069,9 @@ export class MonopolyUI {
                         Mortgage (+ $${p.mortgage})
                       </button>
                     </div>
-                  `).join('')}
+                  `,
+                    )
+                    .join("")}
                 </div>
               `
             }
@@ -1953,7 +2083,7 @@ export class MonopolyUI {
       this.modalBody.innerHTML = html;
 
       // Bind liquidation buttons
-      this.modalBody.querySelectorAll(".btn-sell-house-debt").forEach(btn => {
+      this.modalBody.querySelectorAll(".btn-sell-house-debt").forEach((btn) => {
         btn.onclick = () => {
           const tId = parseInt(btn.getAttribute("data-tile-id"), 10);
           this.engine.sellHouse(player.id, tId);
@@ -1964,7 +2094,7 @@ export class MonopolyUI {
         };
       });
 
-      this.modalBody.querySelectorAll(".btn-mortgage-debt").forEach(btn => {
+      this.modalBody.querySelectorAll(".btn-mortgage-debt").forEach((btn) => {
         btn.onclick = () => {
           const tId = parseInt(btn.getAttribute("data-tile-id"), 10);
           this.engine.mortgageProperty(player.id, tId);
@@ -2014,7 +2144,12 @@ export class MonopolyUI {
     this.modalOverlay.classList.add("active");
   }
 
-  showTradeModal(currentPlayer, onTradeConfirmed, preselectedTargetPlayerId, preselectedPropId) {
+  showTradeModal(
+    currentPlayer,
+    onTradeConfirmed,
+    preselectedTargetPlayerId,
+    preselectedPropId,
+  ) {
     this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon("HANDSHAKE")}</span> <span>Tycoon Trade Exchange Desk</span>`;
 
     // Safety check: Cannot target yourself in trade
@@ -2042,8 +2177,13 @@ export class MonopolyUI {
     }
 
     let targetPlayer = otherPlayers[0];
-    if (preselectedTargetPlayerId !== undefined && preselectedTargetPlayerId !== null) {
-      const found = otherPlayers.find((p) => p.id === preselectedTargetPlayerId);
+    if (
+      preselectedTargetPlayerId !== undefined &&
+      preselectedTargetPlayerId !== null
+    ) {
+      const found = otherPlayers.find(
+        (p) => p.id === preselectedTargetPlayerId,
+      );
       if (found) targetPlayer = found;
     }
 
@@ -2381,7 +2521,8 @@ export class MonopolyUI {
     this.modalFooter.innerHTML = `
       <button class="btn-secondary" id="cancelWaitingModalBtn" style="width: 100%; justify-content: center;">Dismiss</button>
     `;
-    document.getElementById("cancelWaitingModalBtn").onclick = () => this.closeModal();
+    document.getElementById("cancelWaitingModalBtn").onclick = () =>
+      this.closeModal();
     this.modalOverlay.classList.add("active");
   }
 
@@ -2430,7 +2571,7 @@ export class MonopolyUI {
     requestedCash,
     onAccept,
     onDecline,
-    attemptNote = null
+    attemptNote = null,
   ) {
     this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon("HANDSHAKE")}</span> <span>Incoming Trade Proposal</span>`;
 
@@ -2662,7 +2803,9 @@ export class MonopolyUI {
     const winnerName = winner ? winner.name : "Champion";
     const winnerColor = winner ? winner.color : "#d4af37";
     const winnerCash = winner ? winner.cash : 0;
-    const propsOwned = winner ? this.engine.getPlayerProperties(winner.id).length : 0;
+    const propsOwned = winner
+      ? this.engine.getPlayerProperties(winner.id).length
+      : 0;
 
     this.modalBody.innerHTML = `
       <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding: 12px 0;">
@@ -2795,68 +2938,279 @@ export class MonopolyUI {
     this.modalOverlay.classList.add("active");
   }
 
+  showExitConfirmationModal({ isReload = false, onConfirm, onCancel }) {
+    this.closeModal(true);
+    const titleText = isReload ? "Reload Game Session?" : "Exit Current Match?";
+    const iconName = isReload ? "WARNING" : "EXIT";
+
+    this.modalTitle.innerHTML = `<span class="icon-wrap" style="color: #ef4444;">${getIcon(iconName)}</span> <span>${titleText}</span>`;
+    
+    const message = isReload
+      ? "Are you sure you want to refresh the page? Your ongoing match, player turns, and board progress will be lost."
+      : "Are you sure you want to exit the current match? Any in-progress board states, properties, and cash balances will be discarded.";
+
+    this.modalBody.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding: 20px 8px;">
+        <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); border: 2px solid rgba(239, 68, 68, 0.45); display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 2rem;">
+          ${getIcon(iconName)}
+        </div>
+        <div style="font-size: 1.05rem; font-weight: 700; color: #f8fafc; line-height: 1.5; max-width: 420px;">
+          ${message}
+        </div>
+      </div>
+    `;
+
+    const confirmLabel = isReload ? "Reload Anyway" : "Exit to Menu";
+    this.modalFooter.innerHTML = `
+      <button class="btn-secondary" id="exitCancelBtn" style="flex: 1; justify-content: center;">
+        Stay in Game
+      </button>
+      <button class="btn-primary" id="exitConfirmBtn" style="flex: 1; justify-content: center; background: linear-gradient(135deg, #ef4444, #b91c1c); border-color: #ef4444; color: #fff;">
+        ${confirmLabel}
+      </button>
+    `;
+
+    document.getElementById("exitCancelBtn").onclick = () => {
+      this.closeModal(true);
+      if (typeof onCancel === "function") onCancel();
+    };
+
+    document.getElementById("exitConfirmBtn").onclick = () => {
+      this.closeModal(true);
+      if (typeof onConfirm === "function") onConfirm();
+    };
+
+    this.modalOverlay.classList.add("active");
+  }
+
   showRulesModal() {
+    this.closeModal(true);
+    if (this.modalCard) this.modalCard.classList.add("rules-modal");
+
+    this.modalTitle.innerHTML = "";
+    if (this.closeModalCrossBtn) this.closeModalCrossBtn.style.display = "flex";
+
     const isClassicBoard = this.engine.getBoardLength() === 40;
     const cornerStartLabel = isClassicBoard ? "GO" : "START";
     const cornerFreeLabel = isClassicBoard ? "FREE PARKING" : "SAFE ZONE";
-    const boardEditionLabel = isClassicBoard ? "40-Tile Classic Edition" : "36-Tile Custom Edition";
-    this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon("BOOK")}</span> <span>Official Rules & Master Guide</span>`;
+    const boardEditionLabel = isClassicBoard ? "40-Tile Classic Atlantic City" : "36-Tile World Mega-Cities";
+
+    const sections = {
+      overview: `
+        <div class="rules-card rules-card-gold">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("TROPHY")}</span> <span>Object of the Game</span></div>
+          <p>The objective of MONOPOLY is to become the wealthiest player through buying, renting, and trading properties until all opponents are driven into bankruptcy.</p>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("COIN")}</span> <span>Standard Equipment & Starting Bankroll</span></div>
+          <p>Each tycoon starts the match with exactly <strong>$1,500 cash</strong> distributed in standard denominations:</p>
+          <table class="rules-table">
+            <thead>
+              <tr><th>Denomination</th><th>Count</th><th>Total Value</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>$500 Bills</td><td>2</td><td>$1,000</td></tr>
+              <tr><td>$100 Bills</td><td>2</td><td>$200</td></tr>
+              <tr><td>$50 Bills</td><td>2</td><td>$100</td></tr>
+              <tr><td>$20 Bills</td><td>6</td><td>$120</td></tr>
+              <tr><td>$10 Bills</td><td>5</td><td>$50</td></tr>
+              <tr><td>$5 Bills</td><td>5</td><td>$25</td></tr>
+              <tr><td>$1 Bills</td><td>5</td><td>$5</td></tr>
+              <tr style="font-weight: 800; color: var(--gold-light);"><td>Total Capital</td><td>27 Bills</td><td>$1,500</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("HOUSE")}</span> <span>The Banker & The Treasury</span></div>
+          <p>The Bank holds all Title Deed cards, houses, and hotels prior to player purchase. The Bank never "goes broke" — if physical cash runs low, it issues credit IOUs until funds are replenished.</p>
+        </div>
+      `,
+
+      corners: `
+        <div class="rules-card rules-card-gold">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("DICE")}</span> <span>Turn Cycle & Doubles Rule</span></div>
+          <p>Players throw 2 dice and advance clockwise. Throwing <strong>Doubles</strong> grants an immediate bonus turn. However, rolling doubles <strong>3 times in succession</strong> results in immediate arrest: move directly to JAIL (turn ends, do not pass GO, do not collect $200 salary).</p>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("START_ARROW")}</span> <span>Corner 0: ${cornerStartLabel}</span></div>
+          <p>Collect <strong>$${gameSettings.goReward || 200} salary</strong> each time your token lands on or passes ${cornerStartLabel}.</p>
+          <div style="margin-top: 6px; font-size: 0.82rem; color: #94a3b8;">
+            <strong style="color: var(--gold);">Official Rule Nuance:</strong> If you pass GO on a dice roll and land on Chance or Chest, drawing an "Advance to GO" card, you collect $200 twice ($400 total)!
+          </div>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap" style="color: #60a5fa;">${getIcon("JAIL")}</span> <span>Corner 1: JAIL & JUST VISITING</span></div>
+          <p>Landing on this space through normal dice movement is strictly <strong>JUST VISITING</strong> — you incur zero penalty and move ahead as usual on your next turn. You only go to Jail if sent there by "Go to Jail", drawing an arrest card, or rolling 3 consecutive doubles.</p>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap" style="color: #34d399;">${getIcon("SAFE_ZONE")}</span> <span>Corner 2: ${cornerFreeLabel}</span></div>
+          <p>An official resting haven. Players landing here receive no special reward and pay no fines. (Standard Hasbro rules specify zero jackpot money on Free Parking).</p>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap" style="color: #ef4444;">${getIcon("POLICE")}</span> <span>Corner 3: GO TO JAIL</span></div>
+          <p>Immediate arrest! Your token moves directly to the Jail cell. Your turn ends immediately and you do NOT collect any salary from passing ${cornerStartLabel}.</p>
+        </div>
+      `,
+
+      properties: `
+        <div class="rules-card rules-card-gold">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("LAUREL")}</span> <span>Monopolies & Double Rent</span></div>
+          <p>Holding all Title Deeds in a color-group constitutes a <strong>MONOPOLY</strong>. This automatically <strong>DOUBLES</strong> the base rent on all unimproved properties in that set. This rule applies even if another property in that color-group is mortgaged!</p>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("TRAIN")}</span> <span>Railroads / International Airports</span></div>
+          <p>Rent depends on how many stations/airports are owned by that tycoon:</p>
+          <table class="rules-table">
+            <thead>
+              <tr><th>Stations Owned</th><th>Classic Rent</th><th>Custom World Rent</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1 Station</td><td>$25</td><td>$50</td></tr>
+              <tr><td>2 Stations</td><td>$50</td><td>$100</td></tr>
+              <tr><td>3 Stations</td><td>$100</td><td>$150</td></tr>
+              <tr><td>4 Stations</td><td>$200</td><td>$200</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("LIGHTNING")}</span> <span>Utilities (Electric & Water)</span></div>
+          <p>If 1 Utility is owned, rent is <strong>4x the dice roll</strong>. If both Utilities are owned by the same tycoon, rent increases to <strong>10x the dice roll</strong>!</p>
+        </div>
+      `,
+
+      houses: `
+        <div class="rules-card rules-card-gold">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("HOUSE")}</span> <span>The Uniform Building Rule</span></div>
+          <p>Houses must be built evenly across a complete color-group! You cannot construct a 2nd house on any property until every property in that set has at least 1 house. Similarly, you cannot build a 3rd house until all have 2 houses.</p>
+          <div style="margin-top: 8px; font-size: 0.84rem; color: #fca5a5;">
+            ⚠️ <strong>Mortgage Restriction:</strong> You cannot construct houses if ANY property in that color-group is mortgaged!
+          </div>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("HOTEL")}</span> <span>Hotels & Upgrades</span></div>
+          <p>Once you hold 4 houses on every property in a color-group, you may turn in 4 houses to the Bank and pay the hotel price to construct a <strong>Hotel</strong>.</p>
+          <p style="margin-top: 6px;">
+            <span class="rules-badge-official">Hasbro Standard</span> Max 1 Hotel per lot.<br/>
+            <span class="rules-badge-master" style="margin-top: 4px; display: inline-block;">Master Deluxe</span> Allows an optional 2nd "Grand Luxury Hotel" (Level 6) with a 50% rent premium!
+          </p>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("REFRESH")}</span> <span>Selling Buildings</span></div>
+          <p>Houses and hotels may be sold back to the Bank at any time for <strong>half their purchase price (50%)</strong>. Selling must also be done evenly in reverse order across the color group.</p>
+        </div>
+      `,
+
+      jail: `
+        <div class="rules-card rules-card-gold">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("JAIL")}</span> <span>Escaping from Jail</span></div>
+          <p>While locked in Jail, you can get out using one of four official methods:</p>
+          <ul style="padding-left: 20px; margin-top: 6px; display: flex; flex-direction: column; gap: 6px;">
+            <li><strong>1. Roll Doubles:</strong> Attempt to roll matching dice on any of your next 3 turns. If successful, you escape free and immediately advance the rolled amount (no extra roll).</li>
+            <li><strong>2. Pay Bail:</strong> Pay the bail fine ($${gameSettings.jailBailFee || 50}) before rolling on turn 1 or 2, then roll and move.</li>
+            <li><strong>3. VIP Golden Ticket:</strong> Use a "Get Out of Jail Free" card (held or purchased from another tycoon).</li>
+            <li><strong>4. Mandatory 3rd Turn Release:</strong> If you fail to roll doubles on your 3rd turn, you MUST pay the bail fine and advance the spaces shown on that throw.</li>
+          </ul>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("CHECK")}</span> <span>Actions Allowed While in Jail</span></div>
+          <p>Even while serving time in Jail, players <strong>CAN</strong> continue to collect rent from opponents, build houses, trade properties, and arrange mortgages!</p>
+        </div>
+      `,
+
+      finance: `
+        <div class="rules-card rules-card-gold">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("COIN")}</span> <span>Mortgages</span></div>
+          <p>Any unimproved property can be mortgaged to the Bank for <strong>50% of its face value</strong>. All buildings on that color-group must be sold to the Bank at half price before mortgaging.</p>
+          <div style="margin-top: 8px; font-size: 0.84rem;">
+            <div>• Mortgaged properties collect <strong>$0 rent</strong> from opponents.</div>
+            <div style="margin-top: 4px;">• Unmortgaging requires repaying the loan principal plus <strong>10% interest</strong> to the Bank.</div>
+          </div>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("HANDSHAKE")}</span> <span>Trading Properties</span></div>
+          <p>Tycoons can propose private trades on their turn for any combination of properties, cash, and VIP escape cards.</p>
+          <div style="margin-top: 8px; font-size: 0.84rem; color: #fca5a5;">
+            ⚠️ <strong>Official Building Constraint:</strong> No property may be traded if any buildings stand on that color-group! All buildings must be sold to the Bank first.
+          </div>
+          <div style="margin-top: 8px; font-size: 0.84rem; color: #6ee7b7;">
+            ✨ <strong>Deluxe Trade Feature:</strong> In Monopoly Master, mortgaged properties traded between players automatically have their mortgages cleared upon transfer so the buyer receives active deeds!
+          </div>
+        </div>
+      `,
+
+      variants: `
+        <div class="rules-card rules-card-gold">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("WARNING")}</span> <span>Bankruptcy & Liquidation</span></div>
+          <p>If you owe more than your liquid assets can cover:
+          <ul style="padding-left: 20px; margin-top: 6px; display: flex; flex-direction: column; gap: 6px;">
+            <li><strong>Debt to Player:</strong> All cash, unencumbered properties, and escape cards are transferred to the creditor. Buildings are sold to Bank at 50% and cash given to the creditor.</li>
+            <li><strong>Debt to Bank:</strong> The Bank seizes all assets and immediately auctions the properties to the highest bidders.</li>
+          </ul>
+          </p>
+        </div>
+
+        <div class="rules-card">
+          <div class="rules-card-title"><span class="icon-wrap gold-icon">${getIcon("CLOCK")}</span> <span>Official Short Game (60-90 Mins)</span></div>
+          <p>Official Hasbro rules include an abridged edition:</p>
+          <ul style="padding-left: 20px; margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
+            <li>1. Banker deals 3 random Title Deeds to each player for free during setup.</li>
+            <li>2. Only 3 houses are required per lot before buying a Hotel.</li>
+            <li>3. The match ends when the FIRST player goes bankrupt. Remaining players calculate their total net worth (cash + properties + buildings), and the wealthiest player is crowned champion!</li>
+          </ul>
+        </div>
+      `
+    };
+
     this.modalBody.innerHTML = `
-      <div style="display: flex; flex-direction: column; gap: 16px; max-height: 490px; overflow-y: auto; padding-right: 6px; font-size: 0.9rem; line-height: 1.55; color: #cbd5e1;">
-        
-        <div style="background: rgba(212, 175, 55, 0.12); border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 6px;">
-          <div style="font-weight: 900; color: var(--gold); font-size: 1rem; font-family: var(--font-display);">Goal of the Game</div>
-          <div>${isClassicBoard ? "Buy properties and railroads" : "Buy world mega-cities and international airports"}, collect rent from opponents, build complete monopolies with hotels, and bankrupt all rival tycoons!</div>
+      <div class="rules-hero-header">
+        <img src="images/main-logo.webp" alt="Monopoly Master" class="rules-hero-logo" />
+        <div class="rules-hero-text">
+          <h2 class="rules-hero-title">OFFICIAL RULEBOOK & MASTER GUIDE</h2>
+          <div class="rules-hero-sub">Standard Hasbro Ruleset & Monopoly Master Deluxe Regulations (${boardEditionLabel})</div>
         </div>
+      </div>
 
-        <div>
-          <div style="font-weight: 900; color: #fff; margin-bottom: 6px; font-size: 0.96rem;">1. The 4 Iconic Corners (${boardEditionLabel})</div>
-          <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 5px;">
-            <li><strong>${cornerStartLabel}:</strong> Collect $${gameSettings.goReward} every time you land on or pass ${isClassicBoard ? "GO" : "START"}.</li>
-            <li><strong>JAIL (Corner 1):</strong> Landing here sends you to Jail in this edition. On your <em>next turn</em>, you can pay <strong>$${gameSettings.jailBailFee} Bail</strong> to be released immediately, use a <strong>VIP Golden Ticket</strong>, or roll for doubles. If doubles are rolled, you escape for free and advance.</li>
-            <li><strong>${cornerFreeLabel} (Corner 2):</strong> Safe resting haven. Take a break without any penalties or rent.</li>
-            <li><strong>GO TO JAIL (Corner 3):</strong> Arrested! Sent straight to the Jail cell without passing ${isClassicBoard ? "GO" : "START"}.</li>
-          </ul>
-        </div>
+      <div class="rules-tab-bar" id="rulesTabBar">
+        <button class="rules-tab-btn active" data-tab="overview"><span class="icon-wrap">${getIcon("BOOK")}</span> Overview</button>
+        <button class="rules-tab-btn" data-tab="corners"><span class="icon-wrap">${getIcon("DICE")}</span> Movement & Corners</button>
+        <button class="rules-tab-btn" data-tab="properties"><span class="icon-wrap">${getIcon("LAUREL")}</span> Properties & Rent</button>
+        <button class="rules-tab-btn" data-tab="houses"><span class="icon-wrap">${getIcon("HOUSE")}</span> Houses & Hotels</button>
+        <button class="rules-tab-btn" data-tab="jail"><span class="icon-wrap">${getIcon("JAIL")}</span> Jail & Bail</button>
+        <button class="rules-tab-btn" data-tab="finance"><span class="icon-wrap">${getIcon("HANDSHAKE")}</span> Mortgages & Trade</button>
+        <button class="rules-tab-btn" data-tab="variants"><span class="icon-wrap">${getIcon("TROPHY")}</span> Bankruptcy & Variants</button>
+      </div>
 
-        <div>
-          <div style="font-weight: 900; color: #fff; margin-bottom: 6px; font-size: 0.96rem;">2. ${isClassicBoard ? "Railroads" : "International Airports / Stations"} (Rent Schedule)</div>
-          <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 5px;">
-            <li>1 ${isClassicBoard ? "Railroad" : "Airport / Station"} Owned: <strong>$${isClassicBoard ? 25 : 50} Rent</strong></li>
-            <li>2 Owned: <strong>$${isClassicBoard ? 50 : 100} Rent</strong></li>
-            <li>3 Owned: <strong>$${isClassicBoard ? 100 : 150} Rent</strong></li>
-            <li>4 Owned: <strong>$200 Rent</strong></li>
-          </ul>
-        </div>
-
-        <div>
-          <div style="font-weight: 900; color: #fff; margin-bottom: 6px; font-size: 0.96rem;">3. Monopolies, Houses & Hotels</div>
-          <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 5px;">
-            <li>Owning all properties in a color group grants a <strong>MONOPOLY</strong>, doubling base rent.</li>
-            <li>Once you hold a monopoly, build houses evenly (up to 4 houses, then upgrade to 1 Hotel).</li>
-            <li><strong>Even Building Rule:</strong> You cannot construct a 2nd house on a city until all cities in that group have at least 1 house.</li>
-          </ul>
-        </div>
-
-        <div>
-          <div style="font-weight: 900; color: #fff; margin-bottom: 6px; font-size: 0.96rem;">4. Lucky Chest & Surprise Chance Decks (40+ Dynamic Cards)</div>
-          <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 5px;">
-            <li><strong>Benefits:</strong> Win Mega Lotteries (+$300), stock dividends, or birthday gifts from every player ($20).</li>
-            <li><strong>Penalties:</strong> Pay speeding tickets, emergency clinic bills, or host gala parties ($20 each).</li>
-            <li><strong>Warps & Tickets:</strong> Teleport to ${isClassicBoard ? "GO" : "START"}, travel to the nearest ${isClassicBoard ? "Railroad" : "Airport"}, or collect VIP Jail Escape tickets.</li>
-          </ul>
-        </div>
-
-        <div>
-          <div style="font-weight: 900; color: #fff; margin-bottom: 6px; font-size: 0.96rem;">5. Trading & Mortgaging</div>
-          <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 5px;">
-            <li>Click <strong>Propose Trade</strong> on your turn to swap properties and cash with players or AI bots.</li>
-            <li>Mortgage unmonopolized properties for 50% face value if cash is tight. Mortgaged properties collect $0 rent.</li>
-          </ul>
-        </div>
-
+      <div class="rules-scroll-body" id="rulesScrollContent">
+        ${sections.overview}
       </div>
     `;
+
+    const tabBtns = this.modalBody.querySelectorAll(".rules-tab-btn");
+    const contentEl = document.getElementById("rulesScrollContent");
+
+    tabBtns.forEach((btn) => {
+      btn.onclick = () => {
+        tabBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const tabKey = btn.getAttribute("data-tab");
+        if (contentEl && sections[tabKey]) {
+          contentEl.innerHTML = sections[tabKey];
+          contentEl.scrollTop = 0;
+        }
+      };
+    });
 
     this.modalFooter.innerHTML = `<button class="btn-primary" id="closeRulesBtn" style="width: 100%; justify-content: center;">Understood, Let's Play!</button>`;
     document.getElementById("closeRulesBtn").onclick = () => this.closeModal();
@@ -2864,7 +3218,12 @@ export class MonopolyUI {
   }
 
   closeModal(force = false) {
-    if (!force && this.isDebtModal && (this.engine.getCurrentPlayer()?.cash < 0 || this.getLocalPlayer()?.cash < 0)) {
+    if (
+      !force &&
+      this.isDebtModal &&
+      (this.engine.getCurrentPlayer()?.cash < 0 ||
+        this.getLocalPlayer()?.cash < 0)
+    ) {
       sounds.playBuzzer();
       return;
     }
@@ -2880,6 +3239,12 @@ export class MonopolyUI {
     if (this.closeModalCrossBtn) this.closeModalCrossBtn.style.display = "";
     this.isInspectModal = false;
     this.modalOverlay.classList.remove("active");
-    if (this.modalCard) this.modalCard.classList.remove("naked-modal", "setup-modal", "property-management-modal");
+    if (this.modalCard)
+      this.modalCard.classList.remove(
+        "naked-modal",
+        "setup-modal",
+        "property-management-modal",
+        "rules-modal",
+      );
   }
 }

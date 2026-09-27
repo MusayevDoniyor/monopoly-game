@@ -1,373 +1,486 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Play Monopoly Master online with friends or against clever AI bots. Choose classic or world boards, trade properties, build empires, and compete in real time." />
-  <meta name="theme-color" content="#07150e" />
-  <meta name="robots" content="index, follow, max-image-preview:large" />
-  <link rel="canonical" href="https://monopoly-master.onrender.com/" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Monopoly Master" />
-  <meta property="og:title" content="Monopoly Master — Play Online" />
-  <meta property="og:description" content="Build your empire, trade with friends, and challenge AI in Monopoly Master." />
-  <meta property="og:url" content="https://monopoly-master.onrender.com/" />
-  <meta property="og:image" content="https://monopoly-master.onrender.com/images/social-preview.jpg" />
-  <meta property="og:image:type" content="image/jpeg" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Monopoly Master board-game logo on a dark green background" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Monopoly Master — Play Online" />
-  <meta name="twitter:description" content="Build your empire, trade with friends, and challenge AI in Monopoly Master." />
-  <meta name="twitter:image" content="https://monopoly-master.onrender.com/images/social-preview.jpg" />
-  <link rel="preload" as="image" href="images/main-logo.webp" fetchpriority="high" />
-  <link rel="stylesheet" href="css/style.css?v=5.9" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎩</text></svg>">
-</head>
-<body oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
-
-  <!-- Top Minimalist Bar (Clean, Uncluttered, Steam / Microsoft Store Aesthetic) -->
-  <header>
-    <div class="brand">
-      <span class="brand-hat-icon" title="Monopoly Master">🎩</span>
-      <span class="brand-badge">MONOPOLY</span>
-      <span class="brand-title">MASTER EDITION</span>
-      <span class="edition-tag" id="editionTag">Classic Atlantic (40 Tiles)</span>
-      <div class="match-timer-badge" id="matchTimerBadge" title="Match Duration">
-        <span class="icon-wrap" id="matchTimerIcon"></span>
-        <span id="matchTimerText">00:00</span>
-      </div>
-      <div class="online-room-badge" id="onlineRoomBadge" style="display: none;" title="Multiplayer Room Status">
-        <span class="online-status-dot"></span>
-        <span id="onlineRoomText">ONLINE</span>
-      </div>
-    </div>
-
-    <!-- Quick Audio & App Toggles + Slide-out Menu Trigger -->
-    <div class="header-controls">
-      <button class="btn-icon" id="musicBtn" title="Toggle Jazz Music" aria-label="Music">
-        <span class="icon-wrap" id="musicIconWrap"></span>
-      </button>
-      <button class="btn-icon" id="muteBtn" title="Toggle Sound FX" aria-label="Sound">
-        <span class="icon-wrap" id="muteIconWrap"></span>
-      </button>
-      <button class="btn-icon" id="rulesHeaderBtn" title="Official Rules & Guide" aria-label="Rules">
-        <span class="icon-wrap" id="rulesHeaderIconWrap"></span>
-      </button>
-      <button class="btn-icon" id="fullscreenBtn" title="Toggle Fullscreen" aria-label="Fullscreen">
-        <span class="icon-wrap" id="fullscreenIconWrap"></span>
-      </button>
-
-      <!-- Main Game Menu Button (Replaces cluttered top row of buttons) -->
-      <button class="btn-menu" id="gameMenuBtn" title="Open Game Menu">
-        <span class="icon-wrap" id="menuIconWrap"></span>
-        <span class="btn-menu-label">GAME MENU</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- Slide-out Game Menu Drawer / Control Hub -->
-  <div class="menu-drawer-backdrop" id="menuDrawerBackdrop"></div>
-  <aside class="menu-drawer" id="menuDrawer">
-    <div class="menu-drawer-header">
-      <div class="menu-drawer-title">
-        <span class="icon-wrap gold-icon" id="drawerHeaderIcon"></span>
-        <span>CONTROL HUB</span>
-      </div>
-      <button class="btn-icon btn-close-drawer" id="closeDrawerBtn" title="Close Menu">
-        <span class="icon-wrap" id="closeDrawerIconWrap"></span>
-      </button>
-    </div>
-
-    <div class="menu-drawer-content">
-      <div class="drawer-section-label">GAMEPLAY & STRATEGY</div>
-
-      <button class="drawer-item" id="drawerRulesBtn">
-        <div class="drawer-item-icon" id="rulesIconWrap"></div>
-        <div class="drawer-item-text">
-          <div class="drawer-item-title">Rules & Master Guide</div>
-          <div class="drawer-item-desc" id="boardRulesDesc">40-tile classic layout, $150 bail, linear station rents</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Play Monopoly Master online with friends or against clever AI bots. Choose classic or world boards, trade properties, build empires, and compete in real time."
+    />
+    <meta name="theme-color" content="#07150e" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://monopoly-master.onrender.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Monopoly Master" />
+    <meta property="og:title" content="Monopoly Master — Play Online" />
+    <meta
+      property="og:description"
+      content="Build your empire, trade with friends, and challenge AI in Monopoly Master."
+    />
+    <meta property="og:url" content="https://monopoly-master.onrender.com/" />
+    <meta
+      property="og:image"
+      content="https://monopoly-master.onrender.com/images/social-preview.jpg"
+    />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Monopoly Master board-game logo on a dark green background"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Monopoly Master — Play Online" />
+    <meta
+      name="twitter:description"
+      content="Build your empire, trade with friends, and challenge AI in Monopoly Master."
+    />
+    <meta
+      name="twitter:image"
+      content="https://monopoly-master.onrender.com/images/social-preview.jpg"
+    />
+    <link
+      rel="preload"
+      as="image"
+      href="images/main-logo.webp"
+      fetchpriority="high"
+    />
+    <link rel="stylesheet" href="css/style.css?v=6.2" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎩</text></svg>"
+    />
+  </head>
+  <body
+    oncontextmenu="return false;"
+    onselectstart="return false;"
+    ondragstart="return false;"
+  >
+    <!-- Top Minimalist Bar (Clean, Uncluttered, Steam / Microsoft Store Aesthetic) -->
+    <header>
+      <div class="brand">
+        <span class="brand-hat-icon" title="Monopoly Master">🎩</span>
+        <span class="brand-badge">MONOPOLY</span>
+        <span class="brand-title">MASTER EDITION</span>
+        <span class="edition-tag" id="editionTag"
+          >Classic Atlantic (40 Tiles)</span
+        >
+        <div
+          class="match-timer-badge"
+          id="matchTimerBadge"
+          title="Match Duration"
+        >
+          <span class="icon-wrap" id="matchTimerIcon"></span>
+          <span id="matchTimerText">00:00</span>
         </div>
-      </button>
-
-      <button class="drawer-item" id="drawerGeminiBtn">
-        <div class="drawer-item-icon gemini-accent" id="geminiIconWrap"></div>
-        <div class="drawer-item-text">
-          <div class="drawer-item-title">Ask Gemini AI Advisor</div>
-          <div class="drawer-item-desc">Grandmaster heuristics & AI tactical insights</div>
-        </div>
-      </button>
-
-      <button class="drawer-item" id="drawerHeatmapBtn">
-        <div class="drawer-item-icon" id="heatmapIconWrap"></div>
-        <div class="drawer-item-text">
-          <div class="drawer-item-title" id="heatmapDrawerTitle">Strategic Heatmap</div>
-          <div class="drawer-item-desc">Overlay Markov landing probability stats</div>
-        </div>
-      </button>
-
-      <div class="drawer-section-label">MATCH & SESSION</div>
-
-      <button class="drawer-item" id="drawerSpeedBtn">
-        <div class="drawer-item-icon" id="speedIconWrap"></div>
-        <div class="drawer-item-text">
-          <div class="drawer-item-title" id="speedDrawerTitle">Game Speed: 1x</div>
-          <div class="drawer-item-desc">Cycle between Normal (1x), Fast (2x), and Turbo (4x)</div>
-        </div>
-      </button>
-
-      <button class="drawer-item" id="drawerSettingsBtn">
-        <div class="drawer-item-icon" id="settingsIconWrap"></div>
-        <div class="drawer-item-text">
-          <div class="drawer-item-title">Game Settings</div>
-          <div class="drawer-item-desc">Custom rules, bail fees, starting bankroll</div>
-        </div>
-      </button>
-
-      <button class="drawer-item" id="drawerNewGameBtn">
-        <div class="drawer-item-icon" id="newGameIconWrap"></div>
-        <div class="drawer-item-text">
-          <div class="drawer-item-title">New Match / Room</div>
-          <div class="drawer-item-desc">Play solo with bots or host/join multiplayer room</div>
-        </div>
-      </button>
-
-      <button class="drawer-item" id="drawerAchievementsBtn">
-        <div class="drawer-item-icon" id="trophyIconWrap"></div>
-        <div class="drawer-item-text">
-          <div class="drawer-item-title">Achievements</div>
-          <div class="drawer-item-desc">Review unlocked tycoon trophies and milestones</div>
-        </div>
-      </button>
-    </div>
-
-    <div class="menu-drawer-footer">
-      <div class="version-label">Monopoly Master v2.7 • Deluxe 2D Edition</div>
-    </div>
-  </aside>
-
-  <!-- Main Game Workspace -->
-  <main class="app-container">
-    
-    <!-- 2D Board Section -->
-    <div class="board-wrapper">
-      <div class="board-container" id="boardContainer">
-        
-        <!-- Board Center Felt Area -->
-        <div class="board-center">
-
-          <div class="classic-center-art" aria-hidden="true">
-            <div class="classic-art-card classic-art-community">
-              <img src="images/chest-bg.webp" alt="" />
-              <span>COMMUNITY<br>CHEST</span>
-            </div>
-            <div class="classic-art-card classic-art-chance">
-              <img src="images/chance-bg.webp" alt="" />
-              <span>CHANCE</span>
-            </div>
-          </div>
-          
-          <div class="center-logo-wrap">
-            <img src="images/main-logo.webp" alt="Monopoly Master" class="monopoly-logo-img" width="960" height="682" fetchpriority="high" decoding="async">
-          </div>
-
-          <!-- Dice & Turn Actions Arena -->
-          <div class="dice-arena">
-            <div class="dice-tray" id="diceTray">
-              <!-- 3D Die 1 Scene -->
-              <div class="die-scene" id="dieScene1">
-                <div class="die-cube" id="die1">
-                  <!-- Face 1: Value 1 (Front) -->
-                  <div class="die-face face-front is-one">
-                    <div class="pip pip-center"></div>
-                  </div>
-                  <!-- Face 6: Value 6 (Back) -->
-                  <div class="die-face face-back">
-                    <div class="pip pip-tl"></div>
-                    <div class="pip pip-tr"></div>
-                    <div class="pip pip-ml"></div>
-                    <div class="pip pip-mr"></div>
-                    <div class="pip pip-bl"></div>
-                    <div class="pip pip-br"></div>
-                  </div>
-                  <!-- Face 2: Value 2 (Top) -->
-                  <div class="die-face face-top">
-                    <div class="pip pip-tl"></div>
-                    <div class="pip pip-br"></div>
-                  </div>
-                  <!-- Face 5: Value 5 (Bottom) -->
-                  <div class="die-face face-bottom">
-                    <div class="pip pip-tl"></div>
-                    <div class="pip pip-tr"></div>
-                    <div class="pip pip-center"></div>
-                    <div class="pip pip-bl"></div>
-                    <div class="pip pip-br"></div>
-                  </div>
-                  <!-- Face 3: Value 3 (Right) -->
-                  <div class="die-face face-right">
-                    <div class="pip pip-tl"></div>
-                    <div class="pip pip-center"></div>
-                    <div class="pip pip-br"></div>
-                  </div>
-                  <!-- Face 4: Value 4 (Left) -->
-                  <div class="die-face face-left">
-                    <div class="pip pip-tl"></div>
-                    <div class="pip pip-tr"></div>
-                    <div class="pip pip-bl"></div>
-                    <div class="pip pip-br"></div>
-                  </div>
-                </div>
-                <div class="die-shadow"></div>
-              </div>
-
-              <!-- 3D Die 2 Scene -->
-              <div class="die-scene" id="dieScene2">
-                <div class="die-cube" id="die2">
-                  <!-- Face 1: Value 1 (Front) -->
-                  <div class="die-face face-front is-one">
-                    <div class="pip pip-center"></div>
-                  </div>
-                  <!-- Face 6: Value 6 (Back) -->
-                  <div class="die-face face-back">
-                    <div class="pip pip-tl"></div>
-                    <div class="pip pip-tr"></div>
-                    <div class="pip pip-ml"></div>
-                    <div class="pip pip-mr"></div>
-                    <div class="pip pip-bl"></div>
-                    <div class="pip pip-br"></div>
-                  </div>
-                  <!-- Face 2: Value 2 (Top) -->
-                  <div class="die-face face-top">
-                    <div class="pip pip-tl"></div>
-                    <div class="pip pip-br"></div>
-                  </div>
-                  <!-- Face 5: Value 5 (Bottom) -->
-                  <div class="die-face face-bottom">
-                    <div class="pip pip-tl"></div>
-                    <div class="pip pip-tr"></div>
-                    <div class="pip pip-center"></div>
-                    <div class="pip pip-bl"></div>
-                    <div class="pip pip-br"></div>
-                  </div>
-                  <!-- Face 3: Value 3 (Right) -->
-                  <div class="die-face face-right">
-                    <div class="pip pip-tl"></div>
-                    <div class="pip pip-center"></div>
-                    <div class="pip pip-br"></div>
-                  </div>
-                  <!-- Face 4: Value 4 (Left) -->
-                  <div class="die-face face-left">
-                    <div class="pip pip-tl"></div>
-                    <div class="pip pip-tr"></div>
-                    <div class="pip pip-bl"></div>
-                    <div class="pip pip-br"></div>
-                  </div>
-                </div>
-                <div class="die-shadow"></div>
-              </div>
-            </div>
-
-            <!-- Current Turn & Controls Card -->
-            <div class="turn-action-card">
-              <div class="turn-player-header">
-                <div class="token-avatar" id="turnPlayerToken"></div>
-                <span id="turnPlayerName">Player 1</span>
-                <div class="turn-timer-badge" id="turnTimerBadge" title="Turn Remaining Time">
-                  <span class="icon-wrap" id="turnTimerIcon" style="width: 12px; height: 12px;"></span>
-                  <span id="turnTimerCount">25s</span>
-                </div>
-              </div>
-              <div class="turn-timer-bar-wrap">
-                <div class="turn-timer-bar" id="turnTimerBar"></div>
-              </div>
-              <div class="turn-status-text" id="turnStatus">Roll dice to move</div>
-              <div class="action-buttons">
-                <button class="btn-primary" id="rollDiceBtn">
-                  <span class="icon-wrap" id="btnRollDiceIcon"></span>
-                  <span id="rollDiceBtnText">Roll Dice</span>
-                </button>
-                <button class="btn-secondary" id="endTurnBtn" disabled>
-                  <span class="icon-wrap" id="btnEndTurnIcon"></span>
-                  <span>End Turn</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bottom Action Buttons: Manage Properties & Trade -->
-          <div class="center-quick-actions">
-            <button class="btn-ctrl" id="managePropsBtn">
-              <span class="icon-wrap" id="btnManageIcon"></span>
-              <span>Manage Properties</span>
-            </button>
-            <button class="btn-ctrl" id="tradeBtn">
-              <span class="icon-wrap" id="btnTradeIcon"></span>
-              <span>Propose Trade</span>
-            </button>
-          </div>
-
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Side HUD: Player Cards & Game Log -->
-    <aside class="hud-panel">
-      
-      <!-- Players Section -->
-      <div class="panel-card hud-players-card">
-        <div class="panel-title">
-          <div class="panel-title-left">
-            <span class="icon-wrap gold-icon" id="tycoonsTitleIcon"></span>
-            <span>Tycoons</span>
-          </div>
-          <span class="panel-subtitle" id="boardEditionSubtitle">Classic 40-Tile Rules</span>
-        </div>
-        <div class="players-list" id="playersList">
-          <!-- Dynamically populated -->
+        <div
+          class="online-room-badge"
+          id="onlineRoomBadge"
+          style="display: none"
+          title="Multiplayer Room Status"
+        >
+          <span class="online-status-dot"></span>
+          <span id="onlineRoomText">ONLINE</span>
         </div>
       </div>
 
-      <!-- Live Event Log -->
-      <div class="panel-card hud-log-card">
-        <div class="panel-title">
-          <div class="panel-title-left">
-            <span class="icon-wrap gold-icon" id="logTitleIcon"></span>
-            <span>Live Activity Feed</span>
-          </div>
-          <span class="panel-subtitle">Real-Time</span>
-        </div>
-        <div class="log-box" id="logBox">
-          <!-- Dynamically populated -->
-        </div>
-      </div>
+      <!-- Quick Audio & App Toggles + Slide-out Menu Trigger -->
+      <div class="header-controls">
+        <button
+          class="btn-icon"
+          id="musicBtn"
+          title="Toggle Jazz Music"
+          aria-label="Music"
+        >
+          <span class="icon-wrap" id="musicIconWrap"></span>
+        </button>
+        <button
+          class="btn-icon"
+          id="muteBtn"
+          title="Toggle Sound FX"
+          aria-label="Sound"
+        >
+          <span class="icon-wrap" id="muteIconWrap"></span>
+        </button>
+        <button
+          class="btn-icon"
+          id="rulesHeaderBtn"
+          title="Official Rules & Guide"
+          aria-label="Rules"
+        >
+          <span class="icon-wrap" id="rulesHeaderIconWrap"></span>
+        </button>
+        <button
+          class="btn-icon"
+          id="fullscreenBtn"
+          title="Toggle Fullscreen"
+          aria-label="Fullscreen"
+        >
+          <span class="icon-wrap" id="fullscreenIconWrap"></span>
+        </button>
 
-    </aside>
+        <!-- Direct Exit / Restart Game Button -->
+        <button
+          class="btn-exit-game"
+          id="exitGameHeaderBtn"
+          title="Exit Match / Restart"
+        >
+          <span class="icon-wrap" id="exitIconWrap"></span>
+          <span class="btn-exit-label">EXIT GAME</span>
+        </button>
 
-  </main>
-
-  <!-- Interactive Modal System -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 id="modalTitle">Modal Title</h3>
-        <button class="btn-icon btn-modal-close" id="closeModalCrossBtn" title="Close">
-          <span class="icon-wrap" id="modalCloseCrossIcon"></span>
+        <!-- Main Game Menu Button (Replaces cluttered top row of buttons) -->
+        <button class="btn-menu" id="gameMenuBtn" title="Open Game Menu">
+          <span class="icon-wrap" id="menuIconWrap"></span>
+          <span class="btn-menu-label">GAME MENU</span>
         </button>
       </div>
-      <div id="modalBody" class="modal-body-scroll">
-        <!-- Injected Content -->
+    </header>
+
+    <!-- Slide-out Game Menu Drawer / Control Hub -->
+    <div class="menu-drawer-backdrop" id="menuDrawerBackdrop"></div>
+    <aside class="menu-drawer" id="menuDrawer">
+      <div class="menu-drawer-header">
+        <div class="menu-drawer-title">
+          <span class="icon-wrap gold-icon" id="drawerHeaderIcon"></span>
+          <span>CONTROL HUB</span>
+        </div>
+        <button
+          class="btn-icon btn-close-drawer"
+          id="closeDrawerBtn"
+          title="Close Menu"
+        >
+          <span class="icon-wrap" id="closeDrawerIconWrap"></span>
+        </button>
       </div>
-      <div id="modalFooter" class="modal-footer">
-        <!-- Injected Action Buttons -->
+
+      <div class="menu-drawer-content">
+        <div class="drawer-section-label">GAMEPLAY & STRATEGY</div>
+
+        <button class="drawer-item" id="drawerRulesBtn">
+          <div class="drawer-item-icon" id="rulesIconWrap"></div>
+          <div class="drawer-item-text">
+            <div class="drawer-item-title">Rules & Master Guide</div>
+            <div class="drawer-item-desc" id="boardRulesDesc">
+              40-tile classic layout, $150 bail, linear station rents
+            </div>
+          </div>
+        </button>
+
+        <button class="drawer-item" id="drawerGeminiBtn">
+          <div class="drawer-item-icon gemini-accent" id="geminiIconWrap"></div>
+          <div class="drawer-item-text">
+            <div class="drawer-item-title">Ask Gemini AI Advisor</div>
+            <div class="drawer-item-desc">
+              Grandmaster heuristics & AI tactical insights
+            </div>
+          </div>
+        </button>
+
+        <button class="drawer-item" id="drawerHeatmapBtn">
+          <div class="drawer-item-icon" id="heatmapIconWrap"></div>
+          <div class="drawer-item-text">
+            <div class="drawer-item-title" id="heatmapDrawerTitle">
+              Strategic Heatmap
+            </div>
+            <div class="drawer-item-desc">
+              Overlay Markov landing probability stats
+            </div>
+          </div>
+        </button>
+
+        <div class="drawer-section-label">MATCH & SESSION</div>
+
+        <button class="drawer-item" id="drawerSpeedBtn">
+          <div class="drawer-item-icon" id="speedIconWrap"></div>
+          <div class="drawer-item-text">
+            <div class="drawer-item-title" id="speedDrawerTitle">
+              Game Speed: 1x
+            </div>
+            <div class="drawer-item-desc">
+              Cycle between Normal (1x), Fast (2x), and Turbo (4x)
+            </div>
+          </div>
+        </button>
+
+        <button class="drawer-item" id="drawerSettingsBtn">
+          <div class="drawer-item-icon" id="settingsIconWrap"></div>
+          <div class="drawer-item-text">
+            <div class="drawer-item-title">Game Settings</div>
+            <div class="drawer-item-desc">
+              Custom rules, bail fees, starting bankroll
+            </div>
+          </div>
+        </button>
+
+        <button class="drawer-item" id="drawerNewGameBtn">
+          <div class="drawer-item-icon" id="newGameIconWrap"></div>
+          <div class="drawer-item-text">
+            <div class="drawer-item-title">New Match / Room</div>
+            <div class="drawer-item-desc">
+              Play solo with bots or host/join multiplayer room
+            </div>
+          </div>
+        </button>
+
+        <button class="drawer-item" id="drawerAchievementsBtn">
+          <div class="drawer-item-icon" id="trophyIconWrap"></div>
+          <div class="drawer-item-text">
+            <div class="drawer-item-title">Achievements</div>
+            <div class="drawer-item-desc">
+              Review unlocked tycoon trophies and milestones
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <div class="menu-drawer-footer">
+        <div class="version-label">
+          Monopoly Master v2.7 • Deluxe 2D Edition
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Game Workspace -->
+    <main class="app-container">
+      <!-- 2D Board Section -->
+      <div class="board-wrapper">
+        <div class="board-container" id="boardContainer">
+          <!-- Board Center Felt Area -->
+          <div class="board-center">
+            <div class="classic-center-art" aria-hidden="true">
+              <div class="classic-art-card classic-art-community">
+                <img src="images/chest-bg.webp" alt="" />
+                <span>COMMUNITY<br />CHEST</span>
+              </div>
+              <div class="classic-art-card classic-art-chance">
+                <img src="images/chance-bg.webp" alt="" />
+                <span>CHANCE</span>
+              </div>
+            </div>
+
+            <div class="center-logo-wrap">
+              <img
+                src="images/main-logo.webp"
+                alt="Monopoly Master"
+                class="monopoly-logo-img"
+                width="960"
+                height="682"
+                fetchpriority="high"
+                decoding="async"
+              />
+            </div>
+
+            <!-- Dice & Turn Actions Arena -->
+            <div class="dice-arena">
+              <div class="dice-tray" id="diceTray">
+                <!-- 3D Die 1 Scene -->
+                <div class="die-scene" id="dieScene1">
+                  <div class="die-cube" id="die1">
+                    <!-- Face 1: Value 1 (Front) -->
+                    <div class="die-face face-front is-one">
+                      <div class="pip pip-center"></div>
+                    </div>
+                    <!-- Face 6: Value 6 (Back) -->
+                    <div class="die-face face-back">
+                      <div class="pip pip-tl"></div>
+                      <div class="pip pip-tr"></div>
+                      <div class="pip pip-ml"></div>
+                      <div class="pip pip-mr"></div>
+                      <div class="pip pip-bl"></div>
+                      <div class="pip pip-br"></div>
+                    </div>
+                    <!-- Face 2: Value 2 (Top) -->
+                    <div class="die-face face-top">
+                      <div class="pip pip-tl"></div>
+                      <div class="pip pip-br"></div>
+                    </div>
+                    <!-- Face 5: Value 5 (Bottom) -->
+                    <div class="die-face face-bottom">
+                      <div class="pip pip-tl"></div>
+                      <div class="pip pip-tr"></div>
+                      <div class="pip pip-center"></div>
+                      <div class="pip pip-bl"></div>
+                      <div class="pip pip-br"></div>
+                    </div>
+                    <!-- Face 3: Value 3 (Right) -->
+                    <div class="die-face face-right">
+                      <div class="pip pip-tl"></div>
+                      <div class="pip pip-center"></div>
+                      <div class="pip pip-br"></div>
+                    </div>
+                    <!-- Face 4: Value 4 (Left) -->
+                    <div class="die-face face-left">
+                      <div class="pip pip-tl"></div>
+                      <div class="pip pip-tr"></div>
+                      <div class="pip pip-bl"></div>
+                      <div class="pip pip-br"></div>
+                    </div>
+                  </div>
+                  <div class="die-shadow"></div>
+                </div>
+
+                <!-- 3D Die 2 Scene -->
+                <div class="die-scene" id="dieScene2">
+                  <div class="die-cube" id="die2">
+                    <!-- Face 1: Value 1 (Front) -->
+                    <div class="die-face face-front is-one">
+                      <div class="pip pip-center"></div>
+                    </div>
+                    <!-- Face 6: Value 6 (Back) -->
+                    <div class="die-face face-back">
+                      <div class="pip pip-tl"></div>
+                      <div class="pip pip-tr"></div>
+                      <div class="pip pip-ml"></div>
+                      <div class="pip pip-mr"></div>
+                      <div class="pip pip-bl"></div>
+                      <div class="pip pip-br"></div>
+                    </div>
+                    <!-- Face 2: Value 2 (Top) -->
+                    <div class="die-face face-top">
+                      <div class="pip pip-tl"></div>
+                      <div class="pip pip-br"></div>
+                    </div>
+                    <!-- Face 5: Value 5 (Bottom) -->
+                    <div class="die-face face-bottom">
+                      <div class="pip pip-tl"></div>
+                      <div class="pip pip-tr"></div>
+                      <div class="pip pip-center"></div>
+                      <div class="pip pip-bl"></div>
+                      <div class="pip pip-br"></div>
+                    </div>
+                    <!-- Face 3: Value 3 (Right) -->
+                    <div class="die-face face-right">
+                      <div class="pip pip-tl"></div>
+                      <div class="pip pip-center"></div>
+                      <div class="pip pip-br"></div>
+                    </div>
+                    <!-- Face 4: Value 4 (Left) -->
+                    <div class="die-face face-left">
+                      <div class="pip pip-tl"></div>
+                      <div class="pip pip-tr"></div>
+                      <div class="pip pip-bl"></div>
+                      <div class="pip pip-br"></div>
+                    </div>
+                  </div>
+                  <div class="die-shadow"></div>
+                </div>
+              </div>
+
+              <!-- Current Turn & Controls Card -->
+              <div class="turn-action-card">
+                <div class="turn-player-header">
+                  <div class="token-avatar" id="turnPlayerToken"></div>
+                  <span id="turnPlayerName">Player 1</span>
+                  <div
+                    class="turn-timer-badge"
+                    id="turnTimerBadge"
+                    title="Turn Remaining Time"
+                  >
+                    <span
+                      class="icon-wrap"
+                      id="turnTimerIcon"
+                      style="width: 12px; height: 12px"
+                    ></span>
+                    <span id="turnTimerCount">25s</span>
+                  </div>
+                </div>
+                <div class="turn-timer-bar-wrap">
+                  <div class="turn-timer-bar" id="turnTimerBar"></div>
+                </div>
+                <div class="turn-status-text" id="turnStatus">
+                  Roll dice to move
+                </div>
+                <div class="action-buttons">
+                  <button class="btn-primary" id="rollDiceBtn">
+                    <span class="icon-wrap" id="btnRollDiceIcon"></span>
+                    <span id="rollDiceBtnText">Roll Dice</span>
+                  </button>
+                  <button class="btn-secondary" id="endTurnBtn" disabled>
+                    <span class="icon-wrap" id="btnEndTurnIcon"></span>
+                    <span>End Turn</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Action Buttons: Manage Properties & Trade -->
+            <div class="center-quick-actions">
+              <button class="btn-ctrl" id="managePropsBtn">
+                <span class="icon-wrap" id="btnManageIcon"></span>
+                <span>Manage Properties</span>
+              </button>
+              <button class="btn-ctrl" id="tradeBtn">
+                <span class="icon-wrap" id="btnTradeIcon"></span>
+                <span>Propose Trade</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side HUD: Player Cards & Game Log -->
+      <aside class="hud-panel">
+        <!-- Players Section -->
+        <div class="panel-card hud-players-card">
+          <div class="panel-title">
+            <div class="panel-title-left">
+              <span class="icon-wrap gold-icon" id="tycoonsTitleIcon"></span>
+              <span>Tycoons</span>
+            </div>
+            <span class="panel-subtitle" id="boardEditionSubtitle"
+              >Classic 40-Tile Rules</span
+            >
+          </div>
+          <div class="players-list" id="playersList">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Live Event Log -->
+        <div class="panel-card hud-log-card">
+          <div class="panel-title">
+            <div class="panel-title-left">
+              <span class="icon-wrap gold-icon" id="logTitleIcon"></span>
+              <span>Live Activity Feed</span>
+            </div>
+            <span class="panel-subtitle">Real-Time</span>
+          </div>
+          <div class="log-box" id="logBox">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Interactive Modal System -->
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modalTitle">Modal Title</h3>
+          <button
+            class="btn-icon btn-modal-close"
+            id="closeModalCrossBtn"
+            title="Close"
+          >
+            <span class="icon-wrap" id="modalCloseCrossIcon"></span>
+          </button>
+        </div>
+        <div id="modalBody" class="modal-body-scroll">
+          <!-- Injected Content -->
+        </div>
+        <div id="modalFooter" class="modal-footer">
+          <!-- Injected Action Buttons -->
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Particle / Canvas Layer for Visual FX -->
-  <canvas id="fxCanvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 9999;"></canvas>
+    <!-- Particle / Canvas Layer for Visual FX -->
+    <canvas
+      id="fxCanvas"
+      style="position: fixed; inset: 0; pointer-events: none; z-index: 9999"
+    ></canvas>
 
-  <script type="module" src="js/app.js?v=5.7"></script>
-</body>
+    <script type="module" src="js/app.js?v=6.2"></script>
+  </body>
 </html>

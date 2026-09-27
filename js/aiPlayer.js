@@ -1,5 +1,9 @@
-import { BOARD_TILES, COLOR_GROUPS, TILE_PROBABILITIES } from './boardData.js?v=5.1';
-import { sounds } from './audio.js?v=5.1';
+import {
+  BOARD_TILES,
+  COLOR_GROUPS,
+  TILE_PROBABILITIES,
+} from "./boardData.js?v=5.1";
+import { sounds } from "./audio.js?v=5.1";
 
 export class AiPlayer {
   constructor(engine) {
@@ -17,30 +21,32 @@ export class AiPlayer {
 
   // Handle Jail phase decision
   decideJailAction(player) {
-    if (!player.inJail) return 'roll';
+    if (!player.inJail) return "roll";
 
     // If has jail card, definitely use it
     if (player.getOutOfJailCards > 0) {
-      return 'card';
+      return "card";
     }
 
     // In early-game: unowned properties exist, so leaving Jail fast to buy properties is optimal
-    const unownedCount = BOARD_TILES.filter(t => t.type === 'property' && this.engine.board[t.id].owner === null).length;
+    const unownedCount = BOARD_TILES.filter(
+      (t) => t.type === "property" && this.engine.board[t.id].owner === null,
+    ).length;
     if (unownedCount > 6 && player.cash >= 150) {
-      return 'pay';
+      return "pay";
     }
 
     // In late-game: properties are loaded with dangerous houses! Staying in Jail is a safe haven!
     if (unownedCount <= 2 && player.jailTurns < 2) {
-      return 'roll'; // Safely stay in jail
+      return "roll"; // Safely stay in jail
     }
 
     // If 3rd turn in jail, will be forced to pay anyway
     if (player.jailTurns >= 2 && player.cash >= 50) {
-      return 'pay';
+      return "pay";
     }
 
-    return 'roll';
+    return "roll";
   }
 
   // Property purchase decision based on strategic portfolio management & Markov EV
@@ -48,9 +54,11 @@ export class AiPlayer {
     if (player.cash < tile.price) return false;
 
     // 1. Monopoly completion check (Top Priority)
-    if (tile.type === 'property') {
-      const groupTiles = BOARD_TILES.filter(t => t.group === tile.group);
-      const ownedInGroup = groupTiles.filter(t => this.engine.board[t.id].owner === player.id).length;
+    if (tile.type === "property") {
+      const groupTiles = BOARD_TILES.filter((t) => t.group === tile.group);
+      const ownedInGroup = groupTiles.filter(
+        (t) => this.engine.board[t.id].owner === player.id,
+      ).length;
       if (ownedInGroup === groupTiles.length - 1) {
         // Completes our monopoly! High priority, buy as long as we have even $20 left
         return player.cash >= tile.price + 20;
@@ -59,7 +67,9 @@ export class AiPlayer {
       // 2. Block opponent monopoly (High Priority)
       for (const opponent of this.engine.getActivePlayers()) {
         if (opponent.id === player.id) continue;
-        const oppOwned = groupTiles.filter(t => this.engine.board[t.id].owner === opponent.id).length;
+        const oppOwned = groupTiles.filter(
+          (t) => this.engine.board[t.id].owner === opponent.id,
+        ).length;
         if (oppOwned === groupTiles.length - 1) {
           // Block opponent!
           return player.cash >= tile.price + 50;
@@ -68,9 +78,11 @@ export class AiPlayer {
     }
 
     // 3. Station / Airport synergy
-    if (tile.type === 'railroad') {
-      const railroads = BOARD_TILES.filter(t => t.group === 'RAILROAD');
-      const ownedStations = railroads.filter(r => this.engine.board[r.id].owner === player.id).length;
+    if (tile.type === "railroad") {
+      const railroads = BOARD_TILES.filter((t) => t.group === "RAILROAD");
+      const ownedStations = railroads.filter(
+        (r) => this.engine.board[r.id].owner === player.id,
+      ).length;
       if (ownedStations >= 1 && player.cash >= tile.price + 100) {
         return true; // Owning multiple stations scales rent up to $200!
       }
@@ -79,8 +91,9 @@ export class AiPlayer {
     // 4. Cash preservation for existing monopolies:
     // If AI already owns a monopoly that needs houses, don't waste cash buying dead-end single properties!
     const owned = this.engine.getPlayerProperties(player.id);
-    const hasMonopolyNeedingDevelopment = owned.some(t => {
-      if (t.type !== 'property' || !this.engine.hasMonopoly(player.id, t.group)) return false;
+    const hasMonopolyNeedingDevelopment = owned.some((t) => {
+      if (t.type !== "property" || !this.engine.hasMonopoly(player.id, t.group))
+        return false;
       const st = this.engine.board[t.id];
       return st && st.houses < 4;
     });
@@ -94,16 +107,20 @@ export class AiPlayer {
 
     // 5. Progress towards a set (owning 1 of a 3-property group already)
     let synergyScore = 0;
-    if (tile.type === 'property') {
-      const groupTiles = BOARD_TILES.filter(t => t.group === tile.group);
-      const ownedInGroup = groupTiles.filter(t => this.engine.board[t.id].owner === player.id).length;
+    if (tile.type === "property") {
+      const groupTiles = BOARD_TILES.filter((t) => t.group === tile.group);
+      const ownedInGroup = groupTiles.filter(
+        (t) => this.engine.board[t.id].owner === player.id,
+      ).length;
       if (ownedInGroup > 0) {
         synergyScore += 100;
       }
     }
 
     // 6. Dynamic safety buffer based on game stage:
-    const unownedCount = BOARD_TILES.filter(t => t.type === 'property' && this.engine.board[t.id].owner === null).length;
+    const unownedCount = BOARD_TILES.filter(
+      (t) => t.type === "property" && this.engine.board[t.id].owner === null,
+    ).length;
     let safetyBuffer = 180;
     if (unownedCount <= 8) safetyBuffer = 260;
     if (unownedCount <= 3) safetyBuffer = 360; // Late game: dangerous houses on board!
@@ -121,8 +138,11 @@ export class AiPlayer {
     const owned = this.engine.getPlayerProperties(player.id);
     const monopolizedGroups = new Set();
 
-    owned.forEach(tile => {
-      if (tile.type === 'property' && this.engine.hasMonopoly(player.id, tile.group)) {
+    owned.forEach((tile) => {
+      if (
+        tile.type === "property" &&
+        this.engine.hasMonopoly(player.id, tile.group)
+      ) {
         monopolizedGroups.add(tile.group);
       }
     });
@@ -134,7 +154,7 @@ export class AiPlayer {
     let highestRoi = -1;
 
     for (const groupKey of monopolizedGroups) {
-      const groupTiles = BOARD_TILES.filter(t => t.group === groupKey);
+      const groupTiles = BOARD_TILES.filter((t) => t.group === groupKey);
 
       for (const t of groupTiles) {
         const state = this.engine.board[t.id];
@@ -194,7 +214,11 @@ export class AiPlayer {
     }
 
     // 2. Mortgage non-monopolized properties
-    const nonMonopolies = owned.filter(t => !this.engine.hasMonopoly(player.id, t.group) && !this.engine.board[t.id].mortgaged);
+    const nonMonopolies = owned.filter(
+      (t) =>
+        !this.engine.hasMonopoly(player.id, t.group) &&
+        !this.engine.board[t.id].mortgaged,
+    );
     nonMonopolies.sort((a, b) => (a.rent?.[0] || 0) - (b.rent?.[0] || 0));
 
     for (const t of nonMonopolies) {
@@ -205,7 +229,7 @@ export class AiPlayer {
     }
 
     // 3. Mortgage remaining properties if still in debt
-    const remaining = owned.filter(t => !this.engine.board[t.id].mortgaged);
+    const remaining = owned.filter((t) => !this.engine.board[t.id].mortgaged);
     for (const t of remaining) {
       if (this.engine.canMortgage(player.id, t.id)) {
         this.engine.mortgageProperty(player.id, t.id);
@@ -224,7 +248,10 @@ export class AiPlayer {
     const playerCount = Math.max(2, this.engine.players.length || 4);
 
     // Cooldown check for this AI: max 1 trade attempt per 3 rounds
-    if (currentTurn - (this.lastTradeTurn[player.id] || -999) < playerCount * 3) {
+    if (
+      currentTurn - (this.lastTradeTurn[player.id] || -999) <
+      playerCount * 3
+    ) {
       return false;
     }
 
@@ -233,18 +260,27 @@ export class AiPlayer {
 
     // Scan for a color group where AI owns all but 1 property
     for (const groupKey of Object.keys(COLOR_GROUPS)) {
-      if (groupKey === 'SPECIAL') continue;
-      const groupTiles = BOARD_TILES.filter(t => t.group === groupKey);
+      if (groupKey === "SPECIAL") continue;
+      const groupTiles = BOARD_TILES.filter((t) => t.group === groupKey);
       if (groupTiles.length === 0) continue;
 
-      const aiOwned = groupTiles.filter(t => this.engine.board[t.id]?.owner === player.id);
+      const aiOwned = groupTiles.filter(
+        (t) => this.engine.board[t.id]?.owner === player.id,
+      );
       if (aiOwned.length === groupTiles.length - 1) {
         // AI has all but 1!
-        const missingTile = groupTiles.find(t => this.engine.board[t.id]?.owner !== player.id);
+        const missingTile = groupTiles.find(
+          (t) => this.engine.board[t.id]?.owner !== player.id,
+        );
         if (!missingTile) continue;
 
         const targetOwnerId = this.engine.board[missingTile.id]?.owner;
-        if (targetOwnerId === null || targetOwnerId === undefined || targetOwnerId === player.id) continue;
+        if (
+          targetOwnerId === null ||
+          targetOwnerId === undefined ||
+          targetOwnerId === player.id
+        )
+          continue;
 
         const targetPlayer = this.engine.players[targetOwnerId];
         if (!targetPlayer || targetPlayer.bankrupt) continue;
@@ -255,7 +291,10 @@ export class AiPlayer {
         // Anti-Spam protection for HUMAN player:
         if (!targetPlayer.isAi) {
           // 1. Global human trade cooldown: across ALL bots, human gets max 1 offer per 4 full rounds (~16 turns)
-          if (currentTurn - (this.lastHumanTradeTurn || -999) < playerCount * 4) {
+          if (
+            currentTurn - (this.lastHumanTradeTurn || -999) <
+            playerCount * 4
+          ) {
             continue;
           }
 
@@ -278,11 +317,13 @@ export class AiPlayer {
 
         // Look for a spare property that AI can offer (not part of AI's monopolies or 2/3 sets)
         const aiProps = this.engine.getPlayerProperties(player.id);
-        const spareProps = aiProps.filter(p => {
+        const spareProps = aiProps.filter((p) => {
           if (p.id === missingTile.id) return false;
           if (this.engine.hasMonopoly(player.id, p.group)) return false;
-          const setTiles = BOARD_TILES.filter(t => t.group === p.group);
-          const ownedInSet = setTiles.filter(t => this.engine.board[t.id]?.owner === player.id).length;
+          const setTiles = BOARD_TILES.filter((t) => t.group === p.group);
+          const ownedInSet = setTiles.filter(
+            (t) => this.engine.board[t.id]?.owner === player.id,
+          ).length;
           return ownedInSet < setTiles.length - 1; // not 2/3
         });
 
@@ -293,8 +334,16 @@ export class AiPlayer {
         if (spareProps.length > 0) {
           // Find spare property that target player might want (synergy) or highest value
           spareProps.sort((a, b) => {
-            const aTargetHas = BOARD_TILES.filter(t => t.group === a.group && this.engine.board[t.id]?.owner === targetPlayer.id).length;
-            const bTargetHas = BOARD_TILES.filter(t => t.group === b.group && this.engine.board[t.id]?.owner === targetPlayer.id).length;
+            const aTargetHas = BOARD_TILES.filter(
+              (t) =>
+                t.group === a.group &&
+                this.engine.board[t.id]?.owner === targetPlayer.id,
+            ).length;
+            const bTargetHas = BOARD_TILES.filter(
+              (t) =>
+                t.group === b.group &&
+                this.engine.board[t.id]?.owner === targetPlayer.id,
+            ).length;
             return bTargetHas - aTargetHas;
           });
           const bestSpare = spareProps[0];
@@ -304,7 +353,10 @@ export class AiPlayer {
           if (rej) {
             // SWEETENED OFFER (After rejection): substantial extra cash bonus!
             const bonus = rej.count === 1 ? 120 : 200;
-            offeredCash = Math.max((rej.lastCash || 0) + 80, Math.max(50, valDiff) + bonus);
+            offeredCash = Math.max(
+              (rej.lastCash || 0) + 80,
+              Math.max(50, valDiff) + bonus,
+            );
           } else {
             offeredCash = Math.max(50, valDiff + 60);
           }
@@ -318,7 +370,7 @@ export class AiPlayer {
             const stepBonus = rej.count === 1 ? 80 : 140;
             offeredCash = Math.max(
               Math.round(missingTile.price * premiumMultiplier),
-              (rej.lastCash || 0) + stepBonus
+              (rej.lastCash || 0) + stepBonus,
             );
           } else {
             // Initial fair offer: 135% of property face value
@@ -339,12 +391,18 @@ export class AiPlayer {
             ? `🔥 SWEETENED OFFER: Attempt #${rej.count + 1} (Includes extra +$${offeredCash - (rej.lastCash || 0)} bonus cash since previous decline!)`
             : null;
 
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             app.stopTurnTimer();
             if (isSweetened) {
-              this.engine.log(`🤖 [SWEETENED DEAL] ${player.name} is offering MORE CASH ($${offeredCash}) for ${missingTile.name}!`, 'info');
+              this.engine.log(
+                `🤖 [SWEETENED DEAL] ${player.name} is offering MORE CASH ($${offeredCash}) for ${missingTile.name}!`,
+                "info",
+              );
             } else {
-              this.engine.log(`🤖 ${player.name} is offering a trade for ${missingTile.name}!`, 'info');
+              this.engine.log(
+                `🤖 ${player.name} is offering a trade for ${missingTile.name}!`,
+                "info",
+              );
             }
 
             app.ui.showTradeOfferModal(
@@ -359,12 +417,15 @@ export class AiPlayer {
                 delete this.rejectedOffers[rejectKey];
                 player.cash -= offeredCash;
                 targetPlayer.cash += offeredCash;
-                offeredProps.forEach(id => {
+                offeredProps.forEach((id) => {
                   this.engine.board[id].owner = targetPlayer.id;
                 });
                 this.engine.board[missingTile.id].owner = player.id;
 
-                this.engine.log(`🤝 [TRADE AGREEMENT] You accepted ${player.name}'s offer!`, 'success');
+                this.engine.log(
+                  `🤝 [TRADE AGREEMENT] You accepted ${player.name}'s offer!`,
+                  "success",
+                );
                 sounds.playCash(targetPlayer);
                 if (this.engine.hasMonopoly(player.id, missingTile.group)) {
                   app.ui.celebrateMonopoly(player, missingTile.group);
@@ -376,37 +437,58 @@ export class AiPlayer {
               () => {
                 // Human declined -> Record rejection to remember and enforce cooldown & sweetener
                 if (!this.rejectedOffers[rejectKey]) {
-                  this.rejectedOffers[rejectKey] = { count: 1, lastTurn: currentTurn, lastCash: offeredCash };
+                  this.rejectedOffers[rejectKey] = {
+                    count: 1,
+                    lastTurn: currentTurn,
+                    lastCash: offeredCash,
+                  };
                 } else {
                   this.rejectedOffers[rejectKey].count++;
                   this.rejectedOffers[rejectKey].lastTurn = currentTurn;
-                  this.rejectedOffers[rejectKey].lastCash = Math.max(this.rejectedOffers[rejectKey].lastCash, offeredCash);
+                  this.rejectedOffers[rejectKey].lastCash = Math.max(
+                    this.rejectedOffers[rejectKey].lastCash,
+                    offeredCash,
+                  );
                 }
 
                 const rejCount = this.rejectedOffers[rejectKey].count;
-                const cooldownMsg = rejCount >= 3
-                  ? "Bots will not bother you about this property anymore."
-                  : `Bots will leave you alone about this for at least ${rejCount === 1 ? "5" : "8"} rounds.`;
+                const cooldownMsg =
+                  rejCount >= 3
+                    ? "Bots will not bother you about this property anymore."
+                    : `Bots will leave you alone about this for at least ${rejCount === 1 ? "5" : "8"} rounds.`;
 
-                this.engine.log(`❌ You declined ${player.name}'s trade offer. ${cooldownMsg}`, 'warning');
+                this.engine.log(
+                  `❌ You declined ${player.name}'s trade offer. ${cooldownMsg}`,
+                  "warning",
+                );
                 resolve(false);
               },
-              attemptNote
+              attemptNote,
             );
           });
         }
 
         // Case B: Target is another AI -> Evaluate algorithmically
-        const evalResult = this.evaluateTradeOffer(targetPlayer, player, offeredProps, offeredCash, [missingTile.id], 0);
+        const evalResult = this.evaluateTradeOffer(
+          targetPlayer,
+          player,
+          offeredProps,
+          offeredCash,
+          [missingTile.id],
+          0,
+        );
         if (evalResult.accepted) {
           player.cash -= offeredCash;
           targetPlayer.cash += offeredCash;
-          offeredProps.forEach(id => {
+          offeredProps.forEach((id) => {
             this.engine.board[id].owner = targetPlayer.id;
           });
           this.engine.board[missingTile.id].owner = player.id;
 
-          this.engine.log(`🤝 [AI TRADE DEAL] ${player.name} and ${targetPlayer.name} finalized a deal! ${player.name} acquired ${missingTile.name} and completed a monopoly!`, 'success');
+          this.engine.log(
+            `🤝 [AI TRADE DEAL] ${player.name} and ${targetPlayer.name} finalized a deal! ${player.name} acquired ${missingTile.name} and completed a monopoly!`,
+            "success",
+          );
           sounds.playCash(player);
           if (this.engine.hasMonopoly(player.id, missingTile.group)) {
             app.ui.celebrateMonopoly(player, missingTile.group);
@@ -422,25 +504,42 @@ export class AiPlayer {
   }
 
   // Evaluate incoming trade offer
-  evaluateTradeOffer(receiverPlayer, offeringPlayer, offeredProps, offeredCash, requestedProps, requestedCash) {
-    if (offeredProps.length === 0 && offeredCash === 0 && requestedProps.length === 0 && requestedCash === 0) {
+  evaluateTradeOffer(
+    receiverPlayer,
+    offeringPlayer,
+    offeredProps,
+    offeredCash,
+    requestedProps,
+    requestedCash,
+  ) {
+    if (
+      offeredProps.length === 0 &&
+      offeredCash === 0 &&
+      requestedProps.length === 0 &&
+      requestedCash === 0
+    ) {
       return { accepted: false, reason: "No terms offered in trade proposal." };
     }
     if (requestedCash > receiverPlayer.cash) {
-      return { accepted: false, reason: "I don't have that much liquid capital right now." };
+      return {
+        accepted: false,
+        reason: "I don't have that much liquid capital right now.",
+      };
     }
 
     let offeredValue = offeredCash;
     let requestedValue = requestedCash;
 
     // Value of properties offered to AI
-    offeredProps.forEach(id => {
+    offeredProps.forEach((id) => {
       const tile = BOARD_TILES[id];
       offeredValue += tile.price;
 
       // Monopoly synergy bonus: If this completes AI's monopoly!
-      const groupTiles = BOARD_TILES.filter(t => t.group === tile.group);
-      const currentlyOwned = groupTiles.filter(t => this.engine.board[t.id]?.owner === receiverPlayer.id).length;
+      const groupTiles = BOARD_TILES.filter((t) => t.group === tile.group);
+      const currentlyOwned = groupTiles.filter(
+        (t) => this.engine.board[t.id]?.owner === receiverPlayer.id,
+      ).length;
       if (currentlyOwned === groupTiles.length - 1) {
         offeredValue += tile.price * 2.2; // Massive value to complete a monopoly
       } else if (currentlyOwned > 0) {
@@ -449,7 +548,7 @@ export class AiPlayer {
     });
 
     // Value of properties requested from AI
-    requestedProps.forEach(id => {
+    requestedProps.forEach((id) => {
       const tile = BOARD_TILES[id];
       requestedValue += tile.price;
 
@@ -459,23 +558,28 @@ export class AiPlayer {
       }
 
       // Penalty if giving this property completes the OPPONENT'S monopoly!
-      const groupTiles = BOARD_TILES.filter(t => t.group === tile.group);
-      const oppOwned = groupTiles.filter(t => this.engine.board[t.id]?.owner === offeringPlayer.id).length;
+      const groupTiles = BOARD_TILES.filter((t) => t.group === tile.group);
+      const oppOwned = groupTiles.filter(
+        (t) => this.engine.board[t.id]?.owner === offeringPlayer.id,
+      ).length;
       if (oppOwned === groupTiles.length - 1) {
         requestedValue += tile.price * 1.8; // Significant premium to give opponent a monopoly
       }
     });
 
     // Fair deal condition: offered value must be at least 95% of requested value
-    const accepted = offeredValue >= (requestedValue * 0.95);
+    const accepted = offeredValue >= requestedValue * 0.95;
 
-    let reason = '';
+    let reason = "";
     if (accepted) {
-      reason = "Deal agreed! This trade makes strategic sense for our portfolios.";
+      reason =
+        "Deal agreed! This trade makes strategic sense for our portfolios.";
     } else if (offeredValue < requestedValue * 0.6) {
-      reason = "Offer declined. You are asking for far more value than you are offering!";
+      reason =
+        "Offer declined. You are asking for far more value than you are offering!";
     } else {
-      reason = "Offer declined. Add some extra cash or another property, and we can make a deal.";
+      reason =
+        "Offer declined. Add some extra cash or another property, and we can make a deal.";
     }
 
     return { accepted, reason };
