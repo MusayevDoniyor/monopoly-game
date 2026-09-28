@@ -180,12 +180,13 @@ export class MultiplayerManager {
     });
   }
 
-  sendTradeResponse(proposerId, targetId, accepted, reason = '') {
+  sendTradeResponse(proposerId, targetId, accepted, reason = '', tradeDetails = null) {
     this.syncAction('TRADE_RESPONSE', {
       proposerId,
       targetId,
       accepted: !!accepted,
-      reason
+      reason,
+      tradeDetails
     });
   }
 

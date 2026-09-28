@@ -1440,7 +1440,7 @@ class MonopolyApp {
     const p2Before = getMonopolies(p2);
 
     const onTradeExecuted = () => {
-      this.engine.executeTrade(
+      const executed = this.engine.executeTrade(
         p1.id,
         p2.id,
         offProps,
@@ -1448,6 +1448,14 @@ class MonopolyApp {
         reqProps,
         reqCash,
       );
+
+      if (!executed) {
+        this.engine.log(
+          `[TRADE] Trade could not be executed due to rule restrictions.`,
+          "warning",
+        );
+        return false;
+      }
 
       // Check for newly completed monopolies
       const p1After = getMonopolies(p1);
@@ -1633,6 +1641,12 @@ class MonopolyApp {
                 p2.id,
                 true,
                 "Trade terms agreed.",
+                {
+                  offeredProps: payload.offeredProps,
+                  offeredCash: payload.offeredCash,
+                  reqProps: payload.reqProps,
+                  reqCash: payload.reqCash,
+                },
               );
               this.ui.updateBoardState();
               this.ui.updateHUD();
@@ -1658,8 +1672,20 @@ class MonopolyApp {
     } else if (action === "TRADE_RESPONSE") {
       if (payload.proposerId === this.multiplayer.localPlayerId) {
         this.ui.closeModal();
-        const p2 = this.engine.players[payload.targetId];
+        const p2 =
+          this.engine.players.find((p) => p.id === payload.targetId) ||
+          this.engine.players[payload.targetId];
         if (payload.accepted) {
+          if (payload.tradeDetails) {
+            this.engine.executeTrade(
+              payload.proposerId,
+              payload.targetId,
+              payload.tradeDetails.offeredProps,
+              payload.tradeDetails.offeredCash,
+              payload.tradeDetails.reqProps,
+              payload.tradeDetails.reqCash,
+            );
+          }
           this.ui.showTradeResultModal(
             true,
             p2,

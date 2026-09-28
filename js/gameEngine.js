@@ -646,10 +646,14 @@ export class GameEngine {
       );
     } else if (state.houses === 5) {
       this.bank.hotels += 1;
-      this.bank.houses += 4;
-      state.houses = 4;
+      const housesAvailable = Math.min(4, Math.max(0, this.bank.houses));
+      this.bank.houses -= housesAvailable;
+      state.houses = housesAvailable;
+      const stepsSold = 5 - housesAvailable;
+      const totalRefund = stepsSold * refund;
+      player.cash += totalRefund - refund; // base refund already added on line 638
       this.log(
-        `${player.name} downgraded Hotel to 4 houses (+$${refund}).`,
+        `${player.name} downgraded Hotel to ${housesAvailable} houses (+$${totalRefund}).`,
         "warning",
       );
     } else {
@@ -1318,8 +1322,16 @@ export class GameEngine {
       BOARD_TILES.forEach((t) => {
         if (this.board[t.id]?.owner === player.id) {
           this.board[t.id].owner = creditor.id;
-          if (this.board[t.id].houses > 0) {
-            const refund = this.board[t.id].houses * Math.floor((t.houseCost || 0) / 2);
+          const h = this.board[t.id].houses || 0;
+          if (h > 0) {
+            if (h === 6) {
+              this.bank.hotels += 2;
+            } else if (h === 5) {
+              this.bank.hotels += 1;
+            } else {
+              this.bank.houses += h;
+            }
+            const refund = h * Math.floor((t.houseCost || 0) / 2);
             creditor.cash += refund;
             this.board[t.id].houses = 0;
           }
@@ -1337,6 +1349,16 @@ export class GameEngine {
       BOARD_TILES.forEach((t) => {
         if (this.board[t.id]?.owner === player.id) {
           this.board[t.id].owner = null;
+          const h = this.board[t.id].houses || 0;
+          if (h > 0) {
+            if (h === 6) {
+              this.bank.hotels += 2;
+            } else if (h === 5) {
+              this.bank.hotels += 1;
+            } else {
+              this.bank.houses += h;
+            }
+          }
           this.board[t.id].houses = 0;
           this.board[t.id].mortgaged = false;
         }
@@ -1392,46 +1414,79 @@ export class GameEngine {
     this.log(`It's now ${nextPlayer.name}'s turn!`);
   }
 
+  canTradeProperty(tileId) {
+    const tile = this.getTile(tileId);
+    if (!tile) return false;
+    const state = this.board[tileId];
+    if (!state || state.owner === null || state.owner === undefined) return false;
+    if (state.houses > 0) return false;
+    if (tile.group) {
+      const groupTiles = BOARD_TILES.filter((t) => t.group === tile.group);
+      const anyHasHouses = groupTiles.some(
+        (t) => (this.board[t.id]?.houses || 0) > 0,
+      );
+      if (anyHasHouses) return false;
+    }
+    return true;
+  }
+
   executeTrade(
     player1Id,
     player2Id,
-    p1OfferingProps,
-    p1Cash,
-    p2OfferingProps,
-    p2Cash,
+    p1OfferingProps = [],
+    p1Cash = 0,
+    p2OfferingProps = [],
+    p2Cash = 0,
   ) {
-    const p1 = this.players[player1Id];
-    const p2 = this.players[player2Id];
+    const p1 =
+      this.players.find((p) => p.id === player1Id) || this.players[player1Id];
+    const p2 =
+      this.players.find((p) => p.id === player2Id) || this.players[player2Id];
+
+    if (!p1 || !p2 || p1.id === p2.id) return false;
+
+    p1Cash = Math.max(0, Number(p1Cash) || 0);
+    p2Cash = Math.max(0, Number(p2Cash) || 0);
 
     if (p1.cash < p1Cash || p2.cash < p2Cash) return false;
+
+    const p1Props = Array.from(p1OfferingProps || []).map(Number);
+    const p2Props = Array.from(p2OfferingProps || []).map(Number);
+
+    for (const id of p1Props) {
+      if (this.board[id]?.owner !== p1.id) return false;
+      if (!this.canTradeProperty(id)) return false;
+    }
+    for (const id of p2Props) {
+      if (this.board[id]?.owner !== p2.id) return false;
+      if (!this.canTradeProperty(id)) return false;
+    }
 
     p1.cash -= p1Cash;
     p2.cash += p1Cash;
     p2.cash -= p2Cash;
     p1.cash += p2Cash;
 
-    p1OfferingProps.forEach((id) => {
+    p1Props.forEach((id) => {
       if (this.board[id]) {
         this.board[id].owner = p2.id;
+        const tile = this.getTile(id);
         if (this.board[id].mortgaged) {
-          this.board[id].mortgaged = false;
-          const tile = this.getTile(id);
           this.log(
-            `[TRADE] ${tile?.name || "Property"} mortgage was cleared upon acquisition by ${p2.name}!`,
-            "info",
+            `[TRADE] ${tile?.name || "Property"} transferred to ${p2.name} (remains mortgaged).`,
+            "warning",
           );
         }
       }
     });
-    p2OfferingProps.forEach((id) => {
+    p2Props.forEach((id) => {
       if (this.board[id]) {
         this.board[id].owner = p1.id;
+        const tile = this.getTile(id);
         if (this.board[id].mortgaged) {
-          this.board[id].mortgaged = false;
-          const tile = this.getTile(id);
           this.log(
-            `[TRADE] ${tile?.name || "Property"} mortgage was cleared upon acquisition by ${p1.name}!`,
-            "info",
+            `[TRADE] ${tile?.name || "Property"} transferred to ${p1.name} (remains mortgaged).`,
+            "warning",
           );
         }
       }

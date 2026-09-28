@@ -506,5 +506,93 @@ test('doubles re-roll mechanics and trade suppression during doubles', async () 
   assert.equal(engine.currentTurn.hasRolled, true, 'hasRolled marked true on arrest');
 });
 
+test('bank house economy conserves supply on hotel downgrade and bankruptcy', () => {
+  const engine = createEngine('classic');
+  const p1 = engine.players[0];
+  const p2 = engine.players[1];
+  p1.cash = 10000;
+  p2.cash = 10000;
+
+  // p1 owns Mediterranean (1) and Baltic (3)
+  engine.board[1].owner = p1.id;
+  engine.board[3].owner = p1.id;
+
+  // Build 4 houses each
+  for (let i = 0; i < 4; i++) {
+    engine.buildHouse(p1.id, 1);
+    engine.buildHouse(p1.id, 3);
+  }
+  assert.equal(engine.board[1].houses, 4);
+  assert.equal(engine.board[3].houses, 4);
+
+  const initialHouses = engine.bank.houses;
+  const initialHotels = engine.bank.hotels;
+
+  // Upgrade tile 1 to hotel (houses: 5)
+  engine.buildHouse(p1.id, 1);
+  assert.equal(engine.board[1].houses, 5);
+  assert.equal(engine.bank.houses, initialHouses + 4, '4 houses returned to bank on hotel upgrade');
+  assert.equal(engine.bank.hotels, initialHotels - 1, '1 hotel removed from bank');
+
+  // Downgrade tile 1 from hotel to 4 houses
+  engine.sellHouse(p1.id, 1);
+  assert.equal(engine.board[1].houses, 4);
+  assert.equal(engine.bank.houses, initialHouses, '4 houses taken from bank on hotel downgrade');
+  assert.equal(engine.bank.hotels, initialHotels, '1 hotel returned to bank');
+
+  // Test bankruptcy returning houses to bank
+  const bankHousesBeforeBkr = engine.bank.houses;
+  const bankHotelsBeforeBkr = engine.bank.hotels;
+
+  // p1 has 4 houses on tile 1, 4 houses on tile 3. Total 8 houses.
+  engine.declareBankruptcy(p1, p2);
+  assert.equal(engine.bank.houses, bankHousesBeforeBkr + 8, 'All 8 houses returned to bank upon bankruptcy');
+  assert.equal(engine.bank.hotels, bankHotelsBeforeBkr);
+});
+
+test('trade system enforces property building restrictions, ownership, and mortgage persistence', () => {
+  const engine = createEngine('classic');
+  const p1 = engine.players[0];
+  const p2 = engine.players[1];
+  p1.cash = 500;
+  p2.cash = 500;
+
+  // p1 owns tile 1 & 3 (Brown group)
+  engine.board[1].owner = p1.id;
+  engine.board[3].owner = p1.id;
+  // p2 owns tile 6 (Light Blue)
+  engine.board[6].owner = p2.id;
+
+  // 1. Can trade when no houses
+  assert.equal(engine.canTradeProperty(1), true);
+
+  // Build house on tile 1
+  engine.board[1].houses = 1;
+  assert.equal(engine.canTradeProperty(1), false, 'Cannot trade property with houses');
+  assert.equal(engine.canTradeProperty(3), false, 'Cannot trade property in same color group if another has houses');
+
+  // Attempting trade via executeTrade must fail
+  const failedTrade = engine.executeTrade(p1.id, p2.id, [1], 0, [6], 0);
+  assert.equal(failedTrade, false, 'executeTrade rejects trading properties with buildings');
+
+  // Remove houses
+  engine.board[1].houses = 0;
+  assert.equal(engine.canTradeProperty(1), true);
+
+  // 2. Reject trading property player does not own
+  const stolenTrade = engine.executeTrade(p1.id, p2.id, [6], 0, [1], 0);
+  assert.equal(stolenTrade, false, 'Cannot trade property owned by someone else');
+
+  // 3. Trade mortgaged property: mortgage status is preserved
+  engine.board[1].mortgaged = true;
+  const validTrade = engine.executeTrade(p1.id, p2.id, [1], 100, [6], 50);
+  assert.equal(validTrade, true);
+  assert.equal(engine.board[1].owner, p2.id);
+  assert.equal(engine.board[1].mortgaged, true, 'Transferred property preserves mortgaged status');
+  assert.equal(engine.board[6].owner, p1.id);
+  assert.equal(p1.cash, 450); // 500 - 100 + 50
+  assert.equal(p2.cash, 550); // 500 + 100 - 50
+});
+
 
 

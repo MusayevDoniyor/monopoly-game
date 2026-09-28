@@ -617,6 +617,23 @@ export class AiPlayer {
       };
     }
 
+    for (const id of offeredProps) {
+      if (!this.engine.canTradeProperty(id)) {
+        return {
+          accepted: false,
+          reason: "Cannot trade properties while houses or hotels exist in the color group.",
+        };
+      }
+    }
+    for (const id of requestedProps) {
+      if (!this.engine.canTradeProperty(id)) {
+        return {
+          accepted: false,
+          reason: "Cannot trade properties while houses or hotels exist in the color group.",
+        };
+      }
+    }
+
     let offeredValue = offeredCash;
     let requestedValue = requestedCash;
 
@@ -624,38 +641,46 @@ export class AiPlayer {
     const isAggressive = this.isAggressiveMode();
     const monopolyMultiplier = isAggressive ? 2.8 : 2.2;
     offeredProps.forEach((id) => {
-      const tile = BOARD_TILES[id];
-      offeredValue += tile.price;
+      const tile = this.engine.getTile(id);
+      if (!tile) return;
+      const price = tile.price || 0;
+      offeredValue += price;
 
       // Monopoly synergy bonus: If this completes AI's monopoly!
-      const groupTiles = BOARD_TILES.filter((t) => t.group === tile.group);
-      const currentlyOwned = groupTiles.filter(
-        (t) => this.engine.board[t.id]?.owner === receiverPlayer.id,
-      ).length;
-      if (currentlyOwned === groupTiles.length - 1) {
-        offeredValue += tile.price * monopolyMultiplier; // Massive value to complete a monopoly
-      } else if (currentlyOwned > 0) {
-        offeredValue += tile.price * 0.4; // Progress towards set
+      if (tile.group) {
+        const groupTiles = BOARD_TILES.filter((t) => t.group === tile.group);
+        const currentlyOwned = groupTiles.filter(
+          (t) => this.engine.board[t.id]?.owner === receiverPlayer.id,
+        ).length;
+        if (currentlyOwned === groupTiles.length - 1) {
+          offeredValue += price * monopolyMultiplier; // Massive value to complete a monopoly
+        } else if (currentlyOwned > 0) {
+          offeredValue += price * 0.4; // Progress towards set
+        }
       }
     });
 
     // Value of properties requested from AI
     requestedProps.forEach((id) => {
-      const tile = BOARD_TILES[id];
-      requestedValue += tile.price;
+      const tile = this.engine.getTile(id);
+      if (!tile) return;
+      const price = tile.price || 0;
+      requestedValue += price;
 
       // Heavy penalty if giving away a property from an already completed monopoly
-      if (this.engine.hasMonopoly(receiverPlayer.id, tile.group)) {
+      if (tile.group && this.engine.hasMonopoly(receiverPlayer.id, tile.group)) {
         requestedValue += 1000; // Never dismantle our monopoly
       }
 
       // Penalty if giving this property completes the OPPONENT'S monopoly!
-      const groupTiles = BOARD_TILES.filter((t) => t.group === tile.group);
-      const oppOwned = groupTiles.filter(
-        (t) => this.engine.board[t.id]?.owner === offeringPlayer.id,
-      ).length;
-      if (oppOwned === groupTiles.length - 1) {
-        requestedValue += tile.price * (isAggressive ? 1.6 : 1.8);
+      if (tile.group) {
+        const groupTiles = BOARD_TILES.filter((t) => t.group === tile.group);
+        const oppOwned = groupTiles.filter(
+          (t) => this.engine.board[t.id]?.owner === offeringPlayer.id,
+        ).length;
+        if (oppOwned === groupTiles.length - 1) {
+          requestedValue += price * (isAggressive ? 1.6 : 1.8);
+        }
       }
     });
 

@@ -1390,16 +1390,18 @@ export class ModalManager extends UIComponent {
               isMine && wouldCompleteMonopoly(targetPlayer.id, p);
             const completesForMe =
               !isMine && wouldCompleteMonopoly(currentPlayer.id, p);
+            const canTrade = this.engine.canTradeProperty(p.id);
 
             return `
-            <div class="trade-prop-card ${isSelected ? "selected" : ""}" data-prop-id="${p.id}" data-is-mine="${isMine}">
+            <div class="trade-prop-card ${isSelected ? "selected" : ""} ${!canTrade ? "trade-prop-card-disabled" : ""}" data-prop-id="${p.id}" data-is-mine="${isMine}" data-can-trade="${canTrade}" style="${!canTrade ? "opacity: 0.55; cursor: not-allowed;" : ""}">
               <div class="trade-prop-color" style="background-color: ${group?.hex || "#475569"};"></div>
               <div class="trade-prop-info">
                 <div class="trade-prop-name">${p.name}</div>
                 <div class="trade-prop-meta">Val $${p.price} • Rent $${p.rent ? p.rent[0] : 25}</div>
               </div>
-              ${completesForTarget ? '<span class="trade-badge-synergy">⭐ Partner Set</span>' : ""}
-              ${completesForMe ? '<span class="trade-badge-synergy" style="color: #34d399; border-color: #10b981; background: rgba(16,185,129,0.2);">👑 Your Set</span>' : ""}
+              ${!canTrade ? '<span class="trade-badge-synergy" style="color: #fbbf24; border-color: #f59e0b; background: rgba(245,158,11,0.2);">🔒 Set Has Buildings</span>' : ""}
+              ${canTrade && completesForTarget ? '<span class="trade-badge-synergy">⭐ Partner Set</span>' : ""}
+              ${canTrade && completesForMe ? '<span class="trade-badge-synergy" style="color: #34d399; border-color: #10b981; background: rgba(16,185,129,0.2);">👑 Your Set</span>' : ""}
               <div class="trade-card-checkbox">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="20 6 9 17 4 12"></polyline>
@@ -1519,6 +1521,13 @@ export class ModalManager extends UIComponent {
       // Property card click selection (no full rebuild, ultra snappy)
       document.querySelectorAll(".trade-prop-card").forEach((card) => {
         card.onclick = () => {
+          if (card.dataset.canTrade === "false") {
+            this.engine.log(
+              "Cannot trade properties while houses or hotels exist on their color group.",
+              "warning",
+            );
+            return;
+          }
           const propId = parseInt(card.dataset.propId, 10);
           const isMine = card.dataset.isMine === "true";
           const set = isMine ? offeredProps : requestedProps;
