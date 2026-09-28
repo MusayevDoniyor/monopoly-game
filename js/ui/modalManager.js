@@ -486,7 +486,9 @@ export class ModalManager extends UIComponent {
       tradeBtn.onclick = () => {
         this.closeModal();
         if (viewerPlayer && owner && viewerPlayer.id !== owner.id) {
-          this.showTradeModal(viewerPlayer, null, owner.id, tile.id);
+          const cb =
+            this.onTradeProposalCallback || this.ui?.onTradeProposalCallback;
+          this.showTradeModal(viewerPlayer, cb, owner.id, tile.id);
         }
       };
     }
@@ -1314,6 +1316,11 @@ export class ModalManager extends UIComponent {
     preselectedTargetPlayerId,
     preselectedPropId,
   ) {
+    if (!currentPlayer) {
+      currentPlayer = this.getLocalPlayer() || this.engine?.getCurrentPlayer();
+    }
+    if (!currentPlayer) return;
+
     this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon("HANDSHAKE")}</span> <span>Tycoon Trade Exchange Desk</span>`;
 
     // Safety check: Cannot target yourself in trade
@@ -1651,7 +1658,10 @@ export class ModalManager extends UIComponent {
       <button class="btn-secondary" id="cancelTradeBtn">Cancel</button>
     `;
 
-    const tradeCb = onTradeConfirmed || this.onTradeProposalCallback;
+    const tradeCb =
+      onTradeConfirmed ||
+      this.onTradeProposalCallback ||
+      this.ui?.onTradeProposalCallback;
     document.getElementById("sendTradeBtn").onclick = () => {
       this.closeModal();
       if (tradeCb) {
@@ -2403,10 +2413,22 @@ export class ModalManager extends UIComponent {
       this.closeModal();
     this.modalOverlay.classList.add("active");
   }
-  showExitConfirmationModal({ isReload = false, onConfirm, onCancel }) {
+  showExitConfirmationModal(options = {}, onConfirm, onCancel) {
     this.closeModal(true);
     this.isExitModal = true;
     if (this.modalCard) this.modalCard.classList.add("exit-modal");
+
+    let isReload = false;
+    let confirmCb = onConfirm;
+    let cancelCb = onCancel;
+    if (typeof options === "object" && options !== null) {
+      isReload = Boolean(options.isReload);
+      confirmCb = options.onConfirm || onConfirm;
+      cancelCb = options.onCancel || onCancel;
+    } else {
+      isReload = Boolean(options);
+    }
+
     const titleText = isReload ? "Reload Game Session?" : "Exit Current Match?";
     const iconName = isReload ? "WARNING" : "EXIT";
 
@@ -2443,12 +2465,12 @@ export class ModalManager extends UIComponent {
 
     document.getElementById("exitCancelBtn").onclick = () => {
       this.closeModal(true);
-      if (typeof onCancel === "function") onCancel();
+      if (typeof cancelCb === "function") cancelCb();
     };
 
     document.getElementById("exitConfirmBtn").onclick = () => {
       this.closeModal(true);
-      if (typeof onConfirm === "function") onConfirm();
+      if (typeof confirmCb === "function") confirmCb();
     };
 
     this.modalOverlay.classList.add("active");

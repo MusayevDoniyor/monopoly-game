@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { escapeHtml, formatMoney, formatTime, delay } from "../js/utils.js";
 import { TurnTimer } from "../js/turnTimer.js";
+import { UIComponent } from "../js/ui/uiComponent.js";
 
 test("utils: escapeHtml correctly encodes special characters", () => {
   assert.equal(escapeHtml("<script>alert('xss')</script>"), "&lt;script&gt;alert(&#039;xss&#039;)&lt;/script&gt;");
@@ -96,4 +97,42 @@ test("smart reload protection: correctly detects reload keys and game in progres
   // Actively playing match
   assert.equal(checkGameInProgress({ engine: { players: [{ name: "P1" }], gameOver: false }, ui: { isStartingSelector: false, modalCard: { classList: { contains: () => false } } } }), true);
 });
+
+test("UIComponent proxy delegates onTradeProposalCallback and dynamic properties to ui facade", () => {
+  let proposalReceived = null;
+  const mockUi = {
+    onTradeProposalCallback: (p1, p2, offProps, offCash, reqProps, reqCash) => {
+      proposalReceived = { p1, p2, offProps, offCash, reqProps, reqCash };
+    },
+    engine: {
+      players: [{ id: 0, name: "Player 1", cash: 1500 }, { id: 1, name: "Player 2", cash: 1500 }],
+      board: { 1: { owner: 1, mortgaged: false } }
+    }
+  };
+
+  class TestModalSubmodule extends UIComponent {
+    proposeTestTrade(p1, p2, offProps, offCash, reqProps, reqCash) {
+      const cb = this.onTradeProposalCallback || this.ui?.onTradeProposalCallback;
+      assert.ok(cb, "Trade callback must be accessible on submodule instance");
+      cb(p1, p2, offProps, offCash, reqProps, reqCash);
+    }
+  }
+
+  const submodule = new TestModalSubmodule(mockUi);
+  submodule.proposeTestTrade(
+    mockUi.engine.players[0],
+    mockUi.engine.players[1],
+    [],
+    400,
+    [1],
+    0
+  );
+
+  assert.ok(proposalReceived, "Trade proposal callback should be executed");
+  assert.equal(proposalReceived.p1.name, "Player 1");
+  assert.equal(proposalReceived.p2.name, "Player 2");
+  assert.equal(proposalReceived.offCash, 400);
+  assert.deepEqual(proposalReceived.reqProps, [1]);
+});
+
 

@@ -83,77 +83,70 @@ export class MonopolyUI {
   }
 
   // --- DiceRenderer Delegation ---
-  renderDice(d1, d2, rolling) { return this.diceRenderer.renderDice(d1, d2, rolling); }
-  renderDiePips(dieEl, val) { return this.diceRenderer.renderDiePips(dieEl, val); }
+  renderDice(...args) { return this.diceRenderer.renderDice(...args); }
+  renderDiePips(...args) { return this.diceRenderer.renderDiePips(...args); }
 
   // --- TokenAnimator Delegation ---
-  initTokens() { return this.tokenAnimator.initTokens(); }
-  syncTokenStacks() { return this.tokenAnimator.syncTokenStacks(); }
-  animateMovement(player, targetPos, onFinish, backwards, startPosOverride) {
-    return this.tokenAnimator.animateMovement(player, targetPos, onFinish, backwards, startPosOverride);
-  }
+  initTokens(...args) { return this.tokenAnimator.initTokens(...args); }
+  syncTokenStacks(...args) { return this.tokenAnimator.syncTokenStacks(...args); }
+  animateMovement(...args) { return this.tokenAnimator.animateMovement(...args); }
 
   // --- BoardRenderer Delegation ---
-  getTileGridPosition(id) { return this.boardRenderer.getTileGridPosition(id); }
-  toggleHeatmap() { return this.boardRenderer.toggleHeatmap(); }
-  getHeatmapColor(prob) { return this.boardRenderer.getHeatmapColor(prob); }
-  renderBoard() { return this.boardRenderer.renderBoard(); }
-  updateBoardState() { return this.boardRenderer.updateBoardState(); }
+  getTileGridPosition(...args) { return this.boardRenderer.getTileGridPosition(...args); }
+  toggleHeatmap(...args) { return this.boardRenderer.toggleHeatmap(...args); }
+  getHeatmapColor(...args) { return this.boardRenderer.getHeatmapColor(...args); }
+  renderBoard(...args) { return this.boardRenderer.renderBoard(...args); }
+  updateBoardState(...args) { return this.boardRenderer.updateBoardState(...args); }
 
   // --- ActivityFeed Delegation ---
-  initActivityFeedControls() { return this.activityFeed.initActivityFeedControls(); }
-  showJumpToLatest() { return this.activityFeed.showJumpToLatest(); }
-  hideJumpToLatest() { return this.activityFeed.hideJumpToLatest(); }
-  createLogEntryElement(log) { return this.activityFeed.createLogEntryElement(log); }
-  renderActivityFeed() { return this.activityFeed.renderActivityFeed(); }
-  downloadMatchLogJSON() { return this.activityFeed.downloadMatchLogJSON(); }
+  initActivityFeedControls(...args) { return this.activityFeed.initActivityFeedControls(...args); }
+  showJumpToLatest(...args) { return this.activityFeed.showJumpToLatest(...args); }
+  hideJumpToLatest(...args) { return this.activityFeed.hideJumpToLatest(...args); }
+  createLogEntryElement(...args) { return this.activityFeed.createLogEntryElement(...args); }
+  renderActivityFeed(...args) { return this.activityFeed.renderActivityFeed(...args); }
+  downloadMatchLogJSON(...args) { return this.activityFeed.downloadMatchLogJSON(...args); }
 
   // --- HudController Delegation ---
-  initStaticIcons() { return this.hudController.initStaticIcons(); }
-  bindDrawerEvents() { return this.hudController.bindDrawerEvents(); }
-  openMenuDrawer() { return this.hudController.openMenuDrawer(); }
-  closeMenuDrawer() { return this.hudController.closeMenuDrawer(); }
-  updateMatchTimer(totalSeconds) { return this.hudController.updateMatchTimer(totalSeconds); }
-  updateTurnTimer(secondsLeft, maxSeconds, isUrgent) { return this.hudController.updateTurnTimer(secondsLeft, maxSeconds, isUrgent); }
-  setTurnTimerAiThinking(isThinking) { return this.hudController.setTurnTimerAiThinking(isThinking); }
-  hideTurnTimer() { return this.hudController.hideTurnTimer(); }
-  updateHUD() { return this.hudController.updateHUD(); }
+  initStaticIcons(...args) { return this.hudController.initStaticIcons(...args); }
+  bindDrawerEvents(...args) { return this.hudController.bindDrawerEvents(...args); }
+  openMenuDrawer(...args) { return this.hudController.openMenuDrawer(...args); }
+  closeMenuDrawer(...args) { return this.hudController.closeMenuDrawer(...args); }
+  updateMatchTimer(...args) { return this.hudController.updateMatchTimer(...args); }
+  updateTurnTimer(...args) { return this.hudController.updateTurnTimer(...args); }
+  setTurnTimerAiThinking(...args) { return this.hudController.setTurnTimerAiThinking(...args); }
+  hideTurnTimer(...args) { return this.hudController.hideTurnTimer(...args); }
+  updateHUD(...args) { return this.hudController.updateHUD(...args); }
 
   // --- ModalManager Delegation ---
-  startModalTimer(duration, onTimeout, label) { return this.modalManager.startModalTimer(duration, onTimeout, label); }
-  clearModalTimer() { return this.modalManager.clearModalTimer(); }
-  showStartingPlayerSelector(players, onComplete) { return this.modalManager.showStartingPlayerSelector(players, onComplete); }
-  showArrestModal(player, onBail) { return this.modalManager.showArrestModal(player, onBail); }
-  showJailOptionsModal(player, onBail, onRoll, onCard) { return this.modalManager.showJailOptionsModal(player, onBail, onRoll, onCard); }
-  renderTitleDeedCardHTML(tile, owner, player, hasMonopoly) { return this.modalManager.renderTitleDeedCardHTML(tile, owner, player, hasMonopoly); }
-  getLocalPlayer() { return this.modalManager.getLocalPlayer(); }
-  showDeedModal(tile) { return this.modalManager.showDeedModal(tile); }
-  showBuyPrompt(tile, player, onBuy, onDecline) { return this.modalManager.showBuyPrompt(tile, player, onBuy, onDecline); }
-  showCardModal(card, player, onDone) { return this.modalManager.showCardModal(card, player, onDone); }
-  showPropertyManagementModal(player, activeTab) { return this.modalManager.showPropertyManagementModal(player, activeTab); }
-  showGeminiAdvisorModal(promptText) { return this.modalManager.showGeminiAdvisorModal(promptText); }
-  showDebtResolutionModal(debtor, creditor, amountOwed, reason, onResolved) { return this.modalManager.showDebtResolutionModal(debtor, creditor, amountOwed, reason, onResolved); }
-  showTradeModal() { return this.modalManager.showTradeModal(); }
-  showWaitingModal(title, message) { return this.modalManager.showWaitingModal(title, message); }
-  showTradeResultModal(isSuccess, message, onDone) { return this.modalManager.showTradeResultModal(isSuccess, message, onDone); }
-  showTradeOfferModal(trade, onAccept, onDecline, onCounter) { return this.modalManager.showTradeOfferModal(trade, onAccept, onDecline, onCounter); }
-  celebrateMonopoly(colorKey, ownerName, ownerColor) { return this.modalManager.celebrateMonopoly(colorKey, ownerName, ownerColor); }
-  showMonopolyCelebrationToast(colorKey, ownerName, ownerColor) { return this.modalManager.showMonopolyCelebrationToast(colorKey, ownerName, ownerColor); }
-  showJailToast(player) { return this.modalManager.showJailToast(player); }
-  showBankruptcyToast(player) { return this.modalManager.showBankruptcyToast(player); }
-  showGameOverModal(winner) { return this.modalManager.showGameOverModal(winner); }
-  showLobbyModal(roomId, isHost, players, onStartGame) { return this.modalManager.showLobbyModal(roomId, isHost, players, onStartGame); }
-  updateLobbyList(players) { return this.modalManager.updateLobbyList(players); }
-  showAchievementsModal() { return this.modalManager.showAchievementsModal(); }
+  startModalTimer(...args) { return this.modalManager.startModalTimer(...args); }
+  clearModalTimer(...args) { return this.modalManager.clearModalTimer(...args); }
+  showStartingPlayerSelector(...args) { return this.modalManager.showStartingPlayerSelector(...args); }
+  showArrestModal(...args) { return this.modalManager.showArrestModal(...args); }
+  showJailOptionsModal(...args) { return this.modalManager.showJailOptionsModal(...args); }
+  renderTitleDeedCardHTML(...args) { return this.modalManager.renderTitleDeedCardHTML(...args); }
+  getLocalPlayer(...args) { return this.modalManager.getLocalPlayer(...args); }
+  showDeedModal(...args) { return this.modalManager.showDeedModal(...args); }
+  showBuyPrompt(...args) { return this.modalManager.showBuyPrompt(...args); }
+  showCardModal(...args) { return this.modalManager.showCardModal(...args); }
+  showPropertyManagementModal(...args) { return this.modalManager.showPropertyManagementModal(...args); }
+  showGeminiAdvisorModal(...args) { return this.modalManager.showGeminiAdvisorModal(...args); }
+  showDebtResolutionModal(...args) { return this.modalManager.showDebtResolutionModal(...args); }
+  showTradeModal(...args) { return this.modalManager.showTradeModal(...args); }
+  showWaitingModal(...args) { return this.modalManager.showWaitingModal(...args); }
+  showTradeResultModal(...args) { return this.modalManager.showTradeResultModal(...args); }
+  showTradeOfferModal(...args) { return this.modalManager.showTradeOfferModal(...args); }
+  celebrateMonopoly(...args) { return this.modalManager.celebrateMonopoly(...args); }
+  showMonopolyCelebrationToast(...args) { return this.modalManager.showMonopolyCelebrationToast(...args); }
+  showJailToast(...args) { return this.modalManager.showJailToast(...args); }
+  showBankruptcyToast(...args) { return this.modalManager.showBankruptcyToast(...args); }
+  showGameOverModal(...args) { return this.modalManager.showGameOverModal(...args); }
+  showLobbyModal(...args) { return this.modalManager.showLobbyModal(...args); }
+  updateLobbyList(...args) { return this.modalManager.updateLobbyList(...args); }
+  showAchievementsModal(...args) { return this.modalManager.showAchievementsModal(...args); }
   get isExitModal() { return Boolean(this.modalManager?.isExitModal); }
-  showExitConfirmationModal(options, onConfirm, onCancel) {
-    if (typeof options === "object" && options !== null) {
-      return this.modalManager.showExitConfirmationModal(options);
-    }
-    return this.modalManager.showExitConfirmationModal({ isReload: Boolean(options), onConfirm, onCancel });
-  }
-  showRulesModal() { return this.modalManager.showRulesModal(); }
-  closeModal() { return this.modalManager.closeModal(); }
+  showExitConfirmationModal(...args) { return this.modalManager.showExitConfirmationModal(...args); }
+  showRulesModal(...args) { return this.modalManager.showRulesModal(...args); }
+  closeModal(...args) { return this.modalManager.closeModal(...args); }
 }
 
 registerDelegates([
