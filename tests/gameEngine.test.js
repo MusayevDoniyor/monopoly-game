@@ -594,5 +594,24 @@ test('trade system enforces property building restrictions, ownership, and mortg
   assert.equal(p2.cash, 550); // 500 + 100 - 50
 });
 
+test('human players properly liquidate assets to pay penalties, fines, and repairs instead of evading payment', () => {
+  const engine = createEngine('classic');
+  const human = engine.players[0]; // isAi is false
+  human.isAi = false;
+  human.cash = 40;
+
+  // Human owns Oriental Ave (id 6, price 100, mortgage 50)
+  engine.board[6].owner = human.id;
+  engine.board[6].mortgaged = false;
+
+  // Incurs $75 speeding fine
+  const res = engine.processPayment(human, 75, null, 'speeding fine');
+  assert.equal(res.success, true);
+  assert.equal(res.bankrupt, false);
+  // Auto-mortgaged Oriental Ave (40 + 50 = 90), then paid 75 -> 15 remaining cash
+  assert.equal(engine.board[6].mortgaged, true);
+  assert.equal(human.cash, 15);
+});
+
 
 

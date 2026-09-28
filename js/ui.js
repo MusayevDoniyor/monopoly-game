@@ -152,6 +152,7 @@ export class MonopolyUI {
   }
   showExitConfirmationModal(...args) { return this.modalManager.showExitConfirmationModal(...args); }
   showRulesModal(...args) { return this.modalManager.showRulesModal(...args); }
+  downloadCertificatePNG(...args) { return this.modalManager.downloadCertificatePNG(...args); }
   closeModal(...args) { return this.modalManager.closeModal(...args); }
 }
 
@@ -159,7 +160,7 @@ registerDelegates([
   "renderDice", "renderDiePips", "initTokens", "syncTokenStacks", "animateMovement",
   "getTileGridPosition", "toggleHeatmap", "getHeatmapColor", "renderBoard", "updateBoardState",
   "initActivityFeedControls", "showJumpToLatest", "hideJumpToLatest", "createLogEntryElement",
-  "renderActivityFeed", "downloadMatchLogJSON", "initStaticIcons", "bindDrawerEvents",
+  "renderActivityFeed", "downloadMatchLogJSON", "downloadCertificatePNG", "initStaticIcons", "bindDrawerEvents",
   "openMenuDrawer", "closeMenuDrawer", "updateMatchTimer", "updateTurnTimer",
   "setTurnTimerAiThinking", "hideTurnTimer", "updateHUD", "startModalTimer", "clearModalTimer",
   "showStartingPlayerSelector", "showArrestModal", "showJailOptionsModal", "renderTitleDeedCardHTML",

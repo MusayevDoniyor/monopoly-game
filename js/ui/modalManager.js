@@ -2256,9 +2256,15 @@ export class ModalManager extends UIComponent {
       <div class="go-tab-content" id="goTabCertificate" style="display:none">
         <div class="go-cert-chips">${certPlayerChips}</div>
         ${certificates}
-        <button class="go-print-btn" id="goPrintCertBtn">
-          🖨️ Print Certificate
-        </button>
+        <div style="display: flex; gap: 8px; margin-top: 14px;">
+          <button class="go-print-btn" id="goDownloadCertBtn" style="flex: 1; margin-top: 0; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, rgba(212,175,55,0.22), rgba(212,175,55,0.08));">
+            <span class="icon-wrap" style="width: 18px; height: 18px;">${getIcon("DOWNLOAD")}</span>
+            <span>Download Certificate (.PNG)</span>
+          </button>
+          <button class="go-print-btn" id="goPrintCertBtn" style="width: auto; padding: 10px 16px; margin-top: 0;" title="Print Certificate">
+            <span>🖨️</span>
+          </button>
+        </div>
       </div>`;
 
     // ════════════════════════════════════════════════════
@@ -2319,8 +2325,10 @@ export class ModalManager extends UIComponent {
     });
 
     // ── Certificate Player Chips ──
+    let currentCertIdx = 0;
     this.modalBody.querySelectorAll(".go-cert-chip").forEach((chip) => {
       chip.onclick = () => {
+        currentCertIdx = parseInt(chip.dataset.certIdx, 10) || 0;
         this.modalBody
           .querySelectorAll(".go-cert-chip")
           .forEach((c) => c.classList.remove("active"));
@@ -2334,6 +2342,22 @@ export class ModalManager extends UIComponent {
         if (panel) panel.classList.add("active");
       };
     });
+
+    // ── Download Certificate PNG ──
+    const downloadCertBtn = document.getElementById("goDownloadCertBtn");
+    if (downloadCertBtn) {
+      downloadCertBtn.onclick = () => {
+        const p = st[currentCertIdx] || st[0];
+        if (p) {
+          this.downloadCertificatePNG(
+            p,
+            p.stats || {},
+            dateStr,
+            summary.durationFormatted || "30m",
+          );
+        }
+      };
+    }
 
     // ── Print Certificate ──
     const printBtn = document.getElementById("goPrintCertBtn");
@@ -2364,6 +2388,233 @@ export class ModalManager extends UIComponent {
     };
 
     this.modalOverlay.classList.add("active");
+  }
+
+  downloadCertificatePNG(p, s, dateStr, durationFormatted) {
+    if (typeof document === "undefined") return;
+    const canvas = document.createElement("canvas");
+    canvas.width = 1200;
+    canvas.height = 800;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // 1. Background gradient
+    const bgGrad = ctx.createLinearGradient(0, 0, 1200, 800);
+    bgGrad.addColorStop(0, "#080e1a");
+    bgGrad.addColorStop(0.5, "#0f172a");
+    bgGrad.addColorStop(1, "#050914");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 1200, 800);
+
+    // Subtle radial glow behind center
+    const radial = ctx.createRadialGradient(600, 320, 50, 600, 320, 550);
+    radial.addColorStop(0, "rgba(212, 175, 55, 0.09)");
+    radial.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = radial;
+    ctx.fillRect(0, 0, 1200, 800);
+
+    // 2. Borders
+    // Outer border
+    ctx.strokeStyle = "rgba(212, 175, 55, 0.35)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(28, 28, 1144, 744);
+
+    // Inner gold border
+    ctx.strokeStyle = "#d4af37";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(40, 40, 1120, 720);
+
+    // Corner brackets
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 6;
+    ctx.lineCap = "square";
+    const bracket = (x, y, dx, dy) => {
+      ctx.beginPath();
+      ctx.moveTo(x, y + dy * 36);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x + dx * 36, y);
+      ctx.stroke();
+    };
+    bracket(48, 48, 1, 1);
+    bracket(1152, 48, -1, 1);
+    bracket(48, 752, 1, -1);
+    bracket(1152, 752, -1, -1);
+
+    // 3. Header: CERTIFICATE OF ACHIEVEMENT
+    ctx.textAlign = "center";
+    ctx.font = "bold 32px 'Aptos Display', 'Segoe UI', Georgia, serif";
+    ctx.fillStyle = "#d4af37";
+    ctx.fillText("CERTIFICATE OF ACHIEVEMENT", 600, 112);
+
+    // Divider
+    ctx.font = "18px serif";
+    ctx.fillStyle = "rgba(212, 175, 55, 0.75)";
+    ctx.fillText("✦   ✦   ✦", 600, 146);
+
+    // 4. "This is to certify that"
+    ctx.font = "italic 20px Georgia, serif";
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillText("This is to certify that", 600, 196);
+
+    // 5. Player Name
+    ctx.font = "bold 52px 'Aptos Display', 'Segoe UI Variable', sans-serif";
+    ctx.fillStyle = p.color || "#3b82f6";
+    ctx.fillText(p.name, 600, 264);
+
+    // 6. Title / Grade Badge
+    const titleWidth = 460;
+    const titleHeight = 44;
+    const titleX = 600 - titleWidth / 2;
+    const titleY = 296;
+
+    ctx.fillStyle = "rgba(212, 175, 55, 0.15)";
+    ctx.strokeStyle = "#d4af37";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (typeof ctx.roundRect === "function") {
+      ctx.roundRect(titleX, titleY, titleWidth, titleHeight, 22);
+    } else {
+      ctx.rect(titleX, titleY, titleWidth, titleHeight);
+    }
+    ctx.fill();
+    ctx.stroke();
+
+    // Grade pill
+    ctx.fillStyle = "#d4af37";
+    ctx.beginPath();
+    if (typeof ctx.roundRect === "function") {
+      ctx.roundRect(titleX + 4, titleY + 4, 48, 36, 18);
+    } else {
+      ctx.rect(titleX + 4, titleY + 4, 48, 36);
+    }
+    ctx.fill();
+
+    ctx.font = "bold 16px sans-serif";
+    ctx.fillStyle = "#0f172a";
+    ctx.fillText(p.grade || "S+", titleX + 28, titleY + 27);
+
+    ctx.font = "bold 18px 'Aptos Display', Georgia, serif";
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillText(p.title || "Monopoly Champion", titleX + 258, titleY + 28);
+
+    // 7. Stats Grid (4 Boxes)
+    const statsList = [
+      { val: `$${(p.netWorth || 0).toLocaleString()}`, lbl: "NET WORTH", col: "#34d399" },
+      { val: `${p.propertiesCount || 0}`, lbl: "PROPERTIES", col: "#60a5fa" },
+      { val: `${(s.housesBuilt || 0) + (s.hotelsBuilt || 0)}`, lbl: "BUILDINGS", col: "#f59e0b" },
+      { val: `${s.lapsCompleted || 0}`, lbl: "LAPS COMPLETED", col: "#c084fc" },
+    ];
+
+    const boxW = 220;
+    const boxH = 92;
+    const startX = 600 - (boxW * 4 + 20 * 3) / 2;
+    const boxY = 380;
+
+    statsList.forEach((stat, idx) => {
+      const bx = startX + idx * (boxW + 20);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      if (typeof ctx.roundRect === "function") {
+        ctx.roundRect(bx, boxY, boxW, boxH, 12);
+      } else {
+        ctx.rect(bx, boxY, boxW, boxH);
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.font = "bold 32px 'Cascadia Code', monospace";
+      ctx.fillStyle = stat.col;
+      ctx.fillText(stat.val, bx + boxW / 2, boxY + 44);
+
+      ctx.font = "600 12px sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText(stat.lbl, bx + boxW / 2, boxY + 74);
+    });
+
+    // 8. Highlight Banner
+    ctx.fillStyle = "rgba(212, 175, 55, 0.08)";
+    ctx.beginPath();
+    if (typeof ctx.roundRect === "function") {
+      ctx.roundRect(160, 505, 880, 48, 8);
+    } else {
+      ctx.rect(160, 505, 880, 48);
+    }
+    ctx.fill();
+
+    ctx.font = "600 18px 'Aptos', sans-serif";
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillText(
+      `Finished Rank #${p.rank || 1}   •   ${durationFormatted || "30m"} Match Duration   •   ${s.diceRolls || 0} Total Dice Rolls`,
+      600,
+      536,
+    );
+
+    // 9. Footer (Seal, Date, Signature)
+    ctx.strokeStyle = "rgba(212, 175, 55, 0.2)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(120, 600);
+    ctx.lineTo(1080, 600);
+    ctx.stroke();
+
+    // Seal
+    const sealX = 220;
+    const sealY = 680;
+    ctx.strokeStyle = "#d4af37";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(sealX, sealY, 44, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(212, 175, 55, 0.4)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(sealX, sealY, 38, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.font = "24px sans-serif";
+    ctx.fillText("🏛️", sealX, sealY + 2);
+    ctx.font = "bold 10px sans-serif";
+    ctx.fillStyle = "#d4af37";
+    ctx.fillText("OFFICIAL", sealX, sealY + 22);
+
+    // Date
+    ctx.font = "600 13px sans-serif";
+    ctx.fillStyle = "#64748b";
+    ctx.fillText("DATE ISSUED", 600, 665);
+    ctx.font = "bold 17px Georgia, serif";
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillText(dateStr, 600, 695);
+
+    // Signature
+    const sigX = 980;
+    ctx.strokeStyle = "rgba(212, 175, 55, 0.4)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(sigX - 90, 675);
+    ctx.lineTo(sigX + 90, 675);
+    ctx.stroke();
+
+    ctx.font = "italic 16px Georgia, serif";
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillText("Monopoly Master™", sigX, 702);
+
+    // 10. Trigger direct PNG download
+    try {
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      const safeName = (p.name || "player").replace(/[^a-zA-Z0-9_-]/g, "_");
+      link.download = `Monopoly-Master-Certificate-${safeName}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.warn("Canvas download failed, falling back to print:", err);
+      window.print();
+    }
   }
   showLobbyModal(multiplayerManager) {
     this.modalTitle.innerHTML = `<span class="icon-wrap gold-icon">${getIcon("REFRESH")}</span> <span>Multiplayer Room: ${multiplayerManager.roomCode}</span>`;

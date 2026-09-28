@@ -1234,49 +1234,24 @@ export class GameEngine {
       return { success: true, bankrupt: false };
     }
 
-    // 2. Debtor is AI -> Proactively raise cash by selling houses / mortgaging properties
-    if (debtor.isAi) {
-      this.autoLiquidateForPlayer(debtor, amount);
+    // 2. Debtor does not have sufficient cash -> Proactively raise cash by selling houses / mortgaging properties
+    this.autoLiquidateForPlayer(debtor, amount);
 
-      if (debtor.cash >= amount) {
-        debtor.cash -= amount;
-        if (creditor && !creditor.bankrupt) {
-          creditor.cash += amount;
-        }
-        return { success: true, bankrupt: false };
+    if (debtor.cash >= amount) {
+      debtor.cash -= amount;
+      if (creditor && !creditor.bankrupt) {
+        creditor.cash += amount;
       }
-
-      // Debtor cannot pay even after full liquidation: BANKRUPTCY!
-      this.log(
-        `[INSOLVENCY] ${debtor.name} cannot afford $${amount} for ${reason} and is bankrupt!`,
-        "danger",
-      );
-      this.declareBankruptcy(debtor, creditor);
-      return { success: false, bankrupt: true };
+      return { success: true, bankrupt: false };
     }
 
-    // 3. Debtor is Human
-    const totalLiquidatable = debtor.cash + this.getLiquidatableAssets(debtor.id);
-    if (totalLiquidatable < amount) {
-      // Insolvent even with all assets liquidated
-      this.log(
-        `[INSOLVENCY] ${debtor.name} cannot afford $${amount} for ${reason} and is bankrupt!`,
-        "danger",
-      );
-      this.declareBankruptcy(debtor, creditor);
-      return { success: false, bankrupt: true };
-    }
-
-    // Human can liquidate to pay
-    return {
-      success: false,
-      bankrupt: false,
-      pendingDebt: true,
-      amount,
-      deficit: amount - debtor.cash,
-      creditor,
-      reason,
-    };
+    // 3. Debtor cannot pay even after full liquidation: BANKRUPTCY!
+    this.log(
+      `[INSOLVENCY] ${debtor.name} cannot afford $${amount} for ${reason} and is bankrupt!`,
+      "danger",
+    );
+    this.declareBankruptcy(debtor, creditor);
+    return { success: false, bankrupt: true };
   }
 
   checkBankruptcy(player) {
