@@ -6,7 +6,7 @@ import { achievements, ACHIEVEMENTS_LIST } from "../achievements.js";
 import { particles } from "../particles.js";
 import { geminiAdvisor } from "../geminiAdvisor.js";
 import { CLASSIC_RAILROAD_ARTWORK } from "./railroadArtwork.js";
-import { escapeHtml, formatMoney, formatTime } from "../utils.js";
+import { escapeHtml, formatMoney, formatTime, buildRoomInvite } from "../utils.js";
 import { initCustomSelects } from "./customSelect.js";
 
 export class ModalManager extends UIComponent {
@@ -2661,7 +2661,17 @@ export class ModalManager extends UIComponent {
         <div style="background: rgba(212, 175, 55, 0.15); border: 2px dashed var(--gold); padding: 18px; border-radius: 14px;">
           <div style="font-size: 0.85rem; color: var(--gold); text-transform: uppercase; font-weight: 800;">Share this Room Code with friends:</div>
           <div style="font-size: 2.8rem; font-weight: 900; letter-spacing: 6px; color: #fff; margin: 8px 0; font-family: var(--font-mono);">${multiplayerManager.roomCode}</div>
-          <div style="font-size: 0.75rem; color: #94a3b8;">Friends can open this app on their PCs or browser and enter this code!</div>
+          <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 12px;">Friends can open this app on their PCs or browser and enter this code!</div>
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button id="lobbyShareInviteBtn" class="btn-primary" type="button" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 0.85rem; cursor: pointer;">
+              <span style="width: 16px; height: 16px; display: inline-flex;">${getIcon("SHARE")}</span>
+              <span>Share Invite</span>
+            </button>
+            <button id="lobbyCopyCodeBtn" class="btn-secondary" type="button" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 0.85rem; cursor: pointer;">
+              <span style="width: 16px; height: 16px; display: inline-flex;">${getIcon("COPY")}</span>
+              <span id="lobbyCopyCodeText">Copy Code</span>
+            </button>
+          </div>
         </div>
 
         <div style="text-align: left;">
@@ -2670,6 +2680,74 @@ export class ModalManager extends UIComponent {
         </div>
       </div>
     `;
+
+    const roomCode = multiplayerManager.roomCode;
+    const invite = buildRoomInvite(
+      roomCode,
+      typeof window !== "undefined" ? window.location?.origin : "",
+      typeof window !== "undefined" ? window.location?.pathname : ""
+    );
+
+    const copyToClipboard = async (text, toastMsg) => {
+      try {
+        if (navigator?.clipboard?.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          textarea.style.position = "fixed";
+          textarea.style.opacity = "0";
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+        }
+        sounds.playCash();
+        this.showToast(toastMsg, "success");
+        return true;
+      } catch (err) {
+        console.warn("Clipboard copy error:", err);
+        this.showToast(`Room Code: ${roomCode}`, "info");
+        return false;
+      }
+    };
+
+    const shareBtn = document.getElementById("lobbyShareInviteBtn");
+    if (shareBtn) {
+      shareBtn.onclick = async () => {
+        if (navigator?.share) {
+          try {
+            await navigator.share({
+              title: invite.title,
+              text: invite.text,
+              url: invite.url || undefined,
+            });
+            sounds.playCash();
+            this.showToast("Invite shared successfully!", "success");
+          } catch (err) {
+            if (err && err.name !== "AbortError") {
+              await copyToClipboard(invite.text, "Invite link copied to clipboard!");
+            }
+          }
+        } else {
+          await copyToClipboard(invite.text, "Invite link copied to clipboard!");
+        }
+      };
+    }
+
+    const copyBtn = document.getElementById("lobbyCopyCodeBtn");
+    const copyText = document.getElementById("lobbyCopyCodeText");
+    if (copyBtn) {
+      copyBtn.onclick = async () => {
+        const ok = await copyToClipboard(roomCode, `Room Code ${roomCode} copied!`);
+        if (ok && copyText) {
+          copyText.textContent = "Copied!";
+          setTimeout(() => {
+            if (copyText) copyText.textContent = "Copy Code";
+          }, 2500);
+        }
+      };
+    }
 
     this.modalFooter.innerHTML = multiplayerManager.isHost
       ? `<button class="btn-primary" id="startLobbyGameBtn" style="width: 100%; justify-content: center;">Start Match Now</button>`

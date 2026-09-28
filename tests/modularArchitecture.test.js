@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { escapeHtml, formatMoney, formatTime, delay } from "../js/utils.js";
+import { escapeHtml, formatMoney, formatTime, delay, buildRoomInvite, parseRoomParam } from "../js/utils.js";
 import { TurnTimer } from "../js/turnTimer.js";
 import { UIComponent } from "../js/ui/uiComponent.js";
 import { gameSettings, updateGameSettings } from "../js/boardData.js";
@@ -288,6 +288,29 @@ test("multiplayer server rules: lobby host migration and 2 player minimum valida
   assert.equal(lobbyRoom.players[0].id, 1);
   assert.equal(lobbyRoom.players[0].isHost, true, "Remaining player must be promoted to host");
   assert.equal(lobbyRoom.hostWs, wsGuest, "Room hostWs must point to new host socket");
+});
+
+test("utils: buildRoomInvite formats room code and invite link with text", () => {
+  const inviteWithUrl = buildRoomInvite("PARK", "https://monopoly.local", "/match");
+  assert.equal(inviteWithUrl.code, "PARK");
+  assert.equal(inviteWithUrl.url, "https://monopoly.local/match?room=PARK");
+  assert.equal(inviteWithUrl.title, "Monopoly Master Multiplayer");
+  assert.ok(inviteWithUrl.text.includes("PARK"));
+  assert.ok(inviteWithUrl.text.includes("https://monopoly.local/match?room=PARK"));
+
+  const inviteNoBase = buildRoomInvite("test");
+  assert.equal(inviteNoBase.code, "TEST");
+  assert.equal(inviteNoBase.url, "");
+  assert.equal(inviteNoBase.text, "Join my Monopoly Master game!\nRoom Code: TEST");
+});
+
+test("utils: parseRoomParam extracts room code from search parameters", () => {
+  assert.equal(parseRoomParam("?room=ABCD"), "ABCD");
+  assert.equal(parseRoomParam("?join=park"), "PARK");
+  assert.equal(parseRoomParam("?foo=bar&room=host123"), "HOST");
+  assert.equal(parseRoomParam("?other=123"), null);
+  assert.equal(parseRoomParam(""), null);
+  assert.equal(parseRoomParam(null), null);
 });
 
 

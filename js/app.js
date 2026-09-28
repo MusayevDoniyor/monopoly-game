@@ -15,6 +15,7 @@ import { achievements } from "./achievements.js";
 import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js";
 import { TurnTimer } from "./turnTimer.js";
 import { initCustomSelects } from "./ui/customSelect.js";
+import { parseRoomParam } from "./utils.js";
 
 class MonopolyApp {
   constructor() {
@@ -832,6 +833,23 @@ class MonopolyApp {
         console.error("Critical error starting game:", err);
       }
     };
+
+    try {
+      if (typeof window !== "undefined" && window.location?.search) {
+        const autoRoom = parseRoomParam(window.location.search);
+        if (autoRoom) {
+          const joinInput = document.getElementById("joinRoomCodeInput");
+          if (joinInput) {
+            joinInput.value = autoRoom;
+          }
+          if (tabJoin) {
+            tabJoin.click();
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Could not auto-populate room invite code:", err);
+    }
 
     this.ui.modalOverlay.classList.add("active");
   }
