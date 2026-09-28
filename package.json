@@ -9,7 +9,10 @@
     "test": "node --test tests/*.test.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Doniyor Musayev <doniyormusayev2009@gmail.com>",
+  "contributors": [
+    "Doniyor Musayev <doniyormusayev2009@gmail.com>"
+  ],
   "license": "ISC",
   "type": "module",
   "dependencies": {

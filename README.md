@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="images/main-logo.png" alt="Monopoly Master Edition Logo" width="220" />
   <h1>🎩 Monopoly Master Edition</h1>
   <p><strong>A complete, faithful, and visually rich digital implementation of the classic board game.</strong></p>
 
@@ -286,5 +287,12 @@ monopoly-game/
    Play-Monopoly.bat
    ```
 
+## 👑 Author
+
+- **Doniyor Musayev** ([@MusayevDoniyor](https://github.com/MusayevDoniyor)) — *Creator & Lead Developer*
+
+---
+
 ## 📄 License
 This project is licensed under the **ISC License**. See `package.json` for details. Have fun building your digital real estate empire! 🎩✨
+
