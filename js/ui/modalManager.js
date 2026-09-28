@@ -2405,6 +2405,8 @@ export class ModalManager extends UIComponent {
   }
   showExitConfirmationModal({ isReload = false, onConfirm, onCancel }) {
     this.closeModal(true);
+    this.isExitModal = true;
+    if (this.modalCard) this.modalCard.classList.add("exit-modal");
     const titleText = isReload ? "Reload Game Session?" : "Exit Current Match?";
     const iconName = isReload ? "WARNING" : "EXIT";
 
@@ -2701,6 +2703,7 @@ export class ModalManager extends UIComponent {
       return;
     }
     this.isDebtModal = false;
+    this.isExitModal = false;
     this.clearModalTimer();
     this.isStartingSelector = false;
     if (this.closeModalCrossBtn) this.closeModalCrossBtn.style.display = "";
@@ -2712,6 +2715,7 @@ export class ModalManager extends UIComponent {
         "setup-modal",
         "property-management-modal",
         "rules-modal",
+        "exit-modal",
       );
   }
 }

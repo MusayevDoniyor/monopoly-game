@@ -145,7 +145,13 @@ export class MonopolyUI {
   showLobbyModal(roomId, isHost, players, onStartGame) { return this.modalManager.showLobbyModal(roomId, isHost, players, onStartGame); }
   updateLobbyList(players) { return this.modalManager.updateLobbyList(players); }
   showAchievementsModal() { return this.modalManager.showAchievementsModal(); }
-  showExitConfirmationModal(isReload, onConfirm, onCancel) { return this.modalManager.showExitConfirmationModal(isReload, onConfirm, onCancel); }
+  get isExitModal() { return Boolean(this.modalManager?.isExitModal); }
+  showExitConfirmationModal(options, onConfirm, onCancel) {
+    if (typeof options === "object" && options !== null) {
+      return this.modalManager.showExitConfirmationModal(options);
+    }
+    return this.modalManager.showExitConfirmationModal({ isReload: Boolean(options), onConfirm, onCancel });
+  }
   showRulesModal() { return this.modalManager.showRulesModal(); }
   closeModal() { return this.modalManager.closeModal(); }
 }

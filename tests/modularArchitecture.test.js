@@ -55,3 +55,45 @@ test("turnTimer: manages timer state and ignores AI players", () => {
   timer.stopTurnTimer();
   timer.stopMatchClock();
 });
+
+test("smart reload protection: correctly detects reload keys and game in progress state", () => {
+  const isReloadKey = (e) =>
+    e.key === "F5" ||
+    Boolean((e.ctrlKey || e.metaKey) && (e.key === "r" || e.key === "R"));
+
+  assert.equal(isReloadKey({ key: "F5" }), true);
+  assert.equal(isReloadKey({ key: "r", ctrlKey: true }), true);
+  assert.equal(isReloadKey({ key: "R", ctrlKey: true }), true);
+  assert.equal(isReloadKey({ key: "r", metaKey: true }), true);
+  assert.equal(isReloadKey({ key: "R", metaKey: true }), true);
+  assert.equal(isReloadKey({ key: "r", ctrlKey: false, metaKey: false }), false);
+  assert.equal(isReloadKey({ key: "Enter" }), false);
+  assert.equal(isReloadKey({ key: "Escape" }), false);
+
+  const checkGameInProgress = ({ engine, ui }) => {
+    return Boolean(
+      engine &&
+      Array.isArray(engine.players) &&
+      engine.players.length > 0 &&
+      !engine.gameOver &&
+      !ui.isStartingSelector &&
+      !ui.modalCard?.classList.contains("setup-modal")
+    );
+  };
+
+  // Not started (empty players)
+  assert.equal(checkGameInProgress({ engine: { players: [], gameOver: false }, ui: { modalCard: { classList: { contains: () => false } } } }), false);
+
+  // In setup modal
+  assert.equal(checkGameInProgress({ engine: { players: [{ name: "P1" }], gameOver: false }, ui: { modalCard: { classList: { contains: (c) => c === "setup-modal" } } } }), false);
+
+  // During starting selector wheel
+  assert.equal(checkGameInProgress({ engine: { players: [{ name: "P1" }], gameOver: false }, ui: { isStartingSelector: true, modalCard: { classList: { contains: () => false } } } }), false);
+
+  // Game over
+  assert.equal(checkGameInProgress({ engine: { players: [{ name: "P1" }], gameOver: true }, ui: { isStartingSelector: false, modalCard: { classList: { contains: () => false } } } }), false);
+
+  // Actively playing match
+  assert.equal(checkGameInProgress({ engine: { players: [{ name: "P1" }], gameOver: false }, ui: { isStartingSelector: false, modalCard: { classList: { contains: () => false } } } }), true);
+});
+

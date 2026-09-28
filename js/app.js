@@ -196,6 +196,24 @@ class MonopolyApp {
           e.preventDefault();
           return false;
         }
+
+        // Smart Match Protection: Intercept F5 / Ctrl+R / Cmd+R only during active match play
+        const isReloadKey =
+          e.key === "F5" ||
+          ((e.ctrlKey || e.metaKey) && (e.key === "r" || e.key === "R"));
+
+        if (isReloadKey) {
+          if (this.isGameInProgress()) {
+            e.preventDefault();
+            if (
+              !this.ui.isExitModal &&
+              !this.ui.modalCard?.classList.contains("exit-modal")
+            ) {
+              this.promptExitConfirmation(true);
+            }
+            return false;
+          }
+        }
       },
       { capture: true },
     );
