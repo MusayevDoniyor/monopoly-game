@@ -1581,7 +1581,8 @@ textarea {
   letter-spacing: 0.04em;
 }
 
-.tile.corner-free-parking {
+.tile.corner-free-parking,
+.tile.corner-safe-zone {
   padding: 7px;
   border-color: #74622d;
   color: #3e351f;

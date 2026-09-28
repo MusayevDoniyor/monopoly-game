@@ -91,12 +91,12 @@ export const BOARD_36_WORLD = [
   { id: 0, name: 'START', type: 'special', iconKey: 'START_ARROW', subtext: 'Collect $200' },
   // Bottom Edge (1-8)
   { id: 1, name: 'Cairo', country: 'Egypt', type: 'property', group: 'BROWN', price: 60, rent: [2, 10, 30, 90, 160, 250], houseCost: 50, mortgage: 30 },
-  { id: 2, name: 'Lucky Chest', type: 'community-chest', iconKey: 'CHEST', subtext: 'Mystery Bonus' },
+  { id: 2, name: 'Community Chest', type: 'community-chest', iconKey: 'CHEST', subtext: 'Draw a card' },
   { id: 3, name: 'Mumbai', country: 'India', type: 'property', group: 'BROWN', price: 60, rent: [4, 20, 60, 180, 320, 450], houseCost: 50, mortgage: 30 },
   { id: 4, name: 'Carbon Tax', type: 'tax', amount: 150, iconKey: 'TAX' },
   { id: 5, name: 'JFK Station', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'TRAIN' },
   { id: 6, name: 'Buenos Aires', country: 'Argentina', type: 'property', group: 'LIGHT_BLUE', price: 100, rent: [6, 30, 90, 270, 400, 550], houseCost: 50, mortgage: 50 },
-  { id: 7, name: 'Surprise Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Random Fate' },
+  { id: 7, name: 'Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Draw a card' },
   { id: 8, name: 'Bangkok', country: 'Thailand', type: 'property', group: 'LIGHT_BLUE', price: 120, rent: [8, 40, 100, 300, 450, 600], houseCost: 50, mortgage: 60 },
 
   // Corner 1: JAIL
@@ -107,7 +107,7 @@ export const BOARD_36_WORLD = [
   { id: 12, name: 'Rome', country: 'Italy', type: 'property', group: 'PINK', price: 160, rent: [12, 60, 180, 500, 700, 900], houseCost: 100, mortgage: 80 },
   { id: 13, name: 'Heathrow Station', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'TRAIN' },
   { id: 14, name: 'Berlin', country: 'Germany', type: 'property', group: 'ORANGE', price: 180, rent: [14, 70, 200, 550, 750, 950], houseCost: 100, mortgage: 90 },
-  { id: 15, name: 'Lucky Chest', type: 'community-chest', iconKey: 'CHEST', subtext: 'Mystery Bonus' },
+  { id: 15, name: 'Community Chest', type: 'community-chest', iconKey: 'CHEST', subtext: 'Draw a card' },
   { id: 16, name: 'Sydney', country: 'Australia', type: 'property', group: 'ORANGE', price: 180, rent: [14, 70, 200, 550, 750, 950], houseCost: 100, mortgage: 90 },
   { id: 17, name: 'Toronto', country: 'Canada', type: 'property', group: 'ORANGE', price: 200, rent: [16, 80, 220, 600, 800, 1000], houseCost: 100, mortgage: 100 },
 
@@ -115,7 +115,7 @@ export const BOARD_36_WORLD = [
   { id: 18, name: 'SAFE ZONE', type: 'special', iconKey: 'SAFE_ZONE', subtext: 'Safe Haven' },
   // Top Edge (19-26)
   { id: 19, name: 'Dubai', country: 'UAE', type: 'property', group: 'RED', price: 220, rent: [18, 90, 250, 700, 875, 1050], houseCost: 150, mortgage: 110 },
-  { id: 20, name: 'Surprise Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Random Fate' },
+  { id: 20, name: 'Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Draw a card' },
   { id: 21, name: 'Singapore', country: 'Singapore', type: 'property', group: 'RED', price: 220, rent: [18, 90, 250, 700, 875, 1050], houseCost: 150, mortgage: 110 },
   { id: 22, name: 'Tokyo', country: 'Japan', type: 'property', group: 'RED', price: 240, rent: [20, 100, 300, 750, 925, 1100], houseCost: 150, mortgage: 120 },
   { id: 23, name: 'Dubai Station', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'TRAIN' },
@@ -127,10 +127,10 @@ export const BOARD_36_WORLD = [
   { id: 27, name: 'GO TO JAIL', type: 'special', iconKey: 'POLICE', subtext: 'Arrested!' },
   // Right Edge (28-35)
   { id: 28, name: 'Paris', country: 'France', type: 'property', group: 'GREEN', price: 300, rent: [26, 130, 390, 900, 1100, 1275], houseCost: 200, mortgage: 150 },
-  { id: 29, name: 'Lucky Chest', type: 'community-chest', iconKey: 'CHEST', subtext: 'Mystery Bonus' },
+  { id: 29, name: 'Community Chest', type: 'community-chest', iconKey: 'CHEST', subtext: 'Draw a card' },
   { id: 30, name: 'London', country: 'UK', type: 'property', group: 'GREEN', price: 320, rent: [28, 150, 450, 1000, 1200, 1400], houseCost: 200, mortgage: 160 },
   { id: 31, name: 'Haneda Station', type: 'railroad', group: 'RAILROAD', price: 200, rent: [50, 100, 150, 200], mortgage: 100, iconKey: 'TRAIN' },
-  { id: 32, name: 'Surprise Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Random Fate' },
+  { id: 32, name: 'Chance', type: 'chance', iconKey: 'CHANCE', subtext: 'Draw a card' },
   { id: 33, name: 'Geneva', country: 'Switzerland', type: 'property', group: 'DARK_BLUE', price: 350, rent: [35, 175, 500, 1100, 1300, 1500], houseCost: 200, mortgage: 175 },
   { id: 34, name: 'Wealth Tax', type: 'tax', amount: 100, iconKey: 'DIAMOND' },
   { id: 35, name: 'Monaco', country: 'Monaco', type: 'property', group: 'DARK_BLUE', price: 400, rent: [50, 200, 600, 1400, 1700, 2000], houseCost: 200, mortgage: 200 }

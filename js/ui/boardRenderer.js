@@ -131,26 +131,25 @@ export class BoardRenderer extends UIComponent {
             <span class="jail-bail-label">BAIL $${gameSettings.jailBailFee}</span>
           </div>
         `;
-      } else if (tile.name.includes("FREE")) {
-        tileEl.classList.add("corner-free-parking");
-        innerHTML = `
-          <div class="free-parking-art">
-            <div class="corner-topline"><span class="corner-kicker">REST STOP</span><span class="corner-number">03</span></div>
-            <div class="free-parking-title">FREE<br>PARKING</div>
-            <div class="free-parking-chip">$</div>
-            <div class="free-parking-caption">NO FEE <span>•</span> TAKE A BREATHER</div>
-          </div>
-        `;
       } else if (
+        tile.name.includes("FREE") ||
         tile.name.includes("SAFE") ||
         (this.engine.getBoardLength() === 36 && tile.id === 18)
       ) {
-        tileEl.classList.add("corner-safe-zone");
+        tileEl.classList.add("corner-free-parking");
+        const isSafe =
+          tile.name.includes("SAFE") ||
+          (this.engine.getBoardLength() === 36 && tile.id === 18);
+        const titleMarkup = isSafe ? "SAFE<br>ZONE" : "FREE<br>PARKING";
+        const captionMarkup = isSafe
+          ? "NO FEE <span>•</span> SAFE HAVEN"
+          : "NO FEE <span>•</span> TAKE A BREATHER";
         innerHTML = `
-          <div class="safe-zone-wrapper">
-            <img src="images/safe-zone.webp" alt="Illustrated safe zone sign" class="safe-zone-img" loading="lazy" decoding="async" />
-            <span class="safe-zone-index">03</span>
-            <span class="safe-zone-stamp">NO FEE</span>
+          <div class="free-parking-art">
+            <div class="corner-topline"><span class="corner-kicker">REST STOP</span><span class="corner-number">03</span></div>
+            <div class="free-parking-title">${titleMarkup}</div>
+            <div class="free-parking-chip">$</div>
+            <div class="free-parking-caption">${captionMarkup}</div>
           </div>
         `;
       } else if (tile.name.includes("GO TO JAIL")) {
@@ -173,11 +172,9 @@ export class BoardRenderer extends UIComponent {
           </div>
         `;
       } else if (tile.type === "railroad") {
-        const railroadArtwork = isClassicBoard
-          ? CLASSIC_RAILROAD_ARTWORK[tile.name]
-          : null;
+        const railroadArtwork = CLASSIC_RAILROAD_ARTWORK[tile.name];
         const railroadVisual = railroadArtwork
-          ? `<img class="tile-railroad-art" src="${railroadArtwork.tileSrc}" alt="" decoding="async">`
+          ? `<img class="tile-railroad-art" src="${railroadArtwork.tileSrc}" alt="${railroadArtwork.alt}" decoding="async">`
           : `<div class="tile-icon-svg">${getIcon(tile.iconKey || "TRAIN")}</div>`;
         innerHTML += `
           <div class="tile-content tile-railroad-content">

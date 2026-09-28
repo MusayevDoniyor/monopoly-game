@@ -310,9 +310,7 @@ export class ModalManager extends UIComponent {
         ? tile.rent || [25, 50, 100, 200]
         : [bRent, bRent + sRent, bRent + sRent * 2, bRent + sRent * 3];
       const stationLabel = isClassicBoard ? "Railroads" : "Stations";
-      const railroadArtwork = isClassicBoard
-        ? CLASSIC_RAILROAD_ARTWORK[tile.name]
-        : null;
+      const railroadArtwork = CLASSIC_RAILROAD_ARTWORK[tile.name];
       return `
         <div class="deed-card-view${railroadArtwork ? " deed-railroad-card" : ""}">
           ${closeBtnHTML}
