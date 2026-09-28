@@ -52,5 +52,6 @@ coverage/
 tmp/
 temp/
 *.tmp
+.edge-temp/
 
 

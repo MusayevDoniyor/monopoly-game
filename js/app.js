@@ -1,20 +1,20 @@
-import { GameEngine } from "./gameEngine.js?v=8.0";
-import { MonopolyUI } from "./ui.js?v=8.0";
-import { AiPlayer } from "./aiPlayer.js?v=8.0";
-import { sounds } from "./audio.js?v=8.0";
-import { geminiAdvisor } from "./geminiAdvisor.js?v=8.0";
-import { MultiplayerManager } from "./multiplayer.js?v=8.0";
+import { GameEngine } from "./gameEngine.js?v=8.1";
+import { MonopolyUI } from "./ui.js?v=8.1";
+import { AiPlayer } from "./aiPlayer.js?v=8.1";
+import { sounds } from "./audio.js?v=8.1";
+import { geminiAdvisor } from "./geminiAdvisor.js?v=8.1";
+import { MultiplayerManager } from "./multiplayer.js?v=8.1";
 import {
   COLOR_GROUPS,
   gameSettings,
   updateGameSettings,
   reloadActiveBoard,
-} from "./boardData.js?v=8.0";
-import { particles } from "./particles.js?v=8.0";
-import { achievements } from "./achievements.js?v=8.0";
-import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=8.0";
-import { TurnTimer } from "./turnTimer.js";
-import { initCustomSelects } from "./ui/customSelect.js";
+} from "./boardData.js?v=8.1";
+import { particles } from "./particles.js?v=8.1";
+import { achievements } from "./achievements.js?v=8.1";
+import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=8.1";
+import { TurnTimer } from "./turnTimer.js?v=8.1";
+import { initCustomSelects } from "./ui/customSelect.js?v=8.1";
 
 class MonopolyApp {
   constructor() {
@@ -747,28 +747,33 @@ class MonopolyApp {
     };
 
     footerBtn.onclick = () => {
-      const theme = document.getElementById("boardEditionSelect").value;
-      const aiDifficultySelect = document.getElementById("aiDifficultySelect");
-      const aiDiff = aiDifficultySelect ? aiDifficultySelect.value : "aggressive";
-      updateGameSettings({ boardTheme: theme, aiDifficulty: aiDiff });
-      reloadActiveBoard();
+      try {
+        const boardEditionEl = document.getElementById("boardEditionSelect");
+        const theme = boardEditionEl ? boardEditionEl.value : (gameSettings.boardTheme || "classic");
+        const aiDifficultySelect = document.getElementById("aiDifficultySelect");
+        const aiDiff = aiDifficultySelect ? aiDifficultySelect.value : "aggressive";
+        updateGameSettings({ boardTheme: theme, aiDifficulty: aiDiff });
+        reloadActiveBoard();
 
-      const count = parseInt(
-        document.getElementById("playerCountSelect").value,
-        10,
-      );
-      const configs = [];
-      for (let i = 0; i < count; i++) {
-        configs.push({
-          name:
-            document.getElementById(`name-${i}`).value.trim() ||
-            `Player ${i + 1}`,
-          token: document.getElementById(`token-${i}`).value,
-          isAi: document.getElementById(`type-${i}`).value === "ai",
-          color: document.getElementById(`color-${i}`).value,
-        });
+        const countEl = document.getElementById("playerCountSelect");
+        const count = countEl ? parseInt(countEl.value, 10) : 4;
+        const configs = [];
+        for (let i = 0; i < count; i++) {
+          const nameEl = document.getElementById(`name-${i}`);
+          const tokenEl = document.getElementById(`token-${i}`);
+          const typeEl = document.getElementById(`type-${i}`);
+          const colorEl = document.getElementById(`color-${i}`);
+          configs.push({
+            name: (nameEl && nameEl.value.trim()) || `Player ${i + 1}`,
+            token: tokenEl ? tokenEl.value : (TOKEN_KEYS[i % TOKEN_KEYS.length] || "TOP_HAT"),
+            isAi: typeEl ? typeEl.value === "ai" : i > 0,
+            color: colorEl ? colorEl.value : "#3b82f6",
+          });
+        }
+        this.startNewGame(configs);
+      } catch (err) {
+        console.error("Critical error starting game:", err);
       }
-      this.startNewGame(configs);
     };
 
     this.ui.modalOverlay.classList.add("active");
@@ -815,7 +820,9 @@ class MonopolyApp {
       ? startingPlayerIndex
       : this.engine.getRandomInt(0, Math.max(0, configs.length - 1));
 
-    sounds.playStartingSelector();
+    try {
+      sounds.playStartingSelector();
+    } catch (_) {}
     this.ui.showStartingPlayerSelector(
       this.engine.players,
       selectedIndex,

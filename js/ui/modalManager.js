@@ -1,10 +1,10 @@
 import { UIComponent } from "./uiComponent.js";
-import { BOARD_TILES, COLOR_GROUPS, gameSettings } from "../boardData.js?v=8.0";
-import { sounds } from "../audio.js?v=8.0";
-import { getIcon, TOKEN_KEYS, TOKEN_LABELS } from "../icons.js?v=8.0";
-import { achievements, ACHIEVEMENTS_LIST } from "../achievements.js?v=8.0";
-import { particles } from "../particles.js?v=8.0";
-import { geminiAdvisor } from "../geminiAdvisor.js?v=8.0";
+import { BOARD_TILES, COLOR_GROUPS, gameSettings } from "../boardData.js?v=8.1";
+import { sounds } from "../audio.js?v=8.1";
+import { getIcon, TOKEN_KEYS, TOKEN_LABELS } from "../icons.js?v=8.1";
+import { achievements, ACHIEVEMENTS_LIST } from "../achievements.js?v=8.1";
+import { particles } from "../particles.js?v=8.1";
+import { geminiAdvisor } from "../geminiAdvisor.js?v=8.1";
 import { CLASSIC_RAILROAD_ARTWORK } from "./railroadArtwork.js";
 import { escapeHtml, formatMoney, formatTime } from "../utils.js";
 import { initCustomSelects } from "./customSelect.js";

@@ -17,8 +17,12 @@ export class UIComponent {
           return Reflect.set(target, prop, value, receiver);
         }
         if (target.ui) {
-          target.ui[prop] = value;
-          return true;
+          try {
+            target.ui[prop] = value;
+            return true;
+          } catch (_) {
+            return Reflect.set(target, prop, value, receiver);
+          }
         }
         return Reflect.set(target, prop, value, receiver);
       },
@@ -46,8 +50,18 @@ const COMMON_PROPS = [
 
 for (const prop of COMMON_PROPS) {
   Object.defineProperty(UIComponent.prototype, prop, {
-    get() { return this.ui ? this.ui[prop] : undefined; },
-    set(v) { if (this.ui) this.ui[prop] = v; },
+    get() {
+      return this.ui ? this.ui[prop] : this[`_${prop}`];
+    },
+    set(v) {
+      if (this.ui) {
+        try {
+          this.ui[prop] = v;
+          return;
+        } catch (_) {}
+      }
+      this[`_${prop}`] = v;
+    },
     configurable: true,
   });
 }

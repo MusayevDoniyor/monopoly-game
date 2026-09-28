@@ -3,8 +3,8 @@ import {
   COLOR_GROUPS,
   TILE_PROBABILITIES,
   gameSettings,
-} from "./boardData.js?v=8.0";
-import { sounds } from "./audio.js?v=8.0";
+} from "./boardData.js?v=8.1";
+import { sounds } from "./audio.js?v=8.1";
 
 export class AiPlayer {
   constructor(engine) {

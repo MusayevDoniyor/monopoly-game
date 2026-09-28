@@ -1,4 +1,4 @@
-import { gameSettings } from "./boardData.js?v=8.0";
+import { gameSettings } from "./boardData.js?v=8.1";
 import { registerDelegates } from "./ui/uiComponent.js";
 import { DiceRenderer } from "./ui/diceRenderer.js";
 import { TokenAnimator } from "./ui/tokenAnimator.js";
@@ -66,6 +66,7 @@ export class MonopolyUI {
     this.isDebtModal = false;
     this.isStartingSelector = false;
     this.isInspectModal = false;
+    this.isExitModal = false;
     this._onCardModalClose = null;
 
     // Initialize submodules
@@ -144,7 +145,11 @@ export class MonopolyUI {
   showLobbyModal(...args) { return this.modalManager.showLobbyModal(...args); }
   updateLobbyList(...args) { return this.modalManager.updateLobbyList(...args); }
   showAchievementsModal(...args) { return this.modalManager.showAchievementsModal(...args); }
-  get isExitModal() { return Boolean(this.modalManager?.isExitModal); }
+  get isExitModal() { return Boolean(this._isExitModal || this.modalManager?.isExitModal); }
+  set isExitModal(v) {
+    this._isExitModal = Boolean(v);
+    if (this.modalManager) this.modalManager.isExitModal = Boolean(v);
+  }
   showExitConfirmationModal(...args) { return this.modalManager.showExitConfirmationModal(...args); }
   showRulesModal(...args) { return this.modalManager.showRulesModal(...args); }
   closeModal(...args) { return this.modalManager.closeModal(...args); }
