@@ -47,6 +47,15 @@
   box-shadow: 0 3px 8px rgba(56, 189, 248, 0.25);
 }
 
+.btn-panel-action .icon-wrap {
+  width: 0.85rem;
+  height: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .log-jump-latest {
   position: absolute;
   bottom: 12px;

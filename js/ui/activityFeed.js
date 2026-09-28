@@ -1,6 +1,6 @@
 import { UIComponent } from "./uiComponent.js";
-import { getIcon } from "../icons.js?v=5.1";
-import { sounds } from "../audio.js?v=5.1";
+import { getIcon } from "../icons.js?v=8.0";
+import { sounds } from "../audio.js?v=8.0";
 import { escapeHtml } from "../utils.js";
 
 export class ActivityFeed extends UIComponent {
@@ -191,11 +191,15 @@ export class ActivityFeed extends UIComponent {
         URL.revokeObjectURL(url);
       }, 120);
 
-      this.showToast("Match activity log exported as JSON!", "success");
+      if (typeof this.showToast === "function") {
+        this.showToast("Match activity log exported as JSON!", "success");
+      }
       sounds.playCash();
     } catch (err) {
       console.error("Failed to export match log:", err);
-      this.showToast("Failed to export match log as JSON.", "danger");
+      if (typeof this.showToast === "function") {
+        this.showToast("Failed to export match log as JSON.", "danger");
+      }
     }
   }
 }

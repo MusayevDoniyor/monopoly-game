@@ -41,7 +41,7 @@ const COMMON_PROPS = [
   "menuDrawer", "menuDrawerBackdrop", "gameMenuBtn", "closeDrawerBtn",
   "diceRenderer", "tokenAnimator", "boardRenderer", "activityFeed",
   "hudController", "modalManager",
-  "onTradeProposalCallback", "isExitModal", "ai"
+  "onTradeProposalCallback", "isExitModal", "ai", "showToast"
 ];
 
 for (const prop of COMMON_PROPS) {

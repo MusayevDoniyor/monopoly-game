@@ -1,4 +1,4 @@
-import { gameSettings } from "./boardData.js?v=5.1";
+import { gameSettings } from "./boardData.js?v=8.0";
 import { registerDelegates } from "./ui/uiComponent.js";
 import { DiceRenderer } from "./ui/diceRenderer.js";
 import { TokenAnimator } from "./ui/tokenAnimator.js";
@@ -136,6 +136,7 @@ export class MonopolyUI {
   showTradeResultModal(...args) { return this.modalManager.showTradeResultModal(...args); }
   showTradeOfferModal(...args) { return this.modalManager.showTradeOfferModal(...args); }
   celebrateMonopoly(...args) { return this.modalManager.celebrateMonopoly(...args); }
+  showToast(...args) { return this.modalManager.showToast(...args); }
   showMonopolyCelebrationToast(...args) { return this.modalManager.showMonopolyCelebrationToast(...args); }
   showJailToast(...args) { return this.modalManager.showJailToast(...args); }
   showBankruptcyToast(...args) { return this.modalManager.showBankruptcyToast(...args); }
@@ -160,7 +161,7 @@ registerDelegates([
   "getLocalPlayer", "showDeedModal", "showBuyPrompt", "showCardModal",
   "showPropertyManagementModal", "showGeminiAdvisorModal", "showDebtResolutionModal",
   "showTradeModal", "showWaitingModal", "showTradeResultModal", "showTradeOfferModal",
-  "celebrateMonopoly", "showMonopolyCelebrationToast", "showJailToast", "showBankruptcyToast",
+  "celebrateMonopoly", "showToast", "showMonopolyCelebrationToast", "showJailToast", "showBankruptcyToast",
   "showGameOverModal", "showLobbyModal", "updateLobbyList", "showAchievementsModal",
   "showExitConfirmationModal", "showRulesModal", "closeModal"
 ]);

@@ -1,6 +1,6 @@
 import { UIComponent } from "./uiComponent.js";
-import { sounds } from "../audio.js?v=5.1";
-import { getIcon } from "../icons.js?v=5.1";
+import { sounds } from "../audio.js?v=8.0";
+import { getIcon } from "../icons.js?v=8.0";
 
 export class TokenAnimator extends UIComponent {
   initTokens() {

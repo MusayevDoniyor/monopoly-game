@@ -1,4 +1,4 @@
-import { gameSettings } from "./boardData.js?v=5.1";
+import { gameSettings } from "./boardData.js?v=8.0";
 
 export class TurnTimer {
   constructor(app) {

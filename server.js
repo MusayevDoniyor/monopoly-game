@@ -104,11 +104,9 @@ const server = http.createServer((req, res) => {
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || "application/octet-stream";
   const cacheControl =
-    ext === ".html"
+    ext === ".html" || ext === ".js" || ext === ".css"
       ? "no-cache, must-revalidate"
-      : [".js", ".css"].includes(ext) && url.searchParams.has("v")
-        ? "public, max-age=31536000, immutable"
-        : "public, max-age=86400, stale-while-revalidate=604800";
+      : "public, max-age=86400, stale-while-revalidate=604800";
 
   fs.readFile(filePath, (err, content) => {
     if (err) {

@@ -1,18 +1,18 @@
-import { GameEngine } from "./gameEngine.js?v=5.3";
-import { MonopolyUI } from "./ui.js?v=5.9";
-import { AiPlayer } from "./aiPlayer.js?v=5.1";
-import { sounds } from "./audio.js?v=5.1";
-import { geminiAdvisor } from "./geminiAdvisor.js?v=5.1";
-import { MultiplayerManager } from "./multiplayer.js?v=5.1";
+import { GameEngine } from "./gameEngine.js?v=8.0";
+import { MonopolyUI } from "./ui.js?v=8.0";
+import { AiPlayer } from "./aiPlayer.js?v=8.0";
+import { sounds } from "./audio.js?v=8.0";
+import { geminiAdvisor } from "./geminiAdvisor.js?v=8.0";
+import { MultiplayerManager } from "./multiplayer.js?v=8.0";
 import {
   COLOR_GROUPS,
   gameSettings,
   updateGameSettings,
   reloadActiveBoard,
-} from "./boardData.js?v=5.1";
-import { particles } from "./particles.js?v=5.1";
-import { achievements } from "./achievements.js?v=5.1";
-import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=5.1";
+} from "./boardData.js?v=8.0";
+import { particles } from "./particles.js?v=8.0";
+import { achievements } from "./achievements.js?v=8.0";
+import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=8.0";
 import { TurnTimer } from "./turnTimer.js";
 import { initCustomSelects } from "./ui/customSelect.js";
 

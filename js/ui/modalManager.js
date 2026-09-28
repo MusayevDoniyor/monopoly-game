@@ -1,10 +1,10 @@
 import { UIComponent } from "./uiComponent.js";
-import { BOARD_TILES, COLOR_GROUPS, gameSettings } from "../boardData.js?v=5.1";
-import { sounds } from "../audio.js?v=5.1";
-import { getIcon, TOKEN_KEYS, TOKEN_LABELS } from "../icons.js?v=5.1";
-import { achievements, ACHIEVEMENTS_LIST } from "../achievements.js?v=5.1";
-import { particles } from "../particles.js?v=5.1";
-import { geminiAdvisor } from "../geminiAdvisor.js?v=5.1";
+import { BOARD_TILES, COLOR_GROUPS, gameSettings } from "../boardData.js?v=8.0";
+import { sounds } from "../audio.js?v=8.0";
+import { getIcon, TOKEN_KEYS, TOKEN_LABELS } from "../icons.js?v=8.0";
+import { achievements, ACHIEVEMENTS_LIST } from "../achievements.js?v=8.0";
+import { particles } from "../particles.js?v=8.0";
+import { geminiAdvisor } from "../geminiAdvisor.js?v=8.0";
 import { CLASSIC_RAILROAD_ARTWORK } from "./railroadArtwork.js";
 import { escapeHtml, formatMoney, formatTime } from "../utils.js";
 import { initCustomSelects } from "./customSelect.js";
@@ -1902,6 +1902,34 @@ export class ModalManager extends UIComponent {
     this._monopolyToastTimer = setTimeout(() => {
       toast.classList.remove("show");
     }, 2470); // Synchronized with 2.47s level-up chime
+  }
+
+  showToast(message, type = "info") {
+    let toast = document.getElementById("gameUniversalToast");
+    if (!toast) {
+      toast = document.createElement("div");
+      toast.id = "gameUniversalToast";
+      toast.className = "game-universal-toast";
+      document.body.appendChild(toast);
+    }
+
+    const iconsByType = {
+      success: getIcon("CHECK"),
+      danger: getIcon("WARNING"),
+      info: getIcon("SPARKLE"),
+    };
+
+    const iconHtml = iconsByType[type] || getIcon("SPARKLE");
+    toast.className = `game-universal-toast toast-${type} show`;
+    toast.innerHTML = `
+      <span class="universal-toast-icon">${iconHtml}</span>
+      <span class="universal-toast-text">${escapeHtml(message)}</span>
+    `;
+
+    clearTimeout(this._universalToastTimer);
+    this._universalToastTimer = setTimeout(() => {
+      toast.classList.remove("show");
+    }, 3200);
   }
   showJailToast(player) {
     let toast = document.getElementById("jailToast");
