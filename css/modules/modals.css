@@ -767,7 +767,7 @@
 
 .player-config-row {
   display: grid;
-  grid-template-columns: 110px 1fr 85px 36px;
+  grid-template-columns: 146px minmax(0, 1fr) 98px 36px;
   gap: 8px;
   align-items: center;
   width: 100%;
@@ -1601,9 +1601,9 @@
   position: absolute;
   top: calc(100% + 5px);
   left: 0;
-  right: 0;
-  width: 100%;
-  max-width: 100%;
+  min-width: max(100%, 175px);
+  width: max-content;
+  max-width: min(380px, 92vw);
   box-sizing: border-box;
   background: rgba(14, 23, 21, 0.98);
   backdrop-filter: blur(16px);
@@ -1648,15 +1648,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 12px;
+  padding: 8px 12px;
   border-radius: 6px;
   color: #cbd5e1;
-  font-size: 0.84rem;
+  font-size: 0.86rem;
   cursor: pointer;
   transition: all 0.14s ease;
   user-select: none;
   min-width: 0;
+  white-space: nowrap;
 }
 
 .custom-select-option:hover {
@@ -1681,7 +1682,7 @@
 .custom-select-option-title {
   font-weight: 600;
   color: inherit;
-  white-space: normal;
+  white-space: nowrap;
   line-height: 1.3;
 }
 

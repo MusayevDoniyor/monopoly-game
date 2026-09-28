@@ -139,6 +139,15 @@ export function enhanceSelect(selectEl) {
       wrapper.classList.remove("open-upward");
     }
 
+    // Keep menu within screen boundaries horizontally
+    if (rect.left + 220 > window.innerWidth) {
+      menu.style.left = "auto";
+      menu.style.right = "0";
+    } else {
+      menu.style.left = "0";
+      menu.style.right = "auto";
+    }
+
     const selected = menu.querySelector(".custom-select-option.selected");
     if (selected) {
       selected.scrollIntoView({ block: "nearest" });
@@ -148,6 +157,8 @@ export function enhanceSelect(selectEl) {
   function closeMenu() {
     wrapper.classList.remove("open", "open-upward");
     trigger.setAttribute("aria-expanded", "false");
+    menu.style.left = "";
+    menu.style.right = "";
   }
 
   trigger.onclick = (e) => {

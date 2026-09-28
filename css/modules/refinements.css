@@ -383,7 +383,7 @@ textarea {
 }
 
 .player-config-row {
-  grid-template-columns: 130px minmax(0, 1fr) 98px 34px;
+  grid-template-columns: 146px minmax(0, 1fr) 98px 34px;
   gap: 8px;
   align-items: center;
 }
