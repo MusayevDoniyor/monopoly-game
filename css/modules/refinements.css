@@ -1237,9 +1237,24 @@ textarea {
   white-space: nowrap;
 }
 
-.setup-count-field .select-ctrl {
+.setup-count-field .select-ctrl,
+.setup-count-field .custom-select-wrapper {
   min-width: 62px;
+  width: 62px;
   font-weight: 750;
+}
+
+.setup-count-field .custom-select-menu {
+  min-width: 100%;
+  width: 100%;
+  max-width: 100%;
+  right: 0;
+  left: auto;
+}
+
+.setup-count-field .custom-select-option {
+  justify-content: center;
+  padding: 8px 10px;
 }
 
 .setup-player-list {

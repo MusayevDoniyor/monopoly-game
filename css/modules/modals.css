@@ -113,6 +113,7 @@
   max-height: 72vh;
   overflow-y: auto;
   overflow-x: hidden;
+  overflow-x: clip;
   box-sizing: border-box;
   width: 100%;
   scrollbar-width: thin;
@@ -1601,7 +1602,7 @@
   position: absolute;
   top: calc(100% + 5px);
   left: 0;
-  min-width: max(100%, 175px);
+  min-width: 100%;
   width: max-content;
   max-width: min(380px, 92vw);
   box-sizing: border-box;

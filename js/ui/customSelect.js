@@ -139,8 +139,16 @@ export function enhanceSelect(selectEl) {
       wrapper.classList.remove("open-upward");
     }
 
-    // Keep menu within screen boundaries horizontally
-    if (rect.left + 220 > window.innerWidth) {
+    // Keep menu within screen and parent modal boundaries horizontally
+    const scrollParent =
+      wrapper.closest(".modal-body-scroll, .modal-card") || document.body;
+    const parentRect = scrollParent.getBoundingClientRect();
+    const menuWidth = Math.max(menu.offsetWidth || 0, 100);
+
+    if (
+      rect.left + menuWidth > parentRect.right - 8 ||
+      rect.left + menuWidth > window.innerWidth - 8
+    ) {
       menu.style.left = "auto";
       menu.style.right = "0";
     } else {
@@ -148,9 +156,20 @@ export function enhanceSelect(selectEl) {
       menu.style.right = "auto";
     }
 
+    // Scroll inside menu ONLY without shifting parent scroll containers horizontally
     const selected = menu.querySelector(".custom-select-option.selected");
-    if (selected) {
-      selected.scrollIntoView({ block: "nearest" });
+    if (selected && menu.scrollHeight > menu.clientHeight) {
+      const optionTop = selected.offsetTop;
+      const optionBottom = optionTop + selected.offsetHeight;
+      if (optionTop < menu.scrollTop) {
+        menu.scrollTop = optionTop;
+      } else if (optionBottom > menu.scrollTop + menu.clientHeight) {
+        menu.scrollTop = optionBottom - menu.clientHeight;
+      }
+    }
+
+    if (scrollParent && scrollParent.scrollLeft > 0) {
+      scrollParent.scrollLeft = 0;
     }
   }
 
@@ -159,6 +178,10 @@ export function enhanceSelect(selectEl) {
     trigger.setAttribute("aria-expanded", "false");
     menu.style.left = "";
     menu.style.right = "";
+    const scrollParent = wrapper.closest(".modal-body-scroll, .modal-card");
+    if (scrollParent && scrollParent.scrollLeft > 0) {
+      scrollParent.scrollLeft = 0;
+    }
   }
 
   trigger.onclick = (e) => {
