@@ -1,4 +1,4 @@
-import { gameSettings } from "./boardData.js?v=8.1";
+import { gameSettings } from "./boardData.js?v=8.2";
 import { registerDelegates } from "./ui/uiComponent.js";
 import { DiceRenderer } from "./ui/diceRenderer.js";
 import { TokenAnimator } from "./ui/tokenAnimator.js";

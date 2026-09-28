@@ -1,4 +1,4 @@
-import { getIcon } from "./../icons.js?v=8.1";
+import { getIcon } from "./../icons.js?v=8.2";
 
 /**
  * Universal Luxury Custom Dropdown Component

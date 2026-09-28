@@ -25,6 +25,11 @@
   overflow: hidden;
 }
 
+.board-container:focus,
+.board-container:focus-visible {
+  outline: none;
+}
+
 /* 10x10 Grid (36 Tiles: 4 corners + 4x8) */
 .board-container.grid-10 {
   grid-template-columns: 14% repeat(8, 9%) 14%;

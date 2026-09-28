@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { GameEngine } from '../js/gameEngine.js';
-import { updateGameSettings, reloadActiveBoard, BOARD_TILES } from '../js/boardData.js?v=8.1';
-import { sounds } from '../js/audio.js?v=8.1';
-import { CHANCE_CARDS } from '../js/cardsData.js?v=8.1';
+import { updateGameSettings, reloadActiveBoard, BOARD_TILES } from '../js/boardData.js?v=8.2';
+import { sounds } from '../js/audio.js?v=8.2';
+import { CHANCE_CARDS } from '../js/cardsData.js?v=8.2';
 import { AiPlayer } from '../js/aiPlayer.js';
 
 function createEngine(boardTheme = 'classic') {

@@ -45,7 +45,7 @@
       href="images/main-logo.webp"
       fetchpriority="high"
     />
-    <link rel="stylesheet" href="css/style.css?v=8.1" />
+    <link rel="stylesheet" href="css/style.css?v=8.2" />
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎩</text></svg>"
@@ -247,7 +247,7 @@
     <main class="app-container">
       <!-- 2D Board Section -->
       <div class="board-wrapper">
-        <div class="board-container" id="boardContainer">
+        <div class="board-container" id="boardContainer" tabindex="0" role="region" aria-label="Monopoly Game Board">
           <!-- Board Center Felt Area -->
           <div class="board-center">
             <div class="classic-center-art" aria-hidden="true">
@@ -392,9 +392,10 @@
                   Roll dice to move
                 </div>
                 <div class="action-buttons">
-                  <button class="btn-primary" id="rollDiceBtn">
+                  <button class="btn-primary" id="rollDiceBtn" title="Roll Dice (Space)">
                     <span class="icon-wrap" id="btnRollDiceIcon"></span>
                     <span id="rollDiceBtnText">Roll Dice</span>
+                    <span class="btn-kbd-hint" aria-hidden="true">Space</span>
                   </button>
                   <button class="btn-secondary" id="endTurnBtn" disabled>
                     <span class="icon-wrap" id="btnEndTurnIcon"></span>
@@ -494,6 +495,6 @@
       style="position: fixed; inset: 0; pointer-events: none; z-index: 9999"
     ></canvas>
 
-    <script type="module" src="js/app.js?v=8.1"></script>
+    <script type="module" src="js/app.js?v=8.2"></script>
   </body>
 </html>

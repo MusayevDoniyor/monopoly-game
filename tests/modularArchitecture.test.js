@@ -135,4 +135,68 @@ test("UIComponent proxy delegates onTradeProposalCallback and dynamic properties
   assert.deepEqual(proposalReceived.reqProps, [1]);
 });
 
+test("Space key rolls dice when board is active and respects inputs/modals", () => {
+  let rollClicked = 0;
+  const mockRollBtn = {
+    disabled: false,
+    click() {
+      rollClicked++;
+    }
+  };
+
+  const handleKeydown = (e, { activeEl = null, isModalActive = false, isDrawerOpen = false } = {}) => {
+    if (e.code === "Space" || e.key === " " || e.key === "Spacebar") {
+      const tag = activeEl?.tagName;
+      if (
+        ["INPUT", "TEXTAREA", "SELECT"].includes(tag) ||
+        activeEl?.isContentEditable ||
+        activeEl?.closest?.(".custom-select-wrapper")
+      ) {
+        return false;
+      }
+      if (isModalActive || isDrawerOpen) {
+        return false;
+      }
+      if (tag === "BUTTON" && activeEl !== mockRollBtn && !activeEl.closest?.(".board-wrapper, #boardContainer")) {
+        return false;
+      }
+      if (mockRollBtn && !mockRollBtn.disabled) {
+        e.preventDefault();
+        mockRollBtn.click();
+        return true;
+      }
+    }
+    return false;
+  };
+
+  let prevented = false;
+  const fakeEvent = {
+    code: "Space",
+    key: " ",
+    preventDefault() { prevented = true; }
+  };
+
+  // 1. Should roll when board/body is focused and roll button is enabled
+  const res1 = handleKeydown(fakeEvent, { activeEl: { tagName: "DIV", id: "boardContainer" } });
+  assert.equal(res1, true);
+  assert.equal(rollClicked, 1);
+  assert.equal(prevented, true);
+
+  // 2. Should NOT roll when user is typing in an input
+  const res2 = handleKeydown(fakeEvent, { activeEl: { tagName: "INPUT" } });
+  assert.equal(res2, false);
+  assert.equal(rollClicked, 1);
+
+  // 3. Should NOT roll when a modal is active
+  const res3 = handleKeydown(fakeEvent, { activeEl: { tagName: "BODY" }, isModalActive: true });
+  assert.equal(res3, false);
+  assert.equal(rollClicked, 1);
+
+  // 4. Should NOT roll when rollBtn is disabled
+  mockRollBtn.disabled = true;
+  const res4 = handleKeydown(fakeEvent, { activeEl: { tagName: "BODY" } });
+  assert.equal(res4, false);
+  assert.equal(rollClicked, 1);
+});
+
 

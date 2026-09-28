@@ -1,20 +1,20 @@
-import { GameEngine } from "./gameEngine.js?v=8.1";
-import { MonopolyUI } from "./ui.js?v=8.1";
-import { AiPlayer } from "./aiPlayer.js?v=8.1";
-import { sounds } from "./audio.js?v=8.1";
-import { geminiAdvisor } from "./geminiAdvisor.js?v=8.1";
-import { MultiplayerManager } from "./multiplayer.js?v=8.1";
+import { GameEngine } from "./gameEngine.js?v=8.2";
+import { MonopolyUI } from "./ui.js?v=8.2";
+import { AiPlayer } from "./aiPlayer.js?v=8.2";
+import { sounds } from "./audio.js?v=8.2";
+import { geminiAdvisor } from "./geminiAdvisor.js?v=8.2";
+import { MultiplayerManager } from "./multiplayer.js?v=8.2";
 import {
   COLOR_GROUPS,
   gameSettings,
   updateGameSettings,
   reloadActiveBoard,
-} from "./boardData.js?v=8.1";
-import { particles } from "./particles.js?v=8.1";
-import { achievements } from "./achievements.js?v=8.1";
-import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=8.1";
-import { TurnTimer } from "./turnTimer.js?v=8.1";
-import { initCustomSelects } from "./ui/customSelect.js?v=8.1";
+} from "./boardData.js?v=8.2";
+import { particles } from "./particles.js?v=8.2";
+import { achievements } from "./achievements.js?v=8.2";
+import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=8.2";
+import { TurnTimer } from "./turnTimer.js?v=8.2";
+import { initCustomSelects } from "./ui/customSelect.js?v=8.2";
 
 class MonopolyApp {
   constructor() {
@@ -410,6 +410,63 @@ class MonopolyApp {
         this.handleEndTurn();
       };
     }
+
+    // Board container focus on click
+    const boardContainer = document.getElementById("boardContainer");
+    if (boardContainer) {
+      boardContainer.addEventListener("click", () => {
+        const activeTag = document.activeElement?.tagName;
+        if (!["INPUT", "TEXTAREA", "SELECT"].includes(activeTag)) {
+          boardContainer.focus();
+        }
+      });
+    }
+
+    // Keyboard Space shortcut to Roll Dice when board is in focus / active
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Space" || e.key === " " || e.key === "Spacebar") {
+        const activeEl = document.activeElement;
+        const tag = activeEl?.tagName;
+
+        // Never intercept space if typing in inputs, textareas, selects, or custom dropdowns
+        if (
+          ["INPUT", "TEXTAREA", "SELECT"].includes(tag) ||
+          activeEl?.isContentEditable ||
+          activeEl?.closest(".custom-select-wrapper")
+        ) {
+          return;
+        }
+
+        // Never roll if a modal or drawer is active
+        if (
+          this.ui.modalOverlay?.classList.contains("active") ||
+          this.ui.menuDrawer?.classList.contains("open")
+        ) {
+          return;
+        }
+
+        // If focus is specifically on another button outside the board arena, allow native action
+        if (
+          tag === "BUTTON" &&
+          activeEl !== this.ui.rollBtn &&
+          !activeEl.closest(".board-wrapper, #boardContainer")
+        ) {
+          return;
+        }
+
+        // Prevent page scrolling on Space
+        e.preventDefault();
+
+        // Roll dice if roll button is currently available and enabled
+        if (
+          this.ui.rollBtn &&
+          !this.ui.rollBtn.disabled &&
+          !this._isRollingAnimation
+        ) {
+          this.ui.rollBtn.click();
+        }
+      }
+    });
   }
 
   showSettingsModal() {
@@ -902,6 +959,13 @@ class MonopolyApp {
       this.runAiTurn(player);
     } else {
       this.startTurnTimer(player, "roll");
+      const boardEl = document.getElementById("boardContainer");
+      if (
+        boardEl &&
+        !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)
+      ) {
+        boardEl.focus();
+      }
     }
   }
 

@@ -1,6 +1,6 @@
 import { UIComponent } from "./uiComponent.js";
-import { BOARD_TILES, COLOR_GROUPS, TILE_PROBABILITIES, gameSettings } from "../boardData.js?v=8.1";
-import { getIcon } from "../icons.js?v=8.1";
+import { BOARD_TILES, COLOR_GROUPS, TILE_PROBABILITIES, gameSettings } from "../boardData.js?v=8.2";
+import { getIcon } from "../icons.js?v=8.2";
 import { CLASSIC_RAILROAD_ARTWORK } from "./railroadArtwork.js";
 import { escapeHtml } from "../utils.js";
 

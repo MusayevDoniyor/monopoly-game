@@ -1,11 +1,11 @@
 /* Monopoly Master - Modular Stylesheet Index */
-@import url('./modules/variables.css?v=8.1');
-@import url('./modules/board.css?v=8.1');
-@import url('./modules/tokens.css?v=8.1');
-@import url('./modules/dice.css?v=8.1');
-@import url('./modules/hud.css?v=8.1');
-@import url('./modules/feed.css?v=8.1');
-@import url('./modules/modals.css?v=8.1');
-@import url('./modules/certificate.css?v=8.1');
-@import url('./modules/responsive.css?v=8.1');
-@import url('./modules/refinements.css?v=8.1');
+@import url('./modules/variables.css?v=8.2');
+@import url('./modules/board.css?v=8.2');
+@import url('./modules/tokens.css?v=8.2');
+@import url('./modules/dice.css?v=8.2');
+@import url('./modules/hud.css?v=8.2');
+@import url('./modules/feed.css?v=8.2');
+@import url('./modules/modals.css?v=8.2');
+@import url('./modules/certificate.css?v=8.2');
+@import url('./modules/responsive.css?v=8.2');
+@import url('./modules/refinements.css?v=8.2');
