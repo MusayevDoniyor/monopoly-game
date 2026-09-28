@@ -873,7 +873,7 @@ textarea {
   }
 
   .dice-arena {
-    gap: 6px;
+    gap: 10px;
   }
 
   .dice-tray {
@@ -883,39 +883,55 @@ textarea {
   }
 
   .turn-action-card {
-    width: min(86%, 300px);
-    padding: 8px 14px 9px;
-    gap: 5px;
+    width: min(90%, 348px);
+    padding: 12px 18px 14px;
+    gap: 8px;
+    border-radius: 14px;
   }
 
   .turn-player-header {
-    gap: 8px;
-    font-size: 0.98rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
   }
 
   .token-avatar {
-    width: 28px;
-    height: 28px;
-    padding: 4px;
+    width: 32px;
+    height: 32px;
+    padding: 5px;
+    flex-shrink: 0;
   }
 
   .turn-status-text {
-    font-size: 0.82rem;
+    font-size: 0.85rem;
+    min-height: 20px;
+    line-height: 1.35;
   }
 
   .action-buttons {
-    gap: 7px;
+    width: 100%;
+    gap: 10px;
   }
 
-  .btn-primary,
-  .btn-secondary {
-    padding: 7px 14px;
-    font-size: 0.85rem;
+  .action-buttons .btn-primary,
+  .action-buttons .btn-secondary {
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: nowrap;
+    justify-content: center;
+    padding: 9px 12px;
+    font-size: 0.86rem;
+    gap: 7px;
+    border-radius: 10px;
   }
 
   .center-quick-actions {
-    gap: 8px;
-    margin-bottom: 0;
+    width: 100%;
+    max-width: 348px;
+    gap: 10px;
+    margin-top: 4px;
   }
 }
 
@@ -1011,38 +1027,53 @@ textarea {
   outline-offset: 3px;
 }
 
-/* Keep the central action stack compact enough to leave the board art visible. */
+/* Central action stack: maintain spacious proportions and prevent cramped text wrapping */
 @media (min-width: 601px) {
   .turn-action-card {
-    width: min(74%, 252px);
-    padding: 6px 10px 7px;
-    gap: 4px;
+    width: min(90%, 348px);
+    padding: 12px 18px 14px;
+    gap: 8px;
+    border-radius: 14px;
   }
 
   .turn-timer-bar-wrap {
     height: 4px;
+    margin: 2px 0 4px;
   }
 
   .action-buttons {
-    gap: 6px;
+    gap: 10px;
+    width: 100%;
   }
 
   .btn-primary,
   .btn-secondary {
-    padding: 6px 11px;
-    font-size: 0.78rem;
-    gap: 5px;
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: nowrap;
+    justify-content: center;
+    padding: 9px 12px;
+    font-size: 0.86rem;
+    gap: 7px;
+    border-radius: 10px;
   }
 
   .center-quick-actions {
-    gap: 6px;
+    width: 100%;
+    max-width: 348px;
+    gap: 10px;
+    margin-top: 4px;
   }
 
   .btn-ctrl {
-    padding: 4px 8px;
-    border-radius: 7px;
-    font-size: 0.68rem;
-    gap: 5px;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 8px 12px;
+    border-radius: 9px;
+    font-size: 0.78rem;
+    gap: 6px;
+    white-space: nowrap;
+    justify-content: center;
   }
 }
 
