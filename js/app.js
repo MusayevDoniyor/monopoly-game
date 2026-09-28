@@ -1,20 +1,20 @@
-import { GameEngine } from "./gameEngine.js?v=8.2";
-import { MonopolyUI } from "./ui.js?v=8.2";
-import { AiPlayer } from "./aiPlayer.js?v=8.2";
-import { sounds } from "./audio.js?v=8.2";
-import { geminiAdvisor } from "./geminiAdvisor.js?v=8.2";
-import { MultiplayerManager } from "./multiplayer.js?v=8.2";
+import { GameEngine } from "./gameEngine.js";
+import { MonopolyUI } from "./ui.js";
+import { AiPlayer } from "./aiPlayer.js";
+import { sounds } from "./audio.js";
+import { geminiAdvisor } from "./geminiAdvisor.js";
+import { MultiplayerManager } from "./multiplayer.js";
 import {
   COLOR_GROUPS,
   gameSettings,
   updateGameSettings,
   reloadActiveBoard,
-} from "./boardData.js?v=8.2";
-import { particles } from "./particles.js?v=8.2";
-import { achievements } from "./achievements.js?v=8.2";
-import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js?v=8.2";
-import { TurnTimer } from "./turnTimer.js?v=8.2";
-import { initCustomSelects } from "./ui/customSelect.js?v=8.2";
+} from "./boardData.js";
+import { particles } from "./particles.js";
+import { achievements } from "./achievements.js";
+import { TOKEN_KEYS, TOKEN_LABELS, getIcon } from "./icons.js";
+import { TurnTimer } from "./turnTimer.js";
+import { initCustomSelects } from "./ui/customSelect.js";
 
 class MonopolyApp {
   constructor() {
@@ -1385,7 +1385,7 @@ class MonopolyApp {
       } else {
         this.ui.showCardModal(action.cardType, drawnCard, async () => {
           const oldPos = cardPlayer.position;
-          action.onResolve(cardMovesPlayer);
+          action.onResolve(cardMovesPlayer, cardMovesPlayer);
           const newPos = cardPlayer.position;
           this.syncGameState();
 
@@ -1402,12 +1402,18 @@ class MonopolyApp {
                 oldPos,
               );
             });
-            this.checkActionModal(false, () => {
-              this.ui.updateBoardState();
-              this.ui.updateHUD();
-              this.syncGameState();
-              if (onComplete) onComplete();
-            });
+            const deferredOpts = this.engine.currentTurn?.deferredLandingOptions;
+            if (this.engine.currentTurn) {
+              this.engine.currentTurn.deferredLandingOptions = null;
+            }
+            this.engine.handleTileLanding(cardPlayer, () => {
+              this.checkActionModal(false, () => {
+                this.ui.updateBoardState();
+                this.ui.updateHUD();
+                this.syncGameState();
+                if (onComplete) onComplete();
+              });
+            }, deferredOpts);
           } else {
             const indebtedHumans = this.engine
               .getActivePlayers()

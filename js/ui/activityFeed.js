@@ -1,6 +1,6 @@
 import { UIComponent } from "./uiComponent.js";
-import { getIcon } from "../icons.js?v=8.2";
-import { sounds } from "../audio.js?v=8.2";
+import { getIcon } from "../icons.js";
+import { sounds } from "../audio.js";
 import { escapeHtml } from "../utils.js";
 
 export class ActivityFeed extends UIComponent {

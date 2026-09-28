@@ -103,13 +103,29 @@ class SoundEffects {
     try {
       const info = this.audioFiles[key];
       if (!info) return;
+
+      if (this.activeSfx.size >= 10) {
+        const oldest = this.activeSfx.values().next().value;
+        if (oldest) {
+          try {
+            oldest.pause();
+            oldest.src = "";
+          } catch (_) {}
+          this.activeSfx.delete(oldest);
+        }
+      }
+
       const template = this.audioElements[key];
       const audio = template ? template.cloneNode() : new Audio(info.src);
       audio.volume = info.volume;
       audio.muted = false;
       this.activeSfx.add(audio);
-      audio.addEventListener('ended', () => this.activeSfx.delete(audio), { once: true });
-      audio.addEventListener('error', () => this.activeSfx.delete(audio), { once: true });
+      const cleanup = () => {
+        this.activeSfx.delete(audio);
+        try { audio.src = ""; } catch (_) {}
+      };
+      audio.addEventListener('ended', cleanup, { once: true });
+      audio.addEventListener('error', cleanup, { once: true });
       audio.play().catch(() => {});
       return audio;
     } catch (e) {

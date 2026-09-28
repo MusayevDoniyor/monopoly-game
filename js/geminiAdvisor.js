@@ -37,7 +37,8 @@ ${JSON.stringify(gameStateSummary, null, 2)}`;
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }]
-          })
+          }),
+          signal: AbortSignal.timeout(6000)
         });
 
         if (response.ok) {

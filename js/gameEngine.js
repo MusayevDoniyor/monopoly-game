@@ -3,9 +3,9 @@ import {
   COLOR_GROUPS,
   gameSettings,
   reloadActiveBoard,
-} from "./boardData.js?v=8.2";
-import { CHANCE_CARDS, COMMUNITY_CHEST_CARDS } from "./cardsData.js?v=8.2";
-import { sounds } from "./audio.js?v=8.2";
+} from "./boardData.js";
+import { CHANCE_CARDS, COMMUNITY_CHEST_CARDS } from "./cardsData.js";
+import { sounds } from "./audio.js";
 
 export class GameEngine {
   constructor() {
@@ -308,9 +308,13 @@ export class GameEngine {
   }
 
   hasMonopoly(playerId, groupKey) {
+    if (playerId === null || playerId === undefined) return false;
     if (!groupKey || groupKey === "RAILROAD" || groupKey === "UTILITY")
       return false;
-    const groupTiles = BOARD_TILES.filter((t) => t.group === groupKey);
+    const groupTiles = BOARD_TILES.filter(
+      (t) => t.group === groupKey && t.type === "property",
+    );
+    if (groupTiles.length === 0) return false;
     return groupTiles.every((t) => this.board[t.id]?.owner === playerId);
   }
 
@@ -775,7 +779,7 @@ export class GameEngine {
     return card;
   }
 
-  executeCard(player, card, onComplete) {
+  executeCard(player, card, onComplete, options = {}) {
     const action = card.action;
     this.log(`Card Drawn: "${card.text}"`, "info");
 
@@ -811,7 +815,7 @@ export class GameEngine {
         if (target >= this.getBoardLength()) {
           target = this.getBoardLength() - 1;
         }
-        if (action.collectGo && target < oldPos) {
+        if (action.collectGo && (target < oldPos || target === 0)) {
           const goRew = gameSettings.goReward || 200;
           player.cash += goRew;
           if (!player.stats) this.initPlayerStats(player);
@@ -825,14 +829,18 @@ export class GameEngine {
           sounds.playCash(player);
         }
         player.position = target;
-        this.handleTileLanding(player, onComplete);
+        if (!options.deferLanding) {
+          this.handleTileLanding(player, onComplete);
+        }
         break;
       }
 
       case "MOVE_RELATIVE": {
         const total = this.getBoardLength();
         player.position = (player.position + action.steps + total) % total;
-        this.handleTileLanding(player, onComplete);
+        if (!options.deferLanding) {
+          this.handleTileLanding(player, onComplete);
+        }
         break;
       }
 
@@ -856,7 +864,11 @@ export class GameEngine {
           sounds.playCash(player);
         }
         player.position = nextRR;
-        this.handleTileLanding(player, onComplete, { doubleRent: true });
+        if (!options.deferLanding) {
+          this.handleTileLanding(player, onComplete, { doubleRent: true });
+        } else if (this.currentTurn) {
+          this.currentTurn.deferredLandingOptions = { doubleRent: true };
+        }
         break;
       }
 
@@ -1037,12 +1049,13 @@ export class GameEngine {
         cardType: tile.type,
         card,
         player,
-        onResolve: (deferCompletion = false) => {
+        onResolve: (deferCompletion = false, deferLanding = false) => {
           this.currentTurn.awaitingAction = null;
           this.executeCard(
             player,
             card,
             deferCompletion ? () => {} : onFinished,
+            { deferLanding },
           );
         },
       };
@@ -1263,9 +1276,13 @@ export class GameEngine {
     // 3. Human Debtor: DO NOT auto-liquidate without player choice!
     // Deduct cash into deficit so the player enters debt
     debtor.cash -= amount;
-    if (creditor && !creditor.bankrupt) {
-      creditor.cash += amount;
-    }
+    debtor.pendingDebt = {
+      creditor,
+      amount,
+      reason,
+      deficit: Math.abs(debtor.cash),
+    };
+    debtor.lastCreditor = creditor;
 
     const liquidatable = this.getLiquidatableAssets(debtor.id);
     const totalAssets = debtor.cash + liquidatable;
@@ -1299,8 +1316,24 @@ export class GameEngine {
     };
   }
 
+  settlePendingDebt(debtor) {
+    if (!debtor || !debtor.pendingDebt) return;
+    const { creditor, amount } = debtor.pendingDebt;
+    if (creditor && !creditor.bankrupt && creditor.id !== debtor.id) {
+      creditor.cash += amount;
+      this.log(
+        `${debtor.name} settled debt of $${amount} to ${creditor.name}.`,
+        "info",
+      );
+    }
+    debtor.pendingDebt = null;
+  }
+
   checkBankruptcy(player) {
     if (player.cash >= 0) {
+      if (player.pendingDebt) {
+        this.settlePendingDebt(player);
+      }
       return { bankrupt: false, inDebt: false, deficit: 0, canEverClear: true };
     }
 
@@ -1340,26 +1373,38 @@ export class GameEngine {
     player.bankruptcyOrder = this.bankruptcyCounter;
     player.bankruptcyRound = this.roundCount;
 
-    if (creditor && !creditor.bankrupt && creditor.id !== player.id) {
-      if (!creditor.stats) this.initPlayerStats(creditor);
-      creditor.stats.bankruptciesCaused =
-        (creditor.stats.bankruptciesCaused || 0) + 1;
+    const actualCreditor = creditor || player.lastCreditor || null;
+
+    if (actualCreditor && !actualCreditor.bankrupt && actualCreditor.id !== player.id) {
+      if (!actualCreditor.stats) this.initPlayerStats(actualCreditor);
+      actualCreditor.stats.bankruptciesCaused =
+        (actualCreditor.stats.bankruptciesCaused || 0) + 1;
       this.log(
-        `[BANKRUPT] ${player.name} went bankrupt to ${creditor.name} and is eliminated!`,
+        `[BANKRUPT] ${player.name} went bankrupt to ${actualCreditor.name} and is eliminated!`,
         "danger",
       );
-      // Transfer remaining cash to creditor
-      if (player.cash > 0) {
-        creditor.cash += player.cash;
+
+      // Settle cash: transfer debtor's actual remaining liquidated cash without phantom money creation
+      let cashToTransfer = 0;
+      if (player.pendingDebt) {
+        cashToTransfer = Math.max(0, player.cash + player.pendingDebt.amount);
+        player.pendingDebt = null;
+      } else if (player.cash > 0) {
+        cashToTransfer = player.cash;
+      }
+
+      if (cashToTransfer > 0) {
+        actualCreditor.cash += cashToTransfer;
         this.log(
-          `${player.name} surrendered remaining $${player.cash} to ${creditor.name}.`,
+          `${player.name} surrendered remaining $${cashToTransfer} to ${actualCreditor.name}.`,
           "info",
         );
       }
+
       // Transfer all properties to creditor
       BOARD_TILES.forEach((t) => {
         if (this.board[t.id]?.owner === player.id) {
-          this.board[t.id].owner = creditor.id;
+          this.board[t.id].owner = actualCreditor.id;
           const h = this.board[t.id].houses || 0;
           if (h > 0) {
             if (h === 6) {
@@ -1370,13 +1415,13 @@ export class GameEngine {
               this.bank.houses += h;
             }
             const refund = h * Math.floor((t.houseCost || 0) / 2);
-            creditor.cash += refund;
+            actualCreditor.cash += refund;
             this.board[t.id].houses = 0;
           }
         }
       });
       this.log(
-        `All properties owned by ${player.name} were surrendered to ${creditor.name}!`,
+        `All properties owned by ${player.name} were surrendered to ${actualCreditor.name}!`,
         "warning",
       );
     } else {
@@ -1384,6 +1429,7 @@ export class GameEngine {
         `[BANKRUPT] ${player.name} has gone bankrupt to the Bank and is eliminated!`,
         "danger",
       );
+      player.pendingDebt = null;
       BOARD_TILES.forEach((t) => {
         if (this.board[t.id]?.owner === player.id) {
           this.board[t.id].owner = null;

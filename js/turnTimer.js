@@ -1,4 +1,4 @@
-import { gameSettings } from "./boardData.js?v=8.2";
+import { gameSettings } from "./boardData.js";
 
 export class TurnTimer {
   constructor(app) {
@@ -39,8 +39,8 @@ export class TurnTimer {
 
     const totalSec =
       phase === "roll"
-        ? gameSettings.turnTimerSeconds || 25
-        : Math.min(15, gameSettings.turnTimerSeconds || 15);
+        ? (gameSettings.turnTimerSeconds ?? 25)
+        : Math.min(15, gameSettings.turnTimerSeconds ?? 15);
 
     if (totalSec <= 0) {
       this.ui.hideTurnTimer();
@@ -81,7 +81,7 @@ export class TurnTimer {
     if (phase === "roll") {
       if (!this.engine.currentTurn.hasRolled && !player.inJail) {
         this.engine.log(
-          `?? [TURN TIMEOUT] ${player.name} ran out of time! Auto-rolling dice...`,
+          `⏱️ [TURN TIMEOUT] ${player.name} ran out of time! Auto-rolling dice...`,
           "warning",
         );
         this.app.handleRollDice(false);
@@ -89,7 +89,7 @@ export class TurnTimer {
     } else if (phase === "end_turn") {
       if (this.engine.currentTurn.hasRolled) {
         this.engine.log(
-          `?? [TURN TIMEOUT] ${player.name} ran out of time! Auto-passing turn...`,
+          `⏱️ [TURN TIMEOUT] ${player.name} ran out of time! Auto-passing turn...`,
           "warning",
         );
         this.app.handleEndTurn();

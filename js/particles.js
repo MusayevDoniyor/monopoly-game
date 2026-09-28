@@ -10,9 +10,9 @@ export class ParticleEngine {
     document.body.appendChild(this.canvas);
     this.ctx = this.canvas.getContext('2d');
 
+    this.isRunning = false;
     this.resize();
     window.addEventListener('resize', () => this.resize());
-    this.loop();
   }
 
   resize() {
@@ -40,6 +40,12 @@ export class ParticleEngine {
         vRot: (Math.random() - 0.5) * 0.2
       });
     }
+    if (!this.isRunning) {
+      this.isRunning = true;
+      if (typeof requestAnimationFrame !== 'undefined') {
+        requestAnimationFrame(() => this.loop());
+      }
+    }
   }
 
   // Confetti rain across entire screen on victory / major milestones
@@ -59,6 +65,12 @@ export class ParticleEngine {
         rotation: Math.random() * Math.PI,
         vRot: (Math.random() - 0.5) * 0.15
       });
+    }
+    if (!this.isRunning) {
+      this.isRunning = true;
+      if (typeof requestAnimationFrame !== 'undefined') {
+        requestAnimationFrame(() => this.loop());
+      }
     }
   }
 
@@ -97,6 +109,11 @@ export class ParticleEngine {
   }
 
   loop() {
+    if (this.particles.length === 0) {
+      this.isRunning = false;
+      return;
+    }
+    if (!this.ctx || !this.canvas) return;
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -133,7 +150,13 @@ export class ParticleEngine {
       this.ctx.restore();
     }
 
-    requestAnimationFrame(() => this.loop());
+    if (this.particles.length > 0) {
+      if (typeof requestAnimationFrame !== 'undefined') {
+        requestAnimationFrame(() => this.loop());
+      }
+    } else {
+      this.isRunning = false;
+    }
   }
 }
 

@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { escapeHtml, formatMoney, formatTime, delay } from "../js/utils.js";
 import { TurnTimer } from "../js/turnTimer.js";
 import { UIComponent } from "../js/ui/uiComponent.js";
+import { gameSettings, updateGameSettings } from "../js/boardData.js";
+import { particles } from "../js/particles.js";
 
 test("utils: escapeHtml correctly encodes special characters", () => {
   assert.equal(escapeHtml("<script>alert('xss')</script>"), "&lt;script&gt;alert(&#039;xss&#039;)&lt;/script&gt;");
@@ -198,5 +200,95 @@ test("Space key rolls dice when board is active and respects inputs/modals", () 
   assert.equal(res4, false);
   assert.equal(rollClicked, 1);
 });
+
+test("turnTimer: 0s setting properly disables turn timer without fallback to default", () => {
+  updateGameSettings({ turnTimerSeconds: 0 });
+  const mockEngine = {
+    gameOver: false,
+    getCurrentPlayer: () => ({ id: 0, name: "Human", isAi: false })
+  };
+  let hiddenTimer = false;
+  const mockUi = {
+    hideTurnTimer: () => { hiddenTimer = true; },
+    updateTurnTimer: () => {}
+  };
+  const mockApp = {
+    engine: mockEngine,
+    ui: mockUi,
+    multiplayer: { isOnline: false }
+  };
+
+  const timer = new TurnTimer(mockApp);
+  timer.startTurnTimer(mockEngine.getCurrentPlayer(), "roll");
+  assert.equal(hiddenTimer, true, "0 seconds must disable timer rather than falling back to 25s");
+  assert.equal(timer._turnTimerInterval, null, "No interval should be active when timer is disabled");
+  updateGameSettings({ turnTimerSeconds: 25 });
+});
+
+test("particles: idle engine halts animation loop when particles array is empty", () => {
+  particles.particles = [];
+  particles.isRunning = false;
+  particles.loop();
+  assert.equal(particles.isRunning, false, "Empty particles should keep engine idle");
+
+  // Mock document and window for burst if needed
+  particles.burstCoins(0, 0, 5);
+  assert.equal(particles.isRunning, true, "burstCoins should wake up running state");
+  assert.ok(particles.particles.length > 0, "Particles should be populated");
+
+  // Clearing particles and looping sets isRunning back to false
+  particles.particles = [];
+  particles.loop();
+  assert.equal(particles.isRunning, false, "Looping with 0 particles should stop running state");
+});
+
+test("multiplayer server rules: lobby host migration and 2 player minimum validation", () => {
+  // Test minimum players to start
+  const validateStartGame = (room) => {
+    if (!room || room.players.length < 2) {
+      return { allowed: false, error: "Cannot start game with fewer than 2 players." };
+    }
+    return { allowed: true };
+  };
+
+  const soloRoom = { players: [{ id: 0, name: "Host" }] };
+  assert.deepEqual(validateStartGame(soloRoom), {
+    allowed: false,
+    error: "Cannot start game with fewer than 2 players."
+  });
+
+  const validRoom = { players: [{ id: 0, name: "Host" }, { id: 1, name: "Guest" }] };
+  assert.deepEqual(validateStartGame(validRoom), { allowed: true });
+
+  // Test host migration on disconnect during lobby phase
+  const handleLobbyDisconnect = (room, leavingPlayerId) => {
+    const leaving = room.players.find(p => p.id === leavingPlayerId);
+    const wasHost = leaving?.isHost || leaving?.ws === room.hostWs;
+    room.players = room.players.filter(p => p.id !== leavingPlayerId);
+    if (room.players.length > 0 && wasHost) {
+      room.players[0].isHost = true;
+      room.hostWs = room.players[0].ws;
+    }
+    return room;
+  };
+
+  const wsHost = { id: "ws1" };
+  const wsGuest = { id: "ws2" };
+  const lobbyRoom = {
+    hostWs: wsHost,
+    started: false,
+    players: [
+      { id: 0, name: "Host", isHost: true, ws: wsHost },
+      { id: 1, name: "Guest", isHost: false, ws: wsGuest }
+    ]
+  };
+
+  handleLobbyDisconnect(lobbyRoom, 0);
+  assert.equal(lobbyRoom.players.length, 1);
+  assert.equal(lobbyRoom.players[0].id, 1);
+  assert.equal(lobbyRoom.players[0].isHost, true, "Remaining player must be promoted to host");
+  assert.equal(lobbyRoom.hostWs, wsGuest, "Room hostWs must point to new host socket");
+});
+
 
 

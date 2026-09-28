@@ -1,10 +1,10 @@
 import { UIComponent } from "./uiComponent.js";
-import { BOARD_TILES, COLOR_GROUPS, gameSettings } from "../boardData.js?v=8.2";
-import { sounds } from "../audio.js?v=8.2";
-import { getIcon, TOKEN_KEYS, TOKEN_LABELS } from "../icons.js?v=8.2";
-import { achievements, ACHIEVEMENTS_LIST } from "../achievements.js?v=8.2";
-import { particles } from "../particles.js?v=8.2";
-import { geminiAdvisor } from "../geminiAdvisor.js?v=8.2";
+import { BOARD_TILES, COLOR_GROUPS, gameSettings } from "../boardData.js";
+import { sounds } from "../audio.js";
+import { getIcon, TOKEN_KEYS, TOKEN_LABELS } from "../icons.js";
+import { achievements, ACHIEVEMENTS_LIST } from "../achievements.js";
+import { particles } from "../particles.js";
+import { geminiAdvisor } from "../geminiAdvisor.js";
 import { CLASSIC_RAILROAD_ARTWORK } from "./railroadArtwork.js";
 import { escapeHtml, formatMoney, formatTime } from "../utils.js";
 import { initCustomSelects } from "./customSelect.js";
@@ -129,7 +129,12 @@ export class ModalManager extends UIComponent {
       });
     });
 
-    window.setTimeout(() => {
+    if (this._startingSelectorTimer) {
+      clearTimeout(this._startingSelectorTimer);
+      this._startingSelectorTimer = null;
+    }
+    this._startingSelectorTimer = window.setTimeout(() => {
+      this._startingSelectorTimer = null;
       arena?.classList.remove("is-spinning");
       if (winnerToken) {
         winnerToken.classList.add("winner");
@@ -220,19 +225,21 @@ export class ModalManager extends UIComponent {
       onRoll();
     };
 
-    const timerSec = gameSettings.approvalTimerSeconds || 15;
-    this.startModalTimer(
-      timerSec,
-      () => {
-        this.engine.log(
-          `⏱️ [TIME'S UP] ${player.name} did not choose jail action in time. Auto-rolling for doubles...`,
-          "warning",
-        );
-        this.closeModal();
-        onRoll();
-      },
-      "Auto-roll in",
-    );
+    const timerSec = gameSettings.approvalTimerSeconds ?? 15;
+    if (timerSec > 0) {
+      this.startModalTimer(
+        timerSec,
+        () => {
+          this.engine.log(
+            `⏱️ [TIME'S UP] ${player.name} did not choose jail action in time. Auto-rolling for doubles...`,
+            "warning",
+          );
+          this.closeModal();
+          onRoll();
+        },
+        "Auto-roll in",
+      );
+    }
 
     this.modalOverlay.classList.add("active");
   }
@@ -591,21 +598,23 @@ export class ModalManager extends UIComponent {
       };
     }
 
-    const timerSec = gameSettings.approvalTimerSeconds || 15;
-    this.startModalTimer(
-      timerSec,
-      () => {
-        if (purchaseDecisionMade) return;
-        purchaseDecisionMade = true;
-        this.engine.log(
-          `⏱️ [TIME'S UP] ${player.name} did not decide on ${tile.name} in time (Passed).`,
-          "warning",
-        );
-        this.closeModal();
-        onPass();
-      },
-      "Auto-pass in",
-    );
+    const timerSec = gameSettings.approvalTimerSeconds ?? 15;
+    if (timerSec > 0) {
+      this.startModalTimer(
+        timerSec,
+        () => {
+          if (purchaseDecisionMade) return;
+          purchaseDecisionMade = true;
+          this.engine.log(
+            `⏱️ [TIME'S UP] ${player.name} did not decide on ${tile.name} in time (Passed).`,
+            "warning",
+          );
+          this.closeModal();
+          onPass();
+        },
+        "Auto-pass in",
+      );
+    }
 
     this.modalOverlay.classList.add("active");
   }
@@ -709,7 +718,10 @@ export class ModalManager extends UIComponent {
     const continueBtn = document.getElementById("cardContinueBtn");
     if (continueBtn) continueBtn.onclick = handleContinue;
 
-    this.startModalTimer(10, handleContinue, "Auto-continue in");
+    const timerSec = gameSettings.approvalTimerSeconds ?? 15;
+    if (timerSec > 0) {
+      this.startModalTimer(timerSec, handleContinue, "Auto-continue in");
+    }
 
     this.isInspectModal = true;
     this.modalOverlay.classList.add("active");
@@ -1281,6 +1293,9 @@ export class ModalManager extends UIComponent {
         `;
         document.getElementById("confirmDebtClearedBtn").onclick = () => {
           this.isDebtModal = false;
+          if (this.engine?.settlePendingDebt) {
+            this.engine.settlePendingDebt(player);
+          }
           this.closeModal(true);
           if (onResolved) onResolved();
         };
@@ -1848,19 +1863,22 @@ export class ModalManager extends UIComponent {
       if (onDecline) onDecline();
     };
 
-    const timerSec = (gameSettings.approvalTimerSeconds || 15) + 5;
-    this.startModalTimer(
-      timerSec,
-      () => {
-        this.engine.log(
-          `⏱️ [TIME'S UP] ${targetPlayer.name} did not respond to trade proposal in time (Declined).`,
-          "warning",
-        );
-        this.closeModal();
-        if (onDecline) onDecline();
-      },
-      "Auto-decline in",
-    );
+    const baseTimer = gameSettings.approvalTimerSeconds ?? 15;
+    const timerSec = baseTimer > 0 ? baseTimer + 5 : 0;
+    if (timerSec > 0) {
+      this.startModalTimer(
+        timerSec,
+        () => {
+          this.engine.log(
+            `⏱️ [TIME'S UP] ${targetPlayer.name} did not respond to trade proposal in time (Declined).`,
+            "warning",
+          );
+          this.closeModal();
+          if (onDecline) onDecline();
+        },
+        "Auto-decline in",
+      );
+    }
 
     this.modalOverlay.classList.add("active");
   }
@@ -2015,11 +2033,15 @@ export class ModalManager extends UIComponent {
 
     // Confetti rain bursts synchronized with victory-fanfare.mp3 (6.72s)
     particles.burstConfetti();
-    const confettiInterval = setInterval(() => {
+    if (this._confettiInterval) clearInterval(this._confettiInterval);
+    if (this._confettiTimeout) clearTimeout(this._confettiTimeout);
+    this._confettiInterval = setInterval(() => {
       particles.burstConfetti();
     }, 750);
-    setTimeout(() => {
-      clearInterval(confettiInterval);
+    this._confettiTimeout = setTimeout(() => {
+      clearInterval(this._confettiInterval);
+      this._confettiInterval = null;
+      this._confettiTimeout = null;
     }, 6720);
 
     const summary = this.engine.getMatchSummary();
@@ -3029,6 +3051,18 @@ export class ModalManager extends UIComponent {
     this.isDebtModal = false;
     this.isExitModal = false;
     this.clearModalTimer();
+    if (this._startingSelectorTimer) {
+      clearTimeout(this._startingSelectorTimer);
+      this._startingSelectorTimer = null;
+    }
+    if (this._confettiInterval) {
+      clearInterval(this._confettiInterval);
+      this._confettiInterval = null;
+    }
+    if (this._confettiTimeout) {
+      clearTimeout(this._confettiTimeout);
+      this._confettiTimeout = null;
+    }
     this.isStartingSelector = false;
     if (this.closeModalCrossBtn) this.closeModalCrossBtn.style.display = "";
     this.isInspectModal = false;

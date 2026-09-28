@@ -438,6 +438,16 @@ wss.on("connection", (ws) => {
           const room = rooms.get(currentRoomCode);
           if (!room || ws !== room.hostWs) return;
 
+          if (room.players.length < 2) {
+            ws.send(
+              JSON.stringify({
+                type: "ERROR",
+                message: "Cannot start game with fewer than 2 players.",
+              }),
+            );
+            return;
+          }
+
           room.started = true;
           const playerConfigs =
             msg.playerConfigs ||
@@ -512,11 +522,19 @@ wss.on("connection", (ws) => {
 
         if (!room.started) {
           // Lobby stage: remove completely
+          const wasHost = p?.isHost || ws === room.hostWs;
           room.players = room.players.filter((x) => x.id !== playerId);
           if (room.players.length === 0) {
             rooms.delete(currentRoomCode);
             console.log(`[Room ${currentRoomCode}] Deleted (empty lobby)`);
           } else {
+            if (wasHost) {
+              room.players[0].isHost = true;
+              room.hostWs = room.players[0].ws;
+              console.log(
+                `[Room ${currentRoomCode}] Host migrated to ${room.players[0].name}`,
+              );
+            }
             broadcastToRoom(currentRoomCode, {
               type: "PLAYER_LEFT",
               playerId,

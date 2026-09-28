@@ -24,7 +24,8 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadURL("http://localhost:8080");
+  const port = process.env.PORT || 8080;
+  mainWindow.loadURL(`http://localhost:${port}`);
 
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();

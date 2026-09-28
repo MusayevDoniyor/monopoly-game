@@ -63,9 +63,9 @@ export class MultiplayerManager {
         this.ws.onclose = () => {
           console.log('[Multiplayer] Disconnected from Server');
           this.stopHeartbeat();
-          if (this.isOnline && this.roomCode) {
+          if (this.isOnline && this.roomCode && !this.isReconnecting) {
             this.scheduleReconnect();
-          } else {
+          } else if (!this.isReconnecting) {
             this.isOnline = false;
           }
         };
@@ -104,8 +104,8 @@ export class MultiplayerManager {
 
     clearTimeout(this.reconnectTimer);
     this.reconnectTimer = setTimeout(() => {
+      this.isReconnecting = false;
       this.connect().catch(() => {
-        this.isReconnecting = false;
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
           this.scheduleReconnect();
         } else {

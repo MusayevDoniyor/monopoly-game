@@ -1,15 +1,19 @@
 export const COLOR_GROUPS = {
-  BROWN: { name: 'Brown', hex: '#8B4513', count: 2 },
-  LIGHT_BLUE: { name: 'Light Blue', hex: '#0284c7', count: 2 },
-  PINK: { name: 'Pink', hex: '#ec4899', count: 2 },
-  ORANGE: { name: 'Orange', hex: '#f97316', count: 3 },
-  RED: { name: 'Red', hex: '#ef4444', count: 3 },
-  YELLOW: { name: 'Yellow', hex: '#eab308', count: 2 },
-  GREEN: { name: 'Green', hex: '#10b981', count: 2 },
-  DARK_BLUE: { name: 'Dark Blue', hex: '#1e3a8a', count: 2 },
-  RAILROAD: { name: 'Transit Station', hex: '#475569', count: 4 },
-  UTILITY: { name: 'Utility / Power', hex: '#64748b', count: 2 }
+  BROWN: { name: 'Brown', hex: '#8B4513' },
+  LIGHT_BLUE: { name: 'Light Blue', hex: '#0284c7' },
+  PINK: { name: 'Pink', hex: '#ec4899' },
+  ORANGE: { name: 'Orange', hex: '#f97316' },
+  RED: { name: 'Red', hex: '#ef4444' },
+  YELLOW: { name: 'Yellow', hex: '#eab308' },
+  GREEN: { name: 'Green', hex: '#10b981' },
+  DARK_BLUE: { name: 'Dark Blue', hex: '#1e3a8a' },
+  RAILROAD: { name: 'Transit Station', hex: '#475569' },
+  UTILITY: { name: 'Utility / Power', hex: '#64748b' }
 };
+
+export function getGroupPropertyCount(groupKey) {
+  return BOARD_TILES.filter(t => t.group === groupKey).length;
+}
 
 export const DEFAULT_SETTINGS = {
   boardLayout: 'classic40', // 'classic40' (11/row, 9 between each of 4 corners)
@@ -83,7 +87,7 @@ export const TILE_PROBABILITIES_40 = {
   30: 0.0, 31: 2.7, 32: 2.4, 33: 2.6, 34: 2.8, 35: 2.2, 36: 2.5, 37: 2.2, 38: 2.1, 39: 2.6
 };
 
-export let TILE_PROBABILITIES = TILE_PROBABILITIES_36;
+export let TILE_PROBABILITIES = TILE_PROBABILITIES_40;
 
 // 36-Tile Custom Edition (10 per row, 8 between each of 4 corners)
 export const BOARD_36_WORLD = [
@@ -180,7 +184,7 @@ export const BOARD_40_CLASSIC = [
   { id: 39, name: 'Boardwalk', type: 'property', group: 'DARK_BLUE', price: 400, rent: [50, 200, 600, 1400, 1700, 2000], houseCost: 200, mortgage: 200 }
 ];
 
-export let BOARD_TILES = BOARD_36_WORLD;
+export let BOARD_TILES = BOARD_40_CLASSIC;
 
 export function getCurrentBoardTiles() {
   if (gameSettings.boardTheme === 'classic') {

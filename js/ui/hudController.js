@@ -1,6 +1,6 @@
 import { UIComponent } from "./uiComponent.js";
-import { getIcon } from "../icons.js?v=8.2";
-import { COLOR_GROUPS, gameSettings } from "../boardData.js?v=8.2";
+import { getIcon } from "../icons.js";
+import { COLOR_GROUPS, gameSettings } from "../boardData.js";
 import { escapeHtml } from "../utils.js";
 
 export class HudController extends UIComponent {

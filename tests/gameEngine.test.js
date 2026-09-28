@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { GameEngine } from '../js/gameEngine.js';
-import { updateGameSettings, reloadActiveBoard, BOARD_TILES } from '../js/boardData.js?v=8.2';
-import { sounds } from '../js/audio.js?v=8.2';
-import { CHANCE_CARDS } from '../js/cardsData.js?v=8.2';
+import { updateGameSettings, reloadActiveBoard, BOARD_TILES, getGroupPropertyCount, TILE_PROBABILITIES, gameSettings } from '../js/boardData.js';
+import { sounds } from '../js/audio.js';
+import { CHANCE_CARDS } from '../js/cardsData.js';
 import { AiPlayer } from '../js/aiPlayer.js';
+import { ICONS, getIcon } from '../js/icons.js';
 
 function createEngine(boardTheme = 'classic') {
   updateGameSettings({ boardTheme, startingCash: 1500, jailBailFee: 150 });
@@ -628,6 +629,110 @@ test('human players enter interactive debt deficit to choose liquidation assets 
   const resolvedStatus = engine.checkBankruptcy(human);
   assert.equal(resolvedStatus.inDebt, false);
   assert.equal(resolvedStatus.bankrupt, false);
+});
+
+test('human debt and bankruptcy settlement prevents phantom money creation', () => {
+  const engine = createEngine('classic');
+  const human = engine.players[0];
+  const creditor = engine.players[1];
+  human.isAi = false;
+  human.cash = 100;
+  creditor.cash = 1000;
+
+  engine.board[1].owner = human.id;
+  engine.board[1].mortgaged = false;
+
+  // Human owes $500 rent to creditor
+  const initialTotalEconomy = human.cash + creditor.cash; // 100 + 1000 = 1100
+  const res = engine.processPayment(human, 500, creditor, 'Boardwalk rent');
+  assert.equal(res.inDebt, true);
+  assert.equal(human.cash, -400);
+
+  // Creditor cash must NOT be inflated with phantom money before settlement!
+  assert.equal(creditor.cash, 1000, 'Creditor cash must not increase by unpossessed funds');
+
+  // Human declares bankruptcy to creditor
+  engine.declareBankruptcy(human, creditor);
+  assert.equal(human.bankrupt, true);
+  assert.equal(human.cash, 0);
+
+  // Creditor must receive only debtor actual liquidated funds ($100), plus properties
+  assert.equal(creditor.cash, 1100, 'Creditor receives only actual remaining debtor funds ($100)');
+  assert.equal(engine.board[1].owner, creditor.id, 'Creditor receives debtor properties');
+
+  // Total cash in economy must be strictly conserved (1100 before, 1100 after)
+  const finalTotalEconomy = human.cash + creditor.cash;
+  assert.equal(finalTotalEconomy, initialTotalEconomy, 'Economy cash must be conserved with zero phantom money');
+});
+
+test('human settling debt transfers exact settled amount to creditor upon debt clearance', () => {
+  const engine = createEngine('classic');
+  const human = engine.players[0];
+  const creditor = engine.players[1];
+  human.isAi = false;
+  human.cash = 100;
+  creditor.cash = 1000;
+
+  engine.board[6].owner = human.id; // Oriental Ave, mortgage = 50
+  engine.board[6].mortgaged = false;
+
+  // Incurs $150 rent
+  engine.processPayment(human, 150, creditor, 'Oriental Ave rent');
+  assert.equal(human.cash, -50);
+  assert.equal(creditor.cash, 1000);
+
+  // Human mortgages property to clear deficit
+  engine.mortgageProperty(human.id, 6);
+  assert.equal(human.cash, 0);
+
+  // Settle debt
+  engine.settlePendingDebt(human);
+  assert.equal(creditor.cash, 1150, 'Creditor received full $150 after debtor settled debt');
+  assert.equal(human.cash, 0);
+  assert.equal(human.pendingDebt, null);
+});
+
+test('hasMonopoly returns false for null/undefined player, empty groups, and non-property sets', () => {
+  const engine = createEngine('classic');
+  assert.equal(engine.hasMonopoly(null, 'BROWN'), false);
+  assert.equal(engine.hasMonopoly(undefined, 'BROWN'), false);
+  assert.equal(engine.hasMonopoly(0, 'RAILROAD'), false);
+  assert.equal(engine.hasMonopoly(0, 'UTILITY'), false);
+  assert.equal(engine.hasMonopoly(0, 'NONEXISTENT_GROUP'), false);
+  assert.equal(engine.hasMonopoly(0, ''), false);
+  assert.equal(engine.hasMonopoly(null, 'NONEXISTENT_GROUP'), false);
+});
+
+test('executeCard collectGo awards salary when moving to tile 0 from tile 0', () => {
+  const engine = createEngine('classic');
+  const player = engine.players[0];
+  player.position = 0;
+  player.cash = 1500;
+
+  engine.executeCard(player, {
+    text: 'Advance to GO (Collect $200)',
+    action: { type: 'MOVE_TO', target: 0, collectGo: true }
+  }, () => {});
+
+  assert.equal(player.position, 0);
+  assert.equal(player.cash, 1700, 'Player must collect $200 salary when advancing to GO from tile 0');
+});
+
+test('dynamic getGroupPropertyCount and initial board exports', () => {
+  assert.equal(BOARD_TILES.length, 40, 'Default board must be 40-tile Classic edition');
+  assert.equal(TILE_PROBABILITIES[39], 2.6, 'Default probabilities must match 40-tile distribution');
+  assert.equal(getGroupPropertyCount('LIGHT_BLUE'), 3, 'Classic 40 Light Blue has 3 properties');
+  assert.equal(getGroupPropertyCount('BROWN'), 2, 'Classic 40 Brown has 2 properties');
+  assert.equal(getGroupPropertyCount('RAILROAD'), 4, 'Classic 40 Railroad has 4 stations');
+  assert.equal(getGroupPropertyCount('UTILITY'), 2, 'Classic 40 Utility has 2 companies');
+});
+
+test('ICONS library contains STAR and USERS', () => {
+  assert.ok(ICONS.STAR, 'STAR icon must be defined in ICONS');
+  assert.ok(ICONS.USERS, 'USERS icon must be defined in ICONS');
+  assert.ok(ICONS.USERS.includes('<svg'), 'USERS icon must contain SVG markup');
+  assert.ok(getIcon('STAR').includes('⭐'), 'getIcon(STAR) must render star emoji');
+  assert.ok(getIcon('USERS').includes('<svg class="icon-svg"'), 'getIcon(USERS) must inject icon class');
 });
 
 

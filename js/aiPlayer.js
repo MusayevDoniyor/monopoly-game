@@ -3,8 +3,8 @@ import {
   COLOR_GROUPS,
   TILE_PROBABILITIES,
   gameSettings,
-} from "./boardData.js?v=8.2";
-import { sounds } from "./audio.js?v=8.2";
+} from "./boardData.js";
+import { sounds } from "./audio.js";
 
 export class AiPlayer {
   constructor(engine) {
@@ -293,41 +293,9 @@ export class AiPlayer {
   // Debt handling / emergency liquidation
   handleDebt(player) {
     if (player.cash >= 0) return true;
-
-    const owned = this.engine.getPlayerProperties(player.id);
-
-    // 1. Sell houses / hotels on lowest ROI properties
-    for (const t of owned) {
-      if (this.engine.canSellHouse(player.id, t.id)) {
-        this.engine.sellHouse(player.id, t.id);
-        if (player.cash >= 0) return true;
-      }
+    if (this.engine.autoLiquidateForPlayer) {
+      this.engine.autoLiquidateForPlayer(player, 0);
     }
-
-    // 2. Mortgage non-monopolized properties
-    const nonMonopolies = owned.filter(
-      (t) =>
-        !this.engine.hasMonopoly(player.id, t.group) &&
-        !this.engine.board[t.id].mortgaged,
-    );
-    nonMonopolies.sort((a, b) => (a.rent?.[0] || 0) - (b.rent?.[0] || 0));
-
-    for (const t of nonMonopolies) {
-      if (this.engine.canMortgage(player.id, t.id)) {
-        this.engine.mortgageProperty(player.id, t.id);
-        if (player.cash >= 0) return true;
-      }
-    }
-
-    // 3. Mortgage remaining properties if still in debt
-    const remaining = owned.filter((t) => !this.engine.board[t.id].mortgaged);
-    for (const t of remaining) {
-      if (this.engine.canMortgage(player.id, t.id)) {
-        this.engine.mortgageProperty(player.id, t.id);
-        if (player.cash >= 0) return true;
-      }
-    }
-
     return player.cash >= 0;
   }
 
