@@ -1225,6 +1225,10 @@ export class GameEngine {
       return { success: true, bankrupt: false };
     }
 
+    debtor.lastCreditor = creditor;
+    debtor.lastDebtReason = reason;
+    debtor.lastDebtAmount = amount;
+
     // 1. Debtor has sufficient cash
     if (debtor.cash >= amount) {
       debtor.cash -= amount;
@@ -1234,40 +1238,99 @@ export class GameEngine {
       return { success: true, bankrupt: false };
     }
 
-    // 2. Debtor does not have sufficient cash -> Proactively raise cash by selling houses / mortgaging properties
-    this.autoLiquidateForPlayer(debtor, amount);
+    // 2. Debtor does not have sufficient cash:
+    if (debtor.isAi) {
+      // AI proactively raises cash by selling houses / mortgaging properties
+      this.autoLiquidateForPlayer(debtor, amount);
 
-    if (debtor.cash >= amount) {
-      debtor.cash -= amount;
-      if (creditor && !creditor.bankrupt) {
-        creditor.cash += amount;
+      if (debtor.cash >= amount) {
+        debtor.cash -= amount;
+        if (creditor && !creditor.bankrupt) {
+          creditor.cash += amount;
+        }
+        return { success: true, bankrupt: false };
       }
-      return { success: true, bankrupt: false };
+
+      // Debtor AI cannot pay even after full liquidation: BANKRUPTCY!
+      this.log(
+        `[INSOLVENCY] ${debtor.name} cannot afford $${amount} for ${reason} and is bankrupt!`,
+        "danger",
+      );
+      this.declareBankruptcy(debtor, creditor);
+      return { success: false, bankrupt: true };
     }
 
-    // 3. Debtor cannot pay even after full liquidation: BANKRUPTCY!
+    // 3. Human Debtor: DO NOT auto-liquidate without player choice!
+    // Deduct cash into deficit so the player enters debt
+    debtor.cash -= amount;
+    if (creditor && !creditor.bankrupt) {
+      creditor.cash += amount;
+    }
+
+    const liquidatable = this.getLiquidatableAssets(debtor.id);
+    const totalAssets = debtor.cash + liquidatable;
+
+    if (totalAssets < 0) {
+      this.log(
+        `[INSOLVENCY] ${debtor.name} owes $${amount} for ${reason} (Deficit: -$${Math.abs(debtor.cash)}) and total assets ($${liquidatable}) are insufficient!`,
+        "danger",
+      );
+      return {
+        success: false,
+        bankrupt: false,
+        inDebt: true,
+        canEverClear: false,
+        deficit: Math.abs(debtor.cash),
+        amountPaid: amount,
+      };
+    }
+
     this.log(
-      `[INSOLVENCY] ${debtor.name} cannot afford $${amount} for ${reason} and is bankrupt!`,
-      "danger",
+      `[DEBT] ${debtor.name} owes $${amount} for ${reason} (Deficit: -$${Math.abs(debtor.cash)}). Must liquidate assets!`,
+      "warning",
     );
-    this.declareBankruptcy(debtor, creditor);
-    return { success: false, bankrupt: true };
+    return {
+      success: true,
+      bankrupt: false,
+      inDebt: true,
+      canEverClear: true,
+      deficit: Math.abs(debtor.cash),
+      amountPaid: amount,
+    };
   }
 
   checkBankruptcy(player) {
     if (player.cash >= 0) {
-      return { bankrupt: false, inDebt: false };
+      return { bankrupt: false, inDebt: false, deficit: 0, canEverClear: true };
     }
 
     const liquidatable = this.getLiquidatableAssets(player.id);
     const totalAssets = player.cash + liquidatable;
 
     if (totalAssets < 0) {
-      this.declareBankruptcy(player);
-      return { bankrupt: true, inDebt: false };
+      if (player.isAi) {
+        this.declareBankruptcy(player);
+        return {
+          bankrupt: true,
+          inDebt: false,
+          deficit: Math.abs(player.cash),
+          canEverClear: false,
+        };
+      }
+      return {
+        bankrupt: false,
+        inDebt: true,
+        deficit: Math.abs(player.cash),
+        canEverClear: false,
+      };
     }
 
-    return { bankrupt: false, inDebt: true, deficit: Math.abs(player.cash) };
+    return {
+      bankrupt: false,
+      inDebt: true,
+      deficit: Math.abs(player.cash),
+      canEverClear: true,
+    };
   }
 
   declareBankruptcy(player, creditor = null) {

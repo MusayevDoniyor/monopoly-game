@@ -594,7 +594,7 @@ test('trade system enforces property building restrictions, ownership, and mortg
   assert.equal(p2.cash, 550); // 500 + 100 - 50
 });
 
-test('human players properly liquidate assets to pay penalties, fines, and repairs instead of evading payment', () => {
+test('human players enter interactive debt deficit to choose liquidation assets instead of silent auto-liquidation', () => {
   const engine = createEngine('classic');
   const human = engine.players[0]; // isAi is false
   human.isAi = false;
@@ -608,9 +608,26 @@ test('human players properly liquidate assets to pay penalties, fines, and repai
   const res = engine.processPayment(human, 75, null, 'speeding fine');
   assert.equal(res.success, true);
   assert.equal(res.bankrupt, false);
-  // Auto-mortgaged Oriental Ave (40 + 50 = 90), then paid 75 -> 15 remaining cash
+  assert.equal(res.inDebt, true);
+  assert.equal(res.deficit, 35);
+  // Human is NOT auto-mortgaged behind their back
+  assert.equal(engine.board[6].mortgaged, false);
+  assert.equal(human.cash, -35); // 40 - 75 = -35 deficit
+
+  // Check bankruptcy status returns inDebt: true so UI can prompt debt resolution modal
+  const debtStatus = engine.checkBankruptcy(human);
+  assert.equal(debtStatus.inDebt, true);
+  assert.equal(debtStatus.canEverClear, true);
+
+  // Human interactively mortgages Oriental Ave to raise $50
+  engine.mortgageProperty(human.id, 6);
   assert.equal(engine.board[6].mortgaged, true);
-  assert.equal(human.cash, 15);
+  assert.equal(human.cash, 15); // -35 + 50 = 15
+
+  // Debt is now resolved
+  const resolvedStatus = engine.checkBankruptcy(human);
+  assert.equal(resolvedStatus.inDebt, false);
+  assert.equal(resolvedStatus.bankrupt, false);
 });
 
 

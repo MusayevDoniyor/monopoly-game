@@ -1115,6 +1115,7 @@ export class ModalManager extends UIComponent {
   }
   showDebtResolutionModal(player, onResolved, onBankrupt) {
     this.isDebtModal = true;
+    if (this.closeModalCrossBtn) this.closeModalCrossBtn.style.display = "none";
     if (this.modalCard) this.modalCard.classList.remove("naked-modal");
     this.modalTitle.innerHTML = `<span class="icon-wrap" style="color: #ef4444;">${getIcon("WARNING")}</span> <span style="color: #f87171;">MANDATORY DEBT RESOLUTION</span>`;
 
@@ -1293,15 +1294,30 @@ export class ModalManager extends UIComponent {
         document.getElementById("declareBankruptDebtBtn").onclick = () => {
           this.isDebtModal = false;
           this.closeModal(true);
-          this.engine.declareBankruptcy(player);
+          this.engine.declareBankruptcy(player, player.lastCreditor || null);
           if (onBankrupt) onBankrupt();
         };
       } else {
         this.modalFooter.innerHTML = `
-          <button class="btn-secondary" disabled style="width: 100%; justify-content: center; opacity: 0.6; cursor: not-allowed;">
-            Must raise $${deficit} more by selling houses or mortgaging
-          </button>
+          <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+            <button class="btn-secondary" disabled style="width: 100%; justify-content: center; opacity: 0.7; cursor: not-allowed;">
+              Must raise $${deficit} more by selling houses or mortgaging
+            </button>
+            <button class="btn-secondary" id="concedeBankruptDebtBtn" style="width: 100%; justify-content: center; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; font-size: 0.8rem; cursor: pointer;">
+              <span class="icon-wrap" style="width: 14px; height: 14px;">${getIcon("CLOSE")}</span>
+              <span>Surrender & Declare Bankruptcy</span>
+            </button>
+          </div>
         `;
+        const surrenderBtn = document.getElementById("concedeBankruptDebtBtn");
+        if (surrenderBtn) {
+          surrenderBtn.onclick = () => {
+            this.isDebtModal = false;
+            this.closeModal(true);
+            this.engine.declareBankruptcy(player, player.lastCreditor || null);
+            if (onBankrupt) onBankrupt();
+          };
+        }
       }
     };
 

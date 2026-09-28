@@ -1214,18 +1214,24 @@ class MonopolyApp {
         }
       });
 
-      if (player.cash < 0) {
-        if (isAi) {
-          this.engine.ensureSolvency(player);
-        } else {
-          const debtStatus = this.engine.checkBankruptcy(player);
-          if (debtStatus.inDebt) {
-            this.stopTurnTimer();
-            await new Promise((resolve) => {
-              this.ui.showDebtResolutionModal(player, resolve, resolve);
-            });
-          }
+      const indebtedHumans = this.engine
+        .getActivePlayers()
+        .filter((p) => !p.isAi && p.cash < 0 && !p.bankrupt);
+      for (const indebted of indebtedHumans) {
+        const debtStatus = this.engine.checkBankruptcy(indebted);
+        if (debtStatus.inDebt) {
+          this.stopTurnTimer();
+          await new Promise((resolve) => {
+            this.ui.showDebtResolutionModal(indebted, resolve, resolve);
+          });
         }
+      }
+
+      const indebtedAis = this.engine
+        .getActivePlayers()
+        .filter((p) => p.isAi && p.cash < 0 && !p.bankrupt);
+      for (const ai of indebtedAis) {
+        this.engine.ensureSolvency(ai);
       }
 
       if (isDoubles && !player.inJail && !player.bankrupt) {
@@ -1403,6 +1409,18 @@ class MonopolyApp {
               if (onComplete) onComplete();
             });
           } else {
+            const indebtedHumans = this.engine
+              .getActivePlayers()
+              .filter((p) => !p.isAi && p.cash < 0 && !p.bankrupt);
+            for (const indebted of indebtedHumans) {
+              const debtStatus = this.engine.checkBankruptcy(indebted);
+              if (debtStatus.inDebt) {
+                this.stopTurnTimer();
+                await new Promise((res) => {
+                  this.ui.showDebtResolutionModal(indebted, res, res);
+                });
+              }
+            }
             this.ui.updateBoardState();
             this.ui.updateHUD();
             this.syncGameState();
