@@ -191,7 +191,7 @@ export class HudController extends UIComponent {
       const rollBtnText = document.getElementById("rollDiceBtnText");
       if (rollBtnText) {
         rollBtnText.innerText = this.engine.currentTurn.canRollAgain
-          ? "Roll Again (Doubles!)"
+          ? "Roll Again"
           : "Roll Dice";
       }
 

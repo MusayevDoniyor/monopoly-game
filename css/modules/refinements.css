@@ -921,10 +921,12 @@ textarea {
     min-width: 0;
     white-space: nowrap;
     justify-content: center;
-    padding: 9px 12px;
+    padding: 9px 10px;
     font-size: 0.86rem;
-    gap: 7px;
+    gap: 6px;
     border-radius: 10px;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   .center-quick-actions {
@@ -1052,10 +1054,12 @@ textarea {
     min-width: 0;
     white-space: nowrap;
     justify-content: center;
-    padding: 9px 12px;
+    padding: 9px 10px;
     font-size: 0.86rem;
-    gap: 7px;
+    gap: 6px;
     border-radius: 10px;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   .center-quick-actions {
