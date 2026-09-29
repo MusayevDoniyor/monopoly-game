@@ -1,3 +1,15 @@
+import { gameSettings } from './boardData.js';
+
+export function getCardBadge(card, theme = gameSettings?.boardTheme || 'classic') {
+  if (!card) return '';
+  return card.badges?.[theme] ?? card.badge ?? '';
+}
+
+export function getCardText(card, theme = gameSettings?.boardTheme || 'classic') {
+  if (!card) return '';
+  return card.texts?.[theme] ?? card.text ?? '';
+}
+
 export const DYNAMIC_CHANCE_CARDS = [
   {
     id: 'ch_start',
@@ -11,16 +23,56 @@ export const DYNAMIC_CHANCE_CARDS = [
     id: 'ch_monaco',
     title: 'HIGH ROLLER',
     category: 'TRAVEL',
-    badge: 'WARP TO MONACO',
-    text: 'Take a luxury VIP helicopter flight straight to Monaco / Boardwalk. If unowned, you may purchase it!',
+    badges: {
+      classic: 'WARP TO BOARDWALK',
+      world: 'WARP TO MONACO'
+    },
+    texts: {
+      classic: 'Take a luxury VIP helicopter flight straight to Boardwalk. If unowned, you may purchase it!',
+      world: 'Take a luxury VIP helicopter flight straight to Monaco. If unowned, you may purchase it!'
+    },
+    get badge() {
+      const theme = gameSettings?.boardTheme || 'classic';
+      return this.badges[theme] || this.badges.classic;
+    },
+    set badge(val) {
+      this._badge = val;
+    },
+    get text() {
+      const theme = gameSettings?.boardTheme || 'classic';
+      return this.texts[theme] || this.texts.classic;
+    },
+    set text(val) {
+      this._text = val;
+    },
     action: { type: 'MOVE_TO', targets: { classic: 39, world: 35 }, collectGo: false }
   },
   {
     id: 'ch_tokyo',
     title: 'BUSINESS EXPEDITION',
     category: 'TRAVEL',
-    badge: 'ADVANCE TO TOKYO',
-    text: 'Corporate summit in Tokyo / Illinois Ave. If you pass START along the way, collect $200.',
+    badges: {
+      classic: 'ADVANCE TO ILLINOIS AVE',
+      world: 'ADVANCE TO TOKYO'
+    },
+    texts: {
+      classic: 'Corporate summit on Illinois Avenue. If you pass START along the way, collect $200.',
+      world: 'Corporate summit in Tokyo. If you pass START along the way, collect $200.'
+    },
+    get badge() {
+      const theme = gameSettings?.boardTheme || 'classic';
+      return this.badges[theme] || this.badges.classic;
+    },
+    set badge(val) {
+      this._badge = val;
+    },
+    get text() {
+      const theme = gameSettings?.boardTheme || 'classic';
+      return this.texts[theme] || this.texts.classic;
+    },
+    set text(val) {
+      this._text = val;
+    },
     action: { type: 'MOVE_TO', targets: { classic: 24, world: 22 }, collectGo: true }
   },
   {

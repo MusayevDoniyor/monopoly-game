@@ -781,7 +781,8 @@ export class GameEngine {
 
   executeCard(player, card, onComplete, options = {}) {
     const action = card.action;
-    this.log(`Card Drawn: "${card.text}"`, "info");
+    const cardText = (card.texts && gameSettings.boardTheme ? card.texts[gameSettings.boardTheme] : null) || card.text;
+    this.log(`Card Drawn: "${cardText}"`, "info");
 
     switch (action.type) {
       case "CASH":

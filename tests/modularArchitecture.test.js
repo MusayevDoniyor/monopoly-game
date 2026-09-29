@@ -5,6 +5,7 @@ import { TurnTimer } from "../js/turnTimer.js";
 import { UIComponent } from "../js/ui/uiComponent.js";
 import { gameSettings, updateGameSettings } from "../js/boardData.js";
 import { particles } from "../js/particles.js";
+import { getCardBadge, getCardText, CHANCE_CARDS } from "../js/cardsData.js";
 
 test("utils: escapeHtml correctly encodes special characters", () => {
   assert.equal(escapeHtml("<script>alert('xss')</script>"), "&lt;script&gt;alert(&#039;xss&#039;)&lt;/script&gt;");
@@ -312,6 +313,33 @@ test("utils: parseRoomParam extracts room code from search parameters", () => {
   assert.equal(parseRoomParam(""), null);
   assert.equal(parseRoomParam(null), null);
 });
+
+test("cards: travel cards dynamically adapt badge and description to active board theme", () => {
+  const tokyoCard = CHANCE_CARDS.find((c) => c.id === "ch_tokyo");
+  const monacoCard = CHANCE_CARDS.find((c) => c.id === "ch_monaco");
+
+  updateGameSettings({ boardTheme: "classic" });
+  assert.equal(tokyoCard.badge, "ADVANCE TO ILLINOIS AVE");
+  assert.ok(tokyoCard.text.includes("Illinois Avenue"));
+  assert.equal(getCardBadge(tokyoCard, "classic"), "ADVANCE TO ILLINOIS AVE");
+  assert.ok(getCardText(tokyoCard, "classic").includes("Illinois Avenue"));
+
+  assert.equal(monacoCard.badge, "WARP TO BOARDWALK");
+  assert.ok(monacoCard.text.includes("Boardwalk"));
+
+  updateGameSettings({ boardTheme: "world" });
+  assert.equal(tokyoCard.badge, "ADVANCE TO TOKYO");
+  assert.ok(tokyoCard.text.includes("Tokyo"));
+  assert.equal(getCardBadge(tokyoCard, "world"), "ADVANCE TO TOKYO");
+  assert.ok(getCardText(tokyoCard, "world").includes("Tokyo"));
+
+  assert.equal(monacoCard.badge, "WARP TO MONACO");
+  assert.ok(monacoCard.text.includes("Monaco"));
+
+  // Restore setting
+  updateGameSettings({ boardTheme: "classic" });
+});
+
 
 
 

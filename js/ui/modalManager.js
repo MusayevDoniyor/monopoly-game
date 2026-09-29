@@ -625,7 +625,9 @@ export class ModalManager extends UIComponent {
     const isChance = cardType === "chance";
     const iconKey = isChance ? "CHANCE" : "CHEST";
     const cat = (card.category || "EVENT").toLowerCase();
-    const impactPositive = !card.badge || !card.badge.includes("-");
+    const activeBadge = (card.badges && gameSettings.boardTheme ? card.badges[gameSettings.boardTheme] : null) || card.badge;
+    const activeText = (card.texts && gameSettings.boardTheme ? card.texts[gameSettings.boardTheme] : null) || card.text;
+    const impactPositive = !activeBadge || !activeBadge.includes("-");
     const cardArt = (() => {
       switch (card.action?.type) {
         case "CASH":
@@ -678,15 +680,15 @@ export class ModalManager extends UIComponent {
             </div>
 
             <div class="card-desc-box">
-              <p>${card.text}</p>
+              <p>${activeText}</p>
             </div>
 
             ${
-              card.badge
+              activeBadge
                 ? `
               <div class="card-impact-pill ${impactPositive ? "positive" : "negative"}">
                 <span class="icon-wrap" style="width: 14px; height: 14px;">${getIcon(impactPositive ? "SPARKLE" : "WARNING")}</span>
-                <span>${card.badge}</span>
+                <span>${activeBadge}</span>
               </div>
             `
                 : ""

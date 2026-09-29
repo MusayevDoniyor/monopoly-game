@@ -1424,14 +1424,26 @@ class MonopolyApp {
             if (this.engine.currentTurn) {
               this.engine.currentTurn.deferredLandingOptions = null;
             }
+            // Guard to prevent onComplete from firing twice (mirrors
+            // the safeResolve pattern used in the normal dice-roll flow).
+            let cardLandingResolved = false;
+            const safeCardComplete = () => {
+              if (cardLandingResolved) return;
+              cardLandingResolved = true;
+              this.ui.updateBoardState();
+              this.ui.updateHUD();
+              this.syncGameState();
+              if (onComplete) onComplete();
+            };
             this.engine.handleTileLanding(cardPlayer, () => {
-              this.checkActionModal(false, () => {
-                this.ui.updateBoardState();
-                this.ui.updateHUD();
-                this.syncGameState();
-                if (onComplete) onComplete();
-              });
+              this.checkActionModal(false, safeCardComplete);
             }, deferredOpts);
+            // Immediate check: if handleTileLanding set awaitingAction
+            // (e.g. buy_prompt) and returned without calling onFinished,
+            // we must trigger the modal now — otherwise the game hangs.
+            if (this.engine.currentTurn?.awaitingAction) {
+              this.checkActionModal(false, safeCardComplete);
+            }
           } else {
             const indebtedHumans = this.engine
               .getActivePlayers()
